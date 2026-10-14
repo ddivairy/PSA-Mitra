@@ -39,9 +39,41 @@ import { Program, UserRole } from './types';
 const MainAppContent: React.FC = () => {
   const { role, setRole, currentUser } = useApp();
 
+  const portalPaths: Record<string, string> = {
+    'vol-dashboard': '/relawan/dashboard', 'vol-applications': '/relawan/aplikasi',
+    'vol-profile': '/relawan/profil', 'public-programs': '/relawan/program',
+    'part-dashboard': '/mitra/dashboard', 'part-programs': '/mitra/program',
+    'part-participants': '/mitra/relawan', 'part-analytics': '/mitra/analitik',
+    'part-organization': '/mitra/organisasi', 'admin-dashboard': '/admin/dashboard',
+    'admin-partnerships': '/admin/verifikasi-mitra', 'admin-proposals': '/admin/proposal',
+    'admin-applications': '/admin/seleksi-relawan', 'admin-analytics': '/admin/analitik',
+    'admin-audit': '/admin/audit',
+  };
+  const tabFromPath = (path: string) => Object.entries(portalPaths).find(([, value]) => value === path)?.[0];
+
   // Navigation tabs state
   const [currentPublicTab, setCurrentPublicTab] = useState<string>('public-home');
-  const [currentPortalTab, setCurrentPortalTab] = useState<string>('vol-dashboard');
+  const [currentPortalTab, setCurrentPortalTab] = useState<string>(() => tabFromPath(window.location.pathname) || 'vol-dashboard');
+  const navigatePortal = (tab: string) => {
+    setCurrentPortalTab(tab);
+    const path = portalPaths[tab];
+    if (path && window.location.pathname !== path) window.history.pushState({ portalTab: tab }, '', path);
+  };
+
+  useEffect(() => {
+    const syncFromHistory = () => {
+      const tab = tabFromPath(window.location.pathname);
+      if (tab) {
+        setCurrentPortalTab(tab);
+        if (tab.startsWith('admin-')) setRole('admin');
+        else if (tab.startsWith('part-')) setRole('partner');
+        else setRole('volunteer');
+      }
+    };
+    syncFromHistory();
+    window.addEventListener('popstate', syncFromHistory);
+    return () => window.removeEventListener('popstate', syncFromHistory);
+  }, []);
   
   // Flag to know whether an authenticated user is currently viewing the public website or inside their portal
   const [isViewingPublicSite, setIsViewingPublicSite] = useState<boolean>(role === 'public');
@@ -58,12 +90,12 @@ const MainAppContent: React.FC = () => {
       setIsViewingPublicSite(true);
     } else {
       setIsViewingPublicSite(false);
-      if (role === 'volunteer') {
-        setCurrentPortalTab('vol-dashboard');
-      } else if (role === 'partner') {
-        setCurrentPortalTab('part-dashboard');
-      } else if (role === 'admin') {
-        setCurrentPortalTab('admin-dashboard');
+      if (role === 'volunteer' && !currentPortalTab.startsWith('vol-') && currentPortalTab !== 'public-programs') {
+        navigatePortal('vol-dashboard');
+      } else if (role === 'partner' && !currentPortalTab.startsWith('part-')) {
+        navigatePortal('part-dashboard');
+      } else if (role === 'admin' && !currentPortalTab.startsWith('admin-')) {
+        navigatePortal('admin-dashboard');
       }
     }
   }, [role]);
@@ -87,9 +119,9 @@ const MainAppContent: React.FC = () => {
       setCurrentPublicTab('public-home');
     } else {
       setIsViewingPublicSite(false);
-      if (newRole === 'volunteer') setCurrentPortalTab('vol-dashboard');
-      else if (newRole === 'partner') setCurrentPortalTab('part-dashboard');
-      else if (newRole === 'admin') setCurrentPortalTab('admin-dashboard');
+      if (newRole === 'volunteer') navigatePortal('vol-dashboard');
+      else if (newRole === 'partner') navigatePortal('part-dashboard');
+      else if (newRole === 'admin') navigatePortal('admin-dashboard');
     }
   };
 
@@ -163,9 +195,9 @@ const MainAppContent: React.FC = () => {
           initialMode={authInitialMode}
           onSuccess={(newUserRole) => {
             setIsViewingPublicSite(false);
-            if (newUserRole === 'volunteer') setCurrentPortalTab('vol-dashboard');
-            else if (newUserRole === 'partner') setCurrentPortalTab('part-dashboard');
-            else if (newUserRole === 'admin') setCurrentPortalTab('admin-dashboard');
+            if (newUserRole === 'volunteer') navigatePortal('vol-dashboard');
+            else if (newUserRole === 'partner') navigatePortal('part-dashboard');
+            else if (newUserRole === 'admin') navigatePortal('admin-dashboard');
           }}
         />
 
@@ -177,7 +209,7 @@ const MainAppContent: React.FC = () => {
             onSuccess={() => {
               alert('Aplikasi pendaftaran berhasil dikirim!');
               setIsViewingPublicSite(false);
-              setCurrentPortalTab('vol-applications');
+              navigatePortal('vol-applications');
             }}
           />
         )}
@@ -194,7 +226,7 @@ const MainAppContent: React.FC = () => {
     <PortalLayout
       currentTab={currentPortalTab}
       onNavigate={(tab) => {
-        setCurrentPortalTab(tab);
+        navigatePortal(tab);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }}
       onGoToPublic={() => {
@@ -207,22 +239,22 @@ const MainAppContent: React.FC = () => {
         <>
           {currentPortalTab === 'vol-dashboard' && (
             <VolunteerDashboard
-              onNavigate={(tab) => setCurrentPortalTab(tab)}
+              onNavigate={navigatePortal}
               onOpenApply={handleOpenApply}
               onOpenDetail={(prog) => {
                 setSelectedProgramForDetail(prog);
-                setCurrentPortalTab('public-programs');
+                navigatePortal('public-programs');
               }}
             />
           )}
           {currentPortalTab === 'vol-applications' && (
             <div className="py-8 px-4 sm:px-6 lg:px-8">
-              <VolunteerApplicationsList onExplorePrograms={() => setCurrentPortalTab('public-programs')} />
+              <VolunteerApplicationsList onExplorePrograms={() => navigatePortal('public-programs')} />
             </div>
           )}
           {currentPortalTab === 'vol-profile' && (
             <div className="py-8 px-4 sm:px-6 lg:px-8">
-              <VolunteerProfileStepForm onComplete={() => setCurrentPortalTab('vol-dashboard')} />
+              <VolunteerProfileStepForm onComplete={() => navigatePortal('vol-dashboard')} />
             </div>
           )}
           {currentPortalTab === 'public-programs' && (
@@ -241,7 +273,7 @@ const MainAppContent: React.FC = () => {
       {role === 'partner' && (
         <>
           {currentPortalTab === 'part-dashboard' && (
-            <PartnerDashboard onNavigate={(tab) => setCurrentPortalTab(tab)} />
+            <PartnerDashboard onNavigate={navigatePortal} />
           )}
           {currentPortalTab === 'part-programs' && (
             <PartnerProgramsList />
@@ -254,7 +286,7 @@ const MainAppContent: React.FC = () => {
           )}
           {currentPortalTab === 'part-organization' && (
             <div className="py-8 px-4 sm:px-6 lg:px-8">
-              <PartnerOrganizationForm onComplete={() => setCurrentPortalTab('part-dashboard')} />
+              <PartnerOrganizationForm onComplete={() => navigatePortal('part-dashboard')} />
             </div>
           )}
         </>
@@ -264,7 +296,7 @@ const MainAppContent: React.FC = () => {
       {role === 'admin' && (
         <>
           {currentPortalTab === 'admin-dashboard' && (
-            <AdminDashboard onNavigate={(tab) => setCurrentPortalTab(tab)} />
+            <AdminDashboard onNavigate={navigatePortal} />
           )}
           {currentPortalTab === 'admin-partnerships' && (
             <PartnershipReviewList />
@@ -292,7 +324,7 @@ const MainAppContent: React.FC = () => {
           onClose={() => setApplyingProgram(null)}
           onSuccess={() => {
             alert('Aplikasi pendaftaran berhasil dikirim!');
-            setCurrentPortalTab('vol-applications');
+            navigatePortal('vol-applications');
           }}
         />
       )}

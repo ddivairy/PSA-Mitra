@@ -13,8 +13,6 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StatusBadge } from '../common/StatusBadge';
-import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
-import { FeatureHighlightsGrid, FeatureHighlightItem } from '../dashboard/FeatureHighlightsGrid';
 import { InteractiveCalendarWidget } from '../dashboard/InteractiveCalendarWidget';
 import { AnalyticsOverviewWidget } from '../dashboard/AnalyticsOverviewWidget';
 import { NotificationsPanelWidget } from '../dashboard/NotificationsPanelWidget';
@@ -33,33 +31,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const pendingProposals = programs.filter(p => p.proposalStatus === 'submitted' || p.proposalStatus === 'under_review');
   const approvedPartners = partners.filter(p => p.status === 'approved');
   const totalVolunteers = applications.length;
-
-  const featureItems: FeatureHighlightItem[] = [
-    {
-      id: 'f-1',
-      icon: '▦',
-      title: 'Validasi Kemitraan',
-      description: 'Periksa kelengkapan legalitas organisasi, akta pendirian, dan rekam jejak program sosial.',
-      actionText: 'Tinjau mitra baru',
-      onAction: () => onNavigate('admin-partnerships'),
-    },
-    {
-      id: 'f-2',
-      icon: '✎',
-      title: 'Review Proposal',
-      description: 'Evaluasi target penerima manfaat, anggaran kolaborasi, dan linimasa kegiatan sebelum disetujui.',
-      actionText: 'Buka antrean proposal',
-      onAction: () => onNavigate('admin-proposals'),
-    },
-    {
-      id: 'f-3',
-      icon: '◎',
-      title: 'Tata Kelola & Audit',
-      description: 'Audit trail otomatis mencatat seluruh keputusan persetujuan, penolakan, dan catatan revisi.',
-      actionText: 'Lihat rekam jejak',
-      onAction: () => onNavigate('admin-audit'),
-    },
-  ];
 
   const adminTasks: TodayTaskItem[] = [
     {
@@ -126,33 +97,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
   return (
     <div className="space-y-6">
-      {/* Workspace Intro Section */}
-      <WorkspaceIntroHeader
-        eyebrow="YOUR WORKSPACE · INTERNAL PSA GOVERNANCE"
-        title="Dashboard Pengawasan & Tata Kelola PSA"
-        description="Pusat kendali verifikasi organisasi mitra, evaluasi proposal kolaborasi, dan pengawasan operasional relawan Indonesia."
-        actions={
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onNavigate('admin-analytics')}
-              className="steel-button"
-            >
-              Analitik Wilayah
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('admin-audit')}
-              className="navy-button"
-            >
-              Audit Trail
-            </button>
-          </div>
-        }
-      />
-
       {/* 3 Modular Feature Highlight Cards (from style.html) */}
-      <FeatureHighlightsGrid items={featureItems} />
 
       {/* Main 2-Column Dashboard Grid (style.html) */}
       <div className="dashboard-grid">
@@ -225,7 +170,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       <button
                         type="button"
                         onClick={() => reviewPartnership(p.id, 'revision_required', 'Mohon lengkapi lampiran akta pendirian terbaru')}
-                        className="px-3 py-1.5 text-xs font-bold text-[#E85D75] hover:bg-[#E85D75]/10 border border-[#E85D75]/30 rounded-xl transition-colors cursor-pointer"
+                        className="px-3 py-1.5 text-xs font-bold text-[#42699e] hover:bg-[#5C80B6]/10 border border-[#5C80B6]/30 rounded-xl transition-colors cursor-pointer"
                       >
                         Minta Revisi
                       </button>
@@ -288,7 +233,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                       <button
                         type="button"
                         onClick={() => reviewProgramProposal(prg.id, 'revision_required', 'Mohon sesuaikan rincian anggaran dan kuota relawan')}
-                        className="px-3 py-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition-colors cursor-pointer"
+                        className="px-3 py-1.5 text-xs font-bold text-[#42699e] bg-[#5C80B6]/5 hover:bg-[#5C80B6]/10 border border-[#5C80B6]/20 rounded-xl transition-colors cursor-pointer"
                       >
                         Catatan Revisi
                       </button>

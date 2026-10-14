@@ -17,7 +17,6 @@ interface AssignmentsTrackerWidgetProps {
 
 export const AssignmentsTrackerWidget: React.FC<AssignmentsTrackerWidgetProps> = ({
   title = 'Assignments / Tasks',
-  subtitle = 'Progress across your current projects',
   timeframeBadge = 'This week',
   items,
 }) => {
@@ -28,7 +27,6 @@ export const AssignmentsTrackerWidget: React.FC<AssignmentsTrackerWidgetProps> =
           <h2 id="assignments-heading" className="text-base font-extrabold text-[#0F172A]">
             {title}
           </h2>
-          <p className="text-xs text-[#64748B] mt-0.5">{subtitle}</p>
         </div>
         <span className="time-badge">{timeframeBadge}</span>
       </div>

@@ -23,16 +23,13 @@ export const AnalyticsOverviewWidget: React.FC<AnalyticsOverviewWidgetProps> = (
           {title}
         </h2>
       </div>
-      <div className="circle-grid">
+      <div className="metric-list">
         {items.map((item) => (
-          <div key={item.id} className="circle-item">
-            <div
-              className={`circle ${item.isCoral ? 'coral-ring' : ''}`}
-              style={{ '--progress': `${item.percentage}%` } as React.CSSProperties}
-            >
-              <span>{item.percentage}%</span>
+          <div key={item.id} className="metric-row">
+            <div className="metric-label"><span>{item.label}</span><span>{item.percentage}%</span></div>
+            <div className="metric-track" role="progressbar" aria-label={item.label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={item.percentage}>
+              <div className={`metric-fill ${item.isCoral ? 'coral' : ''}`} style={{ width: `${item.percentage}%` }} />
             </div>
-            <span className="truncate">{item.label}</span>
           </div>
         ))}
       </div>

@@ -12,8 +12,6 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Program } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
-import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
-import { FeatureHighlightsGrid, FeatureHighlightItem } from '../dashboard/FeatureHighlightsGrid';
 import { InteractiveCalendarWidget } from '../dashboard/InteractiveCalendarWidget';
 import { AnalyticsOverviewWidget, AnalyticsGaugeItem } from '../dashboard/AnalyticsOverviewWidget';
 import { NotificationsPanelWidget, NoticeItem } from '../dashboard/NotificationsPanelWidget';
@@ -57,33 +55,6 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
     const matchCity = p.city === volunteerProfile.city;
     return matchInterest || matchCity;
   }).slice(0, 2);
-
-  const featureItems: FeatureHighlightItem[] = [
-    {
-      id: 'vf-1',
-      icon: '▦',
-      title: 'Eksplorasi Program',
-      description: 'Temukan program kerelawanan di bidang pendidikan, lingkungan, kesehatan, dan pemberdayaan.',
-      actionText: 'Jelajahi program',
-      onAction: () => onNavigate('public-programs'),
-    },
-    {
-      id: 'vf-2',
-      icon: '✎',
-      title: 'Profil & Portofolio',
-      description: 'Perbarui minat keahlian, sertifikat kerelawanan, dan riwayat pengalaman lapangan.',
-      actionText: 'Kelola profil',
-      onAction: () => onNavigate('vol-profile'),
-    },
-    {
-      id: 'vf-3',
-      icon: '◎',
-      title: 'Pantau Seleksi Aplikasi',
-      description: 'Lihat status evaluasi berkas, jadwal wawancara, dan surat penerimaan program secara real-time.',
-      actionText: 'Lihat aplikasi',
-      onAction: () => onNavigate('vol-applications'),
-    },
-  ];
 
   const volunteerTasks: TodayTaskItem[] = [
     {
@@ -165,33 +136,7 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Workspace Intro Header */}
-      <WorkspaceIntroHeader
-        eyebrow="YOUR WORKSPACE · VOLUNTEER HUB"
-        title={`Selamat Datang, ${volunteerProfile.fullName || currentUser?.name || 'Relawan PSA'}!`}
-        description="Pantau status aplikasi program kerelawanan, lengkapi portofolio keahlian, dan temukan inisiatif berdampak nyata."
-        actions={
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onNavigate('vol-profile')}
-              className="steel-button"
-            >
-              Profil Saya
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('public-programs')}
-              className="navy-button"
-            >
-              + Jelajahi Program
-            </button>
-          </div>
-        }
-      />
-
       {/* 3 Modular Feature Highlights Grid (from style.html) */}
-      <FeatureHighlightsGrid items={featureItems} />
 
       {/* Main 2-Column Dashboard Grid */}
       <div className="dashboard-grid">
