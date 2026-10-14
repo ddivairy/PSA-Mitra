@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en"><head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20261014-04-caa1adb","C":{"Abril Fatface":"YACgEZbkUVE,0","Albert Sans":"YAHO2HRfeh4,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo Black":"YACgEZulLoA,0","Archivo":"YAHO2-t-jNE,0","Arial":"YAGyDvJ_4Ts,0","Baloo 2":"YAHO2IcQUcM,0","Barlow Condensed":"YAFdJljEuFc,0","Barlow":"YAFdJsyuOPM,1","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Canva Sans":"YAFdJjTk5UU,1","Caveat":"YALBs2ploWQ,0","Cinzel":"YACgEeV8bIQ,0","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","Courier Prime":"YAD1aFjegN8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Figtree":"YAHO2b-mV7A,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAFdJpU7Kkk,0","Fredoka":"YACgEZml080,0","Georgia":"YAGzXkO0pEM,0","Hanken Grotesk":"YAHO2VB9G0I,0","Helvetica":"YAFcf7zkXN0,0","IBM Plex Mono":"YAFdJkmvhGI,0","IBM Plex Sans":"YAFdJgT0SHI,0","Impact":"YAFcfnjI7Vk,0","Instrument Sans":"YAHO2bKyaSQ,0","Instrument Serif":"YAHFeOnZNEk,0","Inter":"YAFdJvSyp_k,3","Italiana":"YAHO2Toik_w,0","Jacques Francois":"YAHO2a5g66Q,0","JetBrains Mono":"YAFdJksXcAk,0","Josefin Sans":"YAFdJjvw9Ps,0","Karla":"YAHO2V2NSXM,0","Lato":"YAFdJuFCnaw,0","Libre Baskerville":"YACgEUFdPdA,0","Libre Caslon Display":"YAHO2XhLmt0,0","Lobster":"YAD8SnSjSFI,0","Lora":"YACgEXvxf8Q,0","Manrope":"YAHO2b2feC4,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YAFdtQi73Xs,0","Noto Sans JP":"YAFdJiHXlcI,0","Noto Sans KR":"YAGsojZj-RQ,0","Nunito Sans":"YAFdtQJYB9w,1","Nunito":"YAFdJoNRMmU,1","Oleo Script":"YACgEQQ14jI,0","Oswald":"YACgEQY10lw,0","Outfit":"YAHO2nVlg14,0","Pacifico":"YADLjORQ1u4,0","Playfair Display":"YAFdJhem5V8,1","Plus Jakarta Sans":"YAHO2gdhi18,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Public Sans":"YAFdJj8NdaU,1","Quicksand":"YAFdJpYtCxE,1","Raleway":"YAFdJhmxbVQ,1","Roboto Slab":"YAFdJswIKAg,0","Rockwell":"YAFcfyVZnN0,0","Rye":"YACgEdQP21k,0","Sarabun":"YAFdJssSnME,0","Schibsted Grotesk":"YAHO2sWydRk,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Space Grotesk":"YAHO2sjPCSM,0","Space Mono":"YADW1-vpsoc,0","Spectral":"YAHO2rVUHIM,0","Times New Roman":"YAGzXW3gftg,0","Trebuchet MS":"YAFcfrglpVA,0","Ubuntu":"YACgERDU--Q,0","Verdana":"YAGzXTctYtQ,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0"}}');</script><script src="/_sdk/05db820ba1544614.telemetry_sdk.js" integrity="sha512-a7JzkQDDcioSXpM61nxTfeRW7PcxWQy5+BrhyeTFmQFsXJ+Gncm0y50u7fTA7qOPegFnRgqCfa0mGUOK1yjDWQ=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>James’s Workspace Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <style>
+    :root{--navy:#0B2238;--steel:#5C80B6;--coral:#E85D75;--bg:#F8FAFC;--surface:#FFFFFF;--ink:#0F172A;--muted:#64748B;--line:#e8eef5}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"DM Sans",sans-serif;color:var(--ink)}
+    button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+    .app-wrapper{width:100%;min-height:calc(100 * min(var(--vh,1vh),1vh));background:var(--bg)}
+    .side-rail{position:fixed;z-index:50;left:0;top:0;width:80px;height:calc(100 * min(var(--vh,1vh),1vh));background:var(--navy);border-radius:0 42px 60px 0 / 0 16% 23% 0;box-shadow:12px 18px 32px #0b22381c;overflow:hidden;transition:width .3s ease-in-out,box-shadow .3s ease-in-out}
+    .side-rail:hover,.side-rail:focus-within{width:256px;box-shadow:20px 20px 42px #0b223840}
+    .rail-brand{height:94px;display:flex;align-items:center;gap:15px;padding-left:24px;color:white;white-space:nowrap;font-weight:800}
+    .brand-mark{height:34px;width:34px;flex:none;border:2px solid #fff;border-radius:11px;display:grid;place-items:center;font-size:19px}
+    .rail-label,.brand-name{opacity:0;transition:opacity .2s ease-in-out;white-space:nowrap}
+    .side-rail:hover .rail-label,.side-rail:focus-within .rail-label,.side-rail:hover .brand-name,.side-rail:focus-within .brand-name{opacity:1}
+    .rail-nav{display:flex;flex-direction:column;gap:5px;padding:5px 13px 24px}
+    .rail-link{border:0;background:transparent;color:#e8eff7;width:100%;height:49px;border-radius:17px;display:flex;align-items:center;gap:17px;padding:0 11px;text-align:left;font-weight:700}
+    .rail-link:hover{background:#ffffff20}.rail-link.active{background:white;color:var(--navy);box-shadow:0 8px 18px #06182c38}
+    .rail-link svg{width:23px;height:23px;flex:none;stroke-width:1.8}
+    .workspace{margin-left:80px;min-width:0;padding:0 clamp(17px,3.1vw,48px) 52px}
+    .topbar{max-width:1530px;margin:auto;padding:28px 0 23px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+    .greeting{font-size:clamp(22px,2.3vw,32px);font-weight:800;letter-spacing:-.055em;line-height:1.22}
+    .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .search-shell{display:flex;align-items:center;gap:9px;border:1px solid #e2e8f0;border-radius:14px;background:var(--surface);padding:0 13px;color:var(--muted);height:44px}
+    .search-shell input{width:clamp(115px,12vw,205px);border:0;outline:0;background:transparent;color:var(--ink);font-size:13px}
+    .icon-button{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;position:relative}
+    .icon-button:hover{border-color:var(--steel);color:var(--steel)}.dot{position:absolute;width:9px;height:9px;right:9px;top:8px;border-radius:50%;background:var(--coral);border:2px solid white}
+    .avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#c1d3ed,#5C80B6);color:var(--navy);border:3px solid white;box-shadow:0 0 0 1px var(--line);font-weight:800}
+    .navy-button,.steel-button{border:0;border-radius:13px;background:var(--navy);color:white;padding:12px 17px;font-size:13px;font-weight:800;white-space:nowrap}
+    .navy-button:hover{background:#193c60}.steel-button{background:var(--steel)}.steel-button:hover{background:#42699e}
+    .dashboard-main{max-width:1530px;margin:auto}.section-intro{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:4px 0 20px}
+    .eyebrow{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--steel)}
+    h1{font-size:clamp(25px,2.4vw,34px);letter-spacing:-.05em;font-weight:800;margin:5px 0}h2{font-size:18px;font-weight:800;letter-spacing:-.035em;margin:0}
+    .muted{color:var(--muted);font-size:13px}.board-chip{display:inline-flex;padding:7px 11px;border-radius:999px;background:#e8eef8;color:var(--navy);font-size:12px;font-weight:700;margin:4px 6px 0 0}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:25px;box-shadow:0 3px 14px #0b223808;transition:box-shadow .2s,transform .2s}.card:hover{box-shadow:0 12px 28px #0b223817}
+    .features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px;margin-bottom:18px}.feature{padding:22px;min-height:156px;position:relative;overflow:hidden}
+    .feature:after{content:"";position:absolute;width:100px;height:100px;border:18px solid #5c80b613;border-radius:40%;right:-30px;top:-35px;transform:rotate(25deg)}
+    .feature-icon{width:35px;height:35px;border-radius:11px;background:#e9f0fa;color:var(--steel);display:grid;place-items:center;margin-bottom:15px}
+    .feature h2{font-size:16px}.feature p{margin:7px 0 0;line-height:1.5}.feature button{margin-top:13px;border:0;background:transparent;color:var(--steel);font-weight:800;font-size:12px;padding:3px 0}
+    .dashboard-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(285px,1fr);gap:18px}.stack{display:flex;flex-direction:column;gap:18px}
+    .panel{padding:22px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:17px}.text-button{border:0;background:transparent;color:var(--steel);font-size:12px;font-weight:800;padding:6px}
+    .notice-row{display:flex;align-items:start;gap:11px;padding:12px 0;border-top:1px solid var(--line)}.notice-row:first-of-type{border-top:0}
+    .notice-bullet{width:9px;height:9px;background:var(--coral);border-radius:50%;flex:none;margin-top:6px}.notice-copy{flex:1;min-width:0}.notice-copy strong{font-size:13px}.notice-copy p{font-size:12px;color:var(--muted);margin:3px 0}
+    .time-badge{font-size:10px;color:var(--steel);background:#eaf0f9;border-radius:999px;padding:5px 8px;white-space:nowrap}.clear-one{border:0;background:transparent;color:var(--muted);padding:3px;font-size:18px;line-height:1}
+    .assignment{padding:14px 0;border-top:1px solid var(--line)}.assignment:first-of-type{border:0}.row-top{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:700}
+    .track{height:8px;border-radius:20px;background:#edf1f6;overflow:hidden;margin-top:10px}.fill{height:100%;border-radius:20px;background:var(--steel);transition:width .25s}.fill.coral{background:var(--coral)}
+    .task-row{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding:13px 0}.task-row:first-of-type{border:0}.task-row input{accent-color:var(--steel);width:18px;height:18px;flex:none}
+    .task-info{flex:1;min-width:0}.task-info strong{font-size:13px}.task-info small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.task-row.done strong{text-decoration:line-through;color:var(--muted)}
+    .task-avatar{width:29px;height:29px;border-radius:50%;display:grid;place-items:center;background:#dce8f5;color:var(--navy);font-size:10px;font-weight:800;border:2px solid white}
+    .status-bar{width:5px;height:33px;border-radius:5px;background:var(--steel)}.status-bar.urgent{background:var(--coral)}
+    .calendar-title{font-weight:800}.calendar-week,.calendar-days{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;gap:4px}
+    .calendar-week{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:9px}.calendar-days button,.calendar-days span{min-height:34px;display:grid;place-items:center;border:0;border-radius:10px;background:transparent;font-size:12px;color:var(--ink)}
+    .calendar-days button:hover{background:#e8eef8}.calendar-days button.selected{background:var(--steel);color:#fff;font-weight:800}.calendar-days button.today:not(.selected){box-shadow:inset 0 0 0 2px var(--coral)}
+    .circle-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.circle-item{display:flex;align-items:center;gap:12px;min-width:0;font-size:12px;font-weight:700}
+    .circle{width:66px;height:66px;flex:none;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--steel) var(--progress),#e8eef5 0);position:relative;font-weight:800;color:var(--navy)}
+    .circle.coral-ring{background:conic-gradient(var(--coral) var(--progress),#e8eef5 0)}.circle:before{content:"";position:absolute;inset:8px;background:var(--surface);border-radius:50%}.circle span{position:relative;font-size:13px}
+    .premium{background:var(--navy);color:white;padding:25px;position:relative;overflow:hidden}.premium:after{content:"";position:absolute;width:160px;height:160px;border-radius:48%;border:25px solid #5c80b65c;right:-65px;top:-80px;transform:rotate(30deg)}
+    .premium p{color:#d6e3f2;line-height:1.55;font-size:13px;max-width:260px}.premium button{margin-top:8px;background:white;color:var(--navy);border:0;border-radius:11px;padding:10px 14px;font-weight:800;font-size:12px;position:relative;z-index:1}
+    #feedback{margin:12px 0;color:var(--steel);font-weight:700;font-size:13px;min-height:20px}
+    .dark{--bg:#091725;--surface:#12283d;--ink:#f3f7fc;--muted:#b6c6d7;--line:#29425a}.dark .feature-icon,.dark .time-badge,.dark .board-chip{background:#29425a;color:#c9def9}.dark .circle:before{background:var(--surface)}.dark .circle{color:white}.dark .premium{border-color:#365571}
+    @media(max-width:1200px){.topbar{align-items:flex-start;flex-direction:column}.dashboard-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:880px){.features{grid-template-columns:1fr}.feature{min-height:auto}.dashboard-grid{grid-template-columns:1fr}.topbar{padding-top:20px}.side-rail:hover,.side-rail:focus-within{width:220px}}
+    @media(max-width:550px){.workspace{padding-left:13px;padding-right:13px}.top-actions{gap:7px}.search-shell{order:5;width:100%}.search-shell input{width:100%}.greeting{font-size:23px}.navy-button{padding:11px}.panel{padding:17px}.circle-grid{gap:5px}.circle-item{flex-direction:column;align-items:flex-start}.side-rail{width:63px}.workspace{margin-left:63px}.rail-brand{padding-left:14px}.rail-nav{padding-left:6px;padding-right:6px}.rail-link{padding-left:12px}.side-rail:hover,.side-rail:focus-within{width:212px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition-duration:.01ms!important;scroll-behavior:auto!important}}
+  </style>
+  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+  <script src="/_sdk/570d53629f0b998d.data_sdk.js" type="text/javascript" integrity="sha512-JEN39+V+Nvv9ZZOVS8vNk1iA9ErZJHTdgOw9KzPuMiK7m0I+KPEr/wmTnCFIQVsDjCZgJWfGnFi1IQh2Io2qyA=="></script>
+  <script src="/_sdk/0b63fb8940df03d4.editing_sdk.js" type="text/javascript" integrity="sha512-fFkkekAA7XKU9UcNO+7a7lGi1SDVYUdIo1lpZS9YpfVovu1WAj3C/MEr/w8zt6Jwq6OKflaYkwf4eOUpMYGz9A=="></script>
+  <script src="/_sdk/f195026a424c1f85.resizing_sdk.js" type="text/javascript" integrity="sha512-8On4Z+AXh1abEzZJ9Dbn9wOvFg+k1LsAaAzKGQ7LlfgXajZ9xEmZaZ1QVzv0AWhCZtCsEpWSOG9DgLri06TS7A=="></script>
+ </head>
+ <body data-template-id="__page-root" style="background: rgb(248, 250, 252);">
+  <div class="app-wrapper">
+   <aside class="side-rail" aria-label="Main navigation">
+    <div class="rail-brand">
+     <span class="brand-mark" aria-hidden="true">✦</span><span class="brand-name">WORKSPACE</span>
+    </div>
+    <nav class="rail-nav" aria-label="Dashboard sections"><button class="rail-link active" type="button" data-nav="dashboard" aria-label="Dashboard" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect>
+      </svg><span data-template-id="nav-dashboard" class="canva-text rail-label" style="color: rgb(232, 239, 247); font-weight: 700; font-style: normal; font-size: 15px;">Dashboard</span></button> <button class="rail-link" type="button" data-nav="profile" aria-label="Profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3-7 8-7s8 3 8 7"></path>
+      </svg><span data-template-id="nav-profile" class="canva-text rail-label" style="color: rgb(232, 239, 247); font-weight: 700; font-style: normal; font-size: 15px;">Profile</span></button> <button class="rail-link" type="button" data-nav="analytics" aria-label="Analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <path d="M4 20V12m6 8V4m5 16v-7m5 7V8" stroke-linecap="round"></path>
+      </svg><span data-template-id="nav-analytics" class="canva-text rail-label" style="color: rgb(232, 239, 247); font-weight: 700; font-style: normal; font-size: 15px;">Analytics</span></button> <button class="rail-link" type="button" data-nav="notifications" aria-label="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9ZM10 21h4" stroke-linejoin="round"></path>
+      </svg><span data-template-id="nav-notifications" class="canva-text rail-label" style="color: rgb(232, 239, 247); font-weight: 700; font-style: normal; font-size: 15px;">Notifications</span></button> <button class="rail-link" type="button" data-nav="calendar" aria-label="Calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M7 2v6m10-6v6M3 11h18"></path>
+      </svg><span data-template-id="nav-calendar" class="canva-text rail-label" style="color: rgb(232, 239, 247); font-weight: 700; font-style: normal; font-size: 15px;">Calendar</span></button> <button class="rail-link" type="button" data-nav="messages" aria-label="Messages">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <path d="M20 16a3 3 0 0 1-3 3H9l-5 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z"></path>
+      </svg><span data-template-id="nav-messages" class="canva-text rail-label" style="color: rgb(232, 239, 247); font-weight: 700; font-style: normal; font-size: 15px;">Messages</span></button> <button class="rail-link" type="button" data-nav="settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <circle cx="12" cy="12" r="3"></circle><path d="m10 2-.5 2-2 1-2-.8-2 3 1.5 1.5v2.5L3.5 13l2 3 2-.7 2 1 .5 2h4l.5-2 2-1 2 .7 2-3-1.5-1.8V9l1.5-1.8-2-3-2 .8-2-1-.5-2z" stroke-linejoin="round"></path>
+      </svg><span data-template-id="nav-settings" class="canva-text rail-label" style="color: rgb(232, 239, 247); font-weight: 700; font-style: normal; font-size: 15px;">Settings</span></button> <button class="rail-link" type="button" data-nav="upload" aria-label="Upload">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+       <path d="M12 16V3m-5 5 5-5 5 5M4 16v4h16v-4" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg><span data-template-id="nav-upload" class="canva-text rail-label" style="color: rgb(232, 239, 247); font-weight: 700; font-style: normal; font-size: 15px;">Upload</span></button>
+    </nav>
+   </aside>
+   <div class="workspace">
+    <header class="topbar">
+     <div data-template-id="top-greeting" class="canva-text greeting" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 30px;">Hi, James! What are your plans today?</div>
+     <div class="top-actions"><label class="search-shell" for="task-search">
+       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 5 5"></path>
+       </svg><input id="task-search" type="search" aria-label="Search today's tasks" placeholder="Search tasks..."></label> <button id="theme-toggle" class="icon-button" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M20 15.5A8 8 0 0 1 8.5 4 8 8 0 1 0 20 15.5Z"></path>
+       </svg></button> <button id="bell-button" class="icon-button" type="button" aria-label="Show notifications">
+       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9ZM10 21h4"></path>
+       </svg><span class="dot" aria-hidden="true"></span></button>
+      <div class="avatar" role="img" aria-label="James avatar placeholder">
+       J
+      </div><button id="add-board" data-template-id="add-board-button" class="canva-button navy-button" type="button" style="background: rgb(11, 34, 56); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 15px;">+ Add New Board</button>
+     </div>
+    </header>
+    <main class="dashboard-main" id="dashboard">
+     <div class="section-intro">
+      <div>
+       <div data-template-id="overview-eyebrow" class="canva-text eyebrow" style="color: rgb(92, 128, 182); font-weight: 800; font-style: normal; font-size: 11px;">YOUR WORKSPACE · OCTOBER 2026</div>
+       <h1 data-template-id="overview-title" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 30px;">Your day, at a glance.</h1>
+       <p data-template-id="overview-description" class="canva-text muted" style="color: rgb(100, 116, 139); font-weight: 400; font-style: normal; font-size: 15px;">A little clarity for everything you’re working on.</p>
+      </div>
+     </div>
+     <div id="board-list" aria-live="polite"></div>
+     <div id="feedback" role="status" aria-live="polite"></div>
+     <section class="features" aria-label="Workspace highlights">
+      <article data-template-id="feature-organize-card" class="canva-card card feature" style="background: rgb(255, 255, 255);">
+       <div class="feature-icon" aria-hidden="true">
+        ▦
+       </div>
+       <h2 data-template-id="feature-organize-title" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 23px;">Stay organized</h2>
+       <p data-template-id="feature-organize-copy" class="canva-text muted" style="color: rgb(100, 116, 139); font-weight: 400; font-style: normal; font-size: 15px;">Keep the important things in one calm space.</p><button class="feature-action" data-message="Your tasks are ready below." type="button">Explore tasks →</button>
+      </article>
+      <article data-template-id="feature-notes-card" class="canva-card card feature" style="background: rgb(255, 255, 255);">
+       <div class="feature-icon" aria-hidden="true">
+        ✎
+       </div>
+       <h2 data-template-id="feature-notes-title" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 23px;">Sync your notes</h2>
+       <p data-template-id="feature-notes-copy" class="canva-text muted" style="color: rgb(100, 116, 139); font-weight: 400; font-style: normal; font-size: 15px;">Bring your ideas together as you plan.</p><button class="feature-action" data-message="Notes are not connected in this dashboard preview." type="button">About notes →</button>
+      </article>
+      <article data-template-id="feature-share-card" class="canva-card card feature" style="background: rgb(255, 255, 255);">
+       <div class="feature-icon" aria-hidden="true">
+        ◎
+       </div>
+       <h2 data-template-id="feature-share-title" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 23px;">Collaborate and share</h2>
+       <p data-template-id="feature-share-copy" class="canva-text muted" style="color: rgb(100, 116, 139); font-weight: 400; font-style: normal; font-size: 15px;">Make room for every voice on your team.</p><button class="feature-action" data-message="Sharing is not connected in this dashboard preview." type="button">About sharing →</button>
+      </article>
+     </section>
+     <div class="dashboard-grid">
+      <div class="stack">
+       <section id="notifications" data-template-id="notifications-panel" class="canva-card card panel" aria-labelledby="notifications-heading" style="background: rgb(255, 255, 255);">
+        <div class="panel-head">
+         <h2 id="notifications-heading" data-template-id="notifications-heading" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 23px;">Notifications</h2><button id="clear-all" data-template-id="clear-all-button" class="canva-button text-button" type="button" style="color: rgb(92, 128, 182); font-weight: 800; font-style: normal; font-size: 15px;">Clear all</button>
+        </div>
+        <div id="notification-list">
+         <div class="notice-row">
+          <span class="notice-bullet" aria-hidden="true"></span>
+          <div class="notice-copy">
+           <strong data-template-id="notice-one-title" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 700; font-style: normal; font-size: 15px;">Your weekly plan is ready</strong>
+           <p data-template-id="notice-one-copy" class="canva-text" style="color: rgb(100, 116, 139); font-weight: 400; font-style: normal; font-size: 15px;">A fresh overview of your priorities is waiting.</p>
+          </div><span class="time-badge">2 min</span><button class="clear-one" type="button" aria-label="Clear weekly plan notification">×</button>
+         </div>
+         <div class="notice-row">
+          <span class="notice-bullet" aria-hidden="true"></span>
+          <div class="notice-copy">
+           <strong data-template-id="notice-two-title" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 700; font-style: normal; font-size: 15px;">Maya commented on Design Sprint</strong>
+           <p data-template-id="notice-two-copy" class="canva-text" style="color: rgb(100, 116, 139); font-weight: 400; font-style: normal; font-size: 15px;">Check the latest project conversation.</p>
+          </div><span class="time-badge">1 hr</span><button class="clear-one" type="button" aria-label="Clear Design Sprint notification">×</button>
+         </div>
+         <div class="notice-row">
+          <span class="notice-bullet" aria-hidden="true"></span>
+          <div class="notice-copy">
+           <strong data-template-id="notice-three-title" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 700; font-style: normal; font-size: 15px;">Research review tomorrow</strong>
+           <p data-template-id="notice-three-copy" class="canva-text" style="color: rgb(100, 116, 139); font-weight: 400; font-style: normal; font-size: 15px;">Your team check-in is coming up.</p>
+          </div><span class="time-badge">4 hr</span><button class="clear-one" type="button" aria-label="Clear research review notification">×</button>
+         </div>
+        </div>
+        <p id="notifications-empty" class="muted hidden">You’re all caught up.</p>
+       </section>
+       <section id="assignments" data-template-id="assignments-panel" class="canva-card card panel" aria-labelledby="assignments-heading" style="background: rgb(255, 255, 255);">
+        <div class="panel-head">
+         <div>
+          <h2 id="assignments-heading" data-template-id="assignments-heading" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 23px;">Assignments / Tasks</h2>
+          <p class="muted">Progress across your current projects</p>
+         </div><span class="time-badge">This week</span>
+        </div>
+        <div class="assignment">
+         <div class="row-top">
+          <span>Website refresh</span><span id="website-percent">75%</span>
+         </div>
+         <div class="track" role="progressbar" aria-label="Website refresh completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75">
+          <div id="website-fill" class="fill" style="width:75%"></div>
+         </div>
+        </div>
+        <div class="assignment">
+         <div class="row-top">
+          <span>Launch campaign</span><span>45%</span>
+         </div>
+         <div class="track" role="progressbar" aria-label="Launch campaign completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="45">
+          <div class="fill coral" style="width:45%"></div>
+         </div>
+        </div>
+        <div class="assignment">
+         <div class="row-top">
+          <span>Team onboarding</span><span>82%</span>
+         </div>
+         <div class="track" role="progressbar" aria-label="Team onboarding completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="82">
+          <div class="fill" style="width:82%"></div>
+         </div>
+        </div>
+       </section>
+       <section id="tasks" data-template-id="tasks-panel" class="canva-card card panel" aria-labelledby="tasks-heading" style="background: rgb(255, 255, 255);">
+        <div class="panel-head">
+         <div>
+          <h2 id="tasks-heading" data-template-id="tasks-heading" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 23px;">Today’s Tasks</h2>
+          <p id="task-summary" class="muted">0 of 3 completed</p>
+         </div><span class="time-badge">Today</span>
+        </div>
+        <div id="task-list"><label class="task-row"><input type="checkbox" aria-label="Complete Review research notes"><span class="status-bar"></span><span class="task-info"><strong>Review research notes</strong><small>45 min · Data Research</small></span><span class="task-avatar" aria-label="Assigned to James">J</span></label> <label class="task-row"><input type="checkbox" aria-label="Complete Update design system"><span class="status-bar urgent"></span><span class="task-info"><strong>Update design system</strong><small>1 hr 20 min · UI/UX Design</small></span><span class="task-avatar" aria-label="Assigned to Maya">M</span></label> <label class="task-row"><input type="checkbox" aria-label="Complete Prepare team handoff"><span class="status-bar"></span><span class="task-info"><strong>Prepare team handoff</strong><small>30 min · Website refresh</small></span><span class="task-avatar" aria-label="Assigned to Alex">A</span></label>
+        </div>
+        <p id="tasks-empty" class="muted hidden">No tasks match your search.</p>
+       </section>
+      </div>
+      <div class="stack">
+       <section id="calendar" data-template-id="calendar-panel" class="canva-card card panel" aria-label="Monthly calendar" style="background: rgb(255, 255, 255);">
+        <div id="react-calendar"></div>
+       </section>
+       <section id="analytics" data-template-id="analytics-panel" class="canva-card card panel" aria-labelledby="analytics-heading" style="background: rgb(255, 255, 255);">
+        <div class="panel-head">
+         <h2 id="analytics-heading" data-template-id="analytics-heading" class="canva-text" style="color: rgb(15, 23, 42); font-weight: 800; font-style: normal; font-size: 23px;">Analytics overview</h2>
+        </div>
+        <div class="circle-grid">
+         <div class="circle-item">
+          <div class="circle" style="--progress:90%">
+           <span>90%</span>
+          </div><span>Data Research</span>
+         </div>
+         <div class="circle-item">
+          <div class="circle coral-ring" style="--progress:65%">
+           <span>65%</span>
+          </div><span>UI/UX Design</span>
+         </div>
+        </div>
+       </section>
+       <section data-template-id="premium-card" class="canva-card card premium" aria-labelledby="premium-heading" style="background: rgb(11, 34, 56);">
+        <div class="eyebrow" style="color:#bcd2ed">
+         MORE ROOM TO CREATE
+        </div>
+        <h2 id="premium-heading" data-template-id="premium-heading" class="canva-text" style="font-size: 24px; margin-top: 9px; color: rgb(255, 255, 255); font-weight: 800; font-style: normal;">Go Premium</h2>
+        <p data-template-id="premium-copy" class="canva-text" style="color: rgb(214, 227, 242); font-weight: 400; font-style: normal; font-size: 15px;">Explore more space for your projects and ideas. This is a preview; no purchase is available here.</p><button id="premium-button" data-template-id="premium-button" class="canva-button" type="button" style="background: rgb(255, 255, 255); color: rgb(11, 34, 56); font-weight: 800; font-style: normal; font-size: 15px;">Find out more →</button>
+       </section>
+      </div>
+     </div>
+    </main>
+   </div>
+  </div>
+  <script>
+  const $ = id => document.getElementById(id);
+  function feedback(message){$('feedback').textContent=message}
+  function syncNotices(){const count=$('notification-list').querySelectorAll('.notice-row').length;$('notifications-empty').classList.toggle('hidden',count!==0);$('clear-all').disabled=count===0;document.querySelector('.dot').classList.toggle('hidden',count===0)}
+  document.querySelectorAll('.clear-one').forEach(button=>button.addEventListener('click',()=>{button.closest('.notice-row').remove();syncNotices();feedback('Notification cleared.')}));
+  $('clear-all').addEventListener('click',()=>{$('notification-list').replaceChildren();syncNotices();feedback('All notifications cleared.')});
+  $('bell-button').addEventListener('click',()=>{$('notifications').scrollIntoView({behavior:'smooth',block:'center'});$('notifications-heading').setAttribute('tabindex','-1');$('notifications-heading').focus({preventScroll:true})});
+  $('theme-toggle').addEventListener('click',()=>{const dark=document.body.classList.toggle('dark');$('theme-toggle').setAttribute('aria-pressed',String(dark));$('theme-toggle').setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');feedback(dark?'Dark mode on.':'Light mode on.')});
+  let boardCount=0;
+  $('add-board').addEventListener('click',()=>{boardCount++;const chip=document.createElement('span');chip.className='board-chip';chip.textContent='New Board '+boardCount;$('board-list').append(chip);feedback('New Board '+boardCount+' added for this preview session.')});
+  $('premium-button').addEventListener('click',()=>feedback('Premium plans are not available in this dashboard preview.'));
+  document.querySelectorAll('.feature-action').forEach(button=>button.addEventListener('click',()=>{feedback(button.dataset.message);if(button.textContent.includes('tasks'))$('tasks').scrollIntoView({behavior:'smooth',block:'center'})}));
+  const destinations={dashboard:'dashboard',analytics:'analytics',notifications:'notifications',calendar:'calendar'};
+  document.querySelectorAll('.rail-link').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.rail-link').forEach(link=>{link.classList.remove('active');link.removeAttribute('aria-current')});button.classList.add('active');button.setAttribute('aria-current','page');const name=button.dataset.nav;if(destinations[name]){$(destinations[name]).scrollIntoView({behavior:'smooth',block:'start'});feedback('Showing '+name+'.')}else feedback(name.charAt(0).toUpperCase()+name.slice(1)+' is not available in this dashboard preview.')}));
+  $('task-search').addEventListener('input',event=>{const term=event.target.value.trim().toLowerCase();let shown=0;document.querySelectorAll('.task-row').forEach(row=>{const visible=row.textContent.toLowerCase().includes(term);row.classList.toggle('hidden',!visible);if(visible)shown++});$('tasks-empty').classList.toggle('hidden',shown!==0)});
+  document.querySelectorAll('.task-row input').forEach(input=>input.addEventListener('change',()=>{input.closest('.task-row').classList.toggle('done',input.checked);const done=document.querySelectorAll('.task-row input:checked').length;$('task-summary').textContent=done+' of 3 completed';const percent=Math.min(100,75+done*8);$('website-percent').textContent=percent+'%';$('website-fill').style.width=percent+'%';$('website-fill').parentElement.setAttribute('aria-valuenow',String(percent));feedback(input.checked?'Task marked complete.':'Task marked incomplete.')}));
+  function Calendar(){
+    const now=new Date(2026,9,14);
+    const [month,setMonth]=React.useState(new Date(now.getFullYear(),now.getMonth(),1));
+    const [selected,setSelected]=React.useState(14);
+    const first=(new Date(month.getFullYear(),month.getMonth(),1).getDay()+6)%7;
+    const count=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();
+    const change=delta=>{setMonth(new Date(month.getFullYear(),month.getMonth()+delta,1));setSelected(null)};
+    const days=[...Array(first)].map((_,i)=>React.createElement('span',{key:'blank-'+i,'aria-hidden':'true'}));
+    for(let day=1;day<=count;day++) days.push(React.createElement('button',{type:'button',key:day,className:(selected===day?'selected ':'')+(month.getFullYear()===2026&&month.getMonth()===9&&day===14?'today':''),onClick:()=>{setSelected(day);feedback('Selected '+new Intl.DateTimeFormat('en',{month:'long',day:'numeric',year:'numeric'}).format(new Date(month.getFullYear(),month.getMonth(),day))+'.')},'aria-label':new Intl.DateTimeFormat('en',{dateStyle:'full'}).format(new Date(month.getFullYear(),month.getMonth(),day)),'aria-pressed':selected===day},day));
+    return React.createElement(React.Fragment,null,
+      React.createElement('div',{className:'panel-head'},React.createElement('h2',{className:'calendar-title'},new Intl.DateTimeFormat('en',{month:'long',year:'numeric'}).format(month)),React.createElement('div',{className:'flex gap-2'},React.createElement('button',{className:'icon-button',type:'button',style:{width:32,height:32},'aria-label':'Previous month',onClick:()=>change(-1)},'‹'),React.createElement('button',{className:'icon-button',type:'button',style:{width:32,height:32},'aria-label':'Next month',onClick:()=>change(1)},'›'))),
+      React.createElement('div',{className:'calendar-week','aria-hidden':'true'},...['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>React.createElement('span',{key:d},d))),
+      React.createElement('div',{className:'calendar-days'},...days));
+  }
+  ReactDOM.createRoot($('react-calendar')).render(React.createElement(Calendar));
+</script>
+ 
+</body></html>
