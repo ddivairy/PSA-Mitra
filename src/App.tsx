@@ -96,7 +96,7 @@ const MainAppContent: React.FC = () => {
   // 1. PUBLIC WEBSITE EXPERIENCE
   if (role === 'public' || isViewingPublicSite) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+      <div className="public-site min-h-screen flex flex-col bg-[#F8FAFC]">
         {/* Dedicated Public Navigation Bar */}
         <PublicNavbar
           currentTab={currentPublicTab}

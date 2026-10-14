@@ -84,12 +84,7 @@
   height: 34px;
   width: 34px;
   flex: none;
-  border: 2px solid #fff;
-  border-radius: 11px;
-  display: grid;
-  place-items: center;
-  font-size: 19px;
-  background: rgba(92, 128, 182, 0.2);
+  object-fit: contain;
 }
 .rail-label, .brand-name {
   opacity: 0;
@@ -651,5 +646,164 @@
   .navy-button {
     padding: 10px 14px;
     font-size: 12px;
+  }
+}
+
+/* Public-site visual language adapted from the supplied reference.
+   Scope all presentation overrides so portal roles keep their existing UI. */
+.public-site {
+  --public-navy: #092d43;
+  --public-blue: #3479c5;
+  --public-muted: #476276;
+  --public-paper: #f5f7f6;
+  --public-line: #e5edf3;
+  background: var(--public-paper);
+  color: var(--public-navy);
+  font-family: "DM Sans", sans-serif;
+}
+
+.public-site main {
+  background: var(--public-paper);
+}
+
+.public-site main > div.max-w-7xl {
+  padding-block: clamp(40px, 6vw, 76px);
+}
+
+.public-site main > div.space-y-20 > :not(:first-child),
+.public-site main > div.space-y-16 > :not(:first-child) {
+  margin-block-start: clamp(20px, 3vw, 36px);
+}
+
+.public-site main > div.space-y-20,
+.public-site main > div.space-y-16 {
+  padding-block-end: clamp(36px, 6vw, 72px);
+}
+
+.public-site main h1,
+.public-site main h2 {
+  color: var(--public-navy);
+  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: -0.045em;
+}
+
+.public-site main h1 {
+  font-size: clamp(2.35rem, 5.5vw, 4rem);
+  line-height: 1.06;
+}
+
+.public-site main h2 {
+  line-height: 1.12;
+}
+
+.public-site main [class*="uppercase"][class*="tracking"] {
+  letter-spacing: 0.17em;
+}
+
+.public-site main > div.space-y-20 > section,
+.public-site main > div.space-y-16 > section {
+  overflow: hidden;
+  border-radius: clamp(34px, 6vw, 76px);
+}
+
+.public-site main > div.space-y-20 > section:first-child,
+.public-site main > div.space-y-16 > section:first-child {
+  margin-inline: clamp(10px, 2vw, 28px);
+  border: 0;
+  background:
+    radial-gradient(circle at 78% 75%, #e8f2fb 0, transparent 35%),
+    radial-gradient(circle at 18% 78%, #fceef2 0, transparent 32%),
+    #fff;
+  box-shadow: 0 18px 55px rgba(9, 45, 67, 0.07);
+}
+
+.public-site main > div.space-y-20 > section:nth-child(3) {
+  border: 0;
+  background: #eef5f8;
+}
+
+.public-site main div[class*="bg-white"][class*="rounded"][class*="border"] {
+  border-color: var(--public-line);
+  border-radius: clamp(24px, 4vw, 38px);
+  box-shadow: 0 12px 36px rgba(9, 45, 67, 0.06);
+}
+
+.public-site main div[class*="bg-slate-50"][class*="border"] {
+  border-color: #e7eef2;
+  border-radius: 24px;
+}
+
+.public-site main button[class*="bg-blue-600"] {
+  border-radius: 9999px;
+  background-color: var(--public-blue);
+  box-shadow: 0 8px 20px rgba(52, 121, 197, 0.18);
+}
+
+.public-site main button[class*="bg-blue-600"]:hover {
+  background-color: #2868ad;
+}
+
+.public-site main button[class*="bg-white"][class*="border"] {
+  border-radius: 9999px;
+}
+
+.public-site main input,
+.public-site main select {
+  min-height: 44px;
+  border-color: #cbddea;
+  border-radius: 9999px;
+}
+
+.public-site main input:focus,
+.public-site main select:focus {
+  border-color: var(--public-blue);
+  outline: 3px solid rgba(52, 121, 197, 0.14);
+  outline-offset: 1px;
+}
+
+.public-site main > div.space-y-20 > section:first-child img,
+.public-site main > div.space-y-16 > section:first-child img {
+  border-radius: clamp(42px, 8vw, 96px) clamp(42px, 8vw, 96px) 30px 30px;
+}
+
+.public-site footer {
+  margin-top: 0;
+  border-color: #e3ebf2;
+  background: #fbfdff;
+  color: var(--public-muted);
+}
+
+.public-site footer .text-white {
+  color: var(--public-navy);
+}
+
+.public-site footer .text-slate-300,
+.public-site footer .text-slate-400 {
+  color: var(--public-muted);
+}
+
+.public-site footer [class*="border-slate-800"] {
+  border-color: #e3ebf2;
+}
+
+.public-site footer button:hover,
+.public-site footer a:hover {
+  color: var(--public-blue);
+}
+
+.public-site [role="dialog"] {
+  border-color: var(--public-line);
+  border-radius: clamp(28px, 4vw, 40px);
+  box-shadow: 0 24px 70px rgba(9, 45, 67, 0.2);
+}
+
+@media (max-width: 640px) {
+  .public-site main > div.space-y-20 > section,
+  .public-site main > div.space-y-16 > section {
+    border-radius: 34px;
+  }
+
+  .public-site main h1 {
+    font-size: clamp(2.15rem, 10vw, 3rem);
   }
 }

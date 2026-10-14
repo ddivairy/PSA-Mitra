@@ -10,6 +10,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import psaLogo from '../../assets/images/2D PSA LOGO.png';
 
 interface PublicNavbarProps {
   currentTab: string;
@@ -43,23 +44,23 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-8 h-16">
+    <header className="sticky top-0 z-40 w-full px-3 pt-4 transition-all sm:px-6">
+      <div className="mx-auto flex max-w-[1150px] flex-wrap items-center justify-between gap-3 rounded-[30px] bg-[#111c23] px-4 py-3 shadow-[0_16px_35px_rgba(4,17,27,0.18)] sm:flex-nowrap sm:gap-4 sm:rounded-full sm:px-7 sm:py-2.5">
+        <div className="flex min-h-10 w-full items-center justify-between gap-3 sm:w-auto">
           {/* Zone 1: Brand Wordmark */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex shrink-0 items-center gap-3">
             <button 
               onClick={() => onNavigate('public-home')}
-              className="flex items-center gap-2.5 text-left group"
+              className="group flex items-center gap-2.5 rounded-full text-left"
             >
-              <div className="w-9 h-9 rounded-xl bg-[#0B2238] text-white flex items-center justify-center font-bold text-lg shadow-xs group-hover:bg-[#5C80B6] transition-colors">
-                PSA
-              </div>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white p-1.5">
+                <img src={psaLogo} alt="Logo PSA" className="h-full w-full object-contain" />
+              </span>
               <div>
-                <span className="text-lg font-bold tracking-tight text-[#0F172A] whitespace-nowrap block leading-tight">
+                <span className="block whitespace-nowrap text-sm font-bold leading-tight tracking-tight text-white sm:text-base">
                   Partnership Platform
                 </span>
-                <span className="text-[10px] text-[#5C80B6] uppercase tracking-wider font-semibold">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-[#b5c6d1] sm:text-[10px]">
                   Kemitraan &amp; Relawan
                 </span>
               </div>
@@ -67,17 +68,17 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           </div>
 
           {/* Zone 2: 4–5 single-line nav links */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-[#64748B]">
+          <nav className="hidden items-center gap-1 text-sm font-medium text-white lg:flex xl:gap-2">
             {publicLinks.map((link) => {
               const isActive = currentTab === link.id;
               return (
                 <button
                   key={link.id}
                   onClick={() => onNavigate(link.id)}
-                  className={`whitespace-nowrap transition-colors py-1 border-b-2 text-xs sm:text-sm ${
+                  className={`whitespace-nowrap rounded-full px-3 py-2 text-xs transition-colors xl:px-3.5 xl:text-sm ${
                     isActive 
-                      ? 'text-[#0B2238] border-[#0B2238] font-bold' 
-                      : 'border-transparent hover:text-[#0F172A] hover:border-slate-300'
+                      ? 'bg-white/15 font-bold text-white' 
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   {link.label}
@@ -87,22 +88,22 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           </nav>
 
           {/* Zone 3: Primary Action / Portal Entrance */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="hidden shrink-0 items-center gap-2 lg:flex">
             {role !== 'public' && currentUser ? (
               <div className="flex items-center gap-2">
                 <button
                   onClick={onEnterPortal}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#0B2238] hover:bg-[#0B2238]/90 rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                  className="flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-bold text-[#092d43] transition-colors hover:bg-[#eaf2f7]"
                 >
-                  {role === 'volunteer' && <UserIcon size={14} className="text-[#5C80B6]" />}
-                  {role === 'partner' && <Building2 size={14} className="text-[#5C80B6]" />}
-                  {role === 'admin' && <ShieldCheck size={14} className="text-[#5C80B6]" />}
+                  {role === 'volunteer' && <UserIcon size={14} className="text-[#3479c5]" />}
+                  {role === 'partner' && <Building2 size={14} className="text-[#3479c5]" />}
+                  {role === 'admin' && <ShieldCheck size={14} className="text-[#3479c5]" />}
                   <span>Masuk ke {getPortalLabel()}</span>
                   <ArrowRight size={14} />
                 </button>
                 <button
                   onClick={logoutToPublic}
-                  className="p-2 text-[#64748B] hover:text-[#E85D75] rounded-xl hover:bg-slate-100 transition-colors"
+                  className="rounded-full p-2 text-white/75 transition-colors hover:bg-white/10 hover:text-white"
                   title="Keluar"
                 >
                   <LogOut size={16} />
@@ -112,34 +113,34 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => onOpenAuth('login')}
-                  className="px-3.5 py-2 text-xs font-semibold text-[#64748B] hover:text-[#0F172A] rounded-xl hover:bg-slate-100 transition-colors whitespace-nowrap"
+                  className="whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold text-[#092d43] transition-colors hover:bg-[#eaf2f7]"
                 >
                   Masuk Akun
                 </button>
                 <button
                   onClick={() => onOpenAuth('register_vol')}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#0B2238] hover:bg-[#0B2238]/90 rounded-xl shadow-xs transition-colors whitespace-nowrap"
+                  className="whitespace-nowrap rounded-full bg-[#3479c5] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#2868ad]"
                 >
                   Daftar Relawan
                 </button>
               </div>
             )}
-
-            {/* Mobile menu trigger */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
-              aria-label="Menu"
-            >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
           </div>
+
+          {/* Mobile menu trigger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="rounded-full border border-white/30 px-3.5 py-2 text-white transition-colors hover:bg-white/10 lg:hidden"
+            aria-label={mobileMenuOpen ? 'Tutup menu' : 'Buka menu'}
+            aria-expanded={mobileMenuOpen}
+          >
+            {mobileMenuOpen ? <X size={19} /> : <Menu size={19} />}
+          </button>
         </div>
-      </div>
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1">
+        <div className="mx-auto mt-2 max-w-[1150px] space-y-1 rounded-[30px] bg-[#111c23] p-4 shadow-xl lg:hidden">
           {publicLinks.map((link) => (
             <button
               key={link.id}
@@ -147,8 +148,8 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 onNavigate(link.id);
                 setMobileMenuOpen(false);
               }}
-              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                currentTab === link.id ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-700 hover:bg-slate-50'
+              className={`w-full rounded-full px-4 py-3 text-left text-sm font-medium transition-colors ${
+                currentTab === link.id ? 'bg-white/15 font-bold text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
               {link.label}
@@ -156,13 +157,13 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           ))}
 
           {role !== 'public' ? (
-            <div className="pt-3 border-t border-slate-100 space-y-2">
+            <div className="space-y-2 border-t border-white/15 pt-4">
               <button
                 onClick={() => {
                   onEnterPortal();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2.5 text-center text-xs font-semibold text-white bg-[#0B2238] rounded-xl"
+                className="w-full rounded-full bg-[#3479c5] py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[#2868ad]"
               >
                 Masuk ke {getPortalLabel()}
               </button>
@@ -171,19 +172,19 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   logoutToPublic();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2 text-center text-xs font-medium text-[#E85D75] border border-[#E85D75]/30 rounded-xl"
+                className="w-full rounded-full border border-white/25 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-white/10"
               >
                 Keluar Akun
               </button>
             </div>
           ) : (
-            <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 border-t border-white/15 pt-4">
               <button
                 onClick={() => {
                   onOpenAuth('login');
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2 text-center text-xs font-medium text-[#0F172A] border border-slate-300 rounded-xl"
+                className="w-full rounded-full bg-white py-3 text-center text-sm font-bold text-[#092d43] transition-colors hover:bg-[#eaf2f7]"
               >
                 Masuk
               </button>
@@ -192,7 +193,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                   onOpenAuth('register_vol');
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2 text-center text-xs font-semibold text-white bg-[#0B2238] rounded-xl"
+                className="w-full rounded-full bg-[#3479c5] py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[#2868ad]"
               >
                 Daftar Relawan
               </button>
@@ -200,6 +201,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           )}
         </div>
       )}
+      </div>
     </header>
   );
 };
