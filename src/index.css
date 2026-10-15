@@ -150,7 +150,7 @@
   display: flex;
   flex: none;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 5px;
   margin-block: auto;
   width: 100%;
@@ -162,8 +162,8 @@
   border: 0;
   background: transparent;
   color: #e8eff7;
-  width: 48px;
-  min-width: 48px;
+  width: 100%;
+  min-width: 0;
   height: 48px;
   margin: 0 auto;
   border-radius: 14px;
@@ -183,11 +183,6 @@
 }
 .rail-nav > div {
   width: 100%;
-}
-.side-rail:hover .rail-nav,
-.side-rail.expanded .rail-nav,
-.side-rail:has(:focus-visible) .rail-nav {
-  align-items: stretch;
 }
 .side-rail:hover .rail-link,
 .side-rail.expanded .rail-link,
