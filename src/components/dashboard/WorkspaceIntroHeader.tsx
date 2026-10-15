@@ -8,7 +8,7 @@ interface WorkspaceIntroHeaderProps {
 }
 
 export const WorkspaceIntroHeader: React.FC<WorkspaceIntroHeaderProps> = ({
-  eyebrow = 'YOUR WORKSPACE · OCTOBER 2026',
+  eyebrow = 'RUANG KERJA',
   title,
   description,
   actions,

@@ -141,8 +141,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAuth }) => {
               <ShieldCheck size={14} className="text-emerald-400" />
               Verifikasi Kemitraan Resmi Terpadu
             </span>
-            <span>·</span>
-            <span>Versi Dokumen: 1.0</span>
           </div>
         </div>
       </div>

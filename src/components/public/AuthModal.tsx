@@ -7,7 +7,6 @@ import {
   User as UserIcon, 
   Building2, 
   Phone, 
-  CheckCircle2, 
   ArrowRight,
   ShieldAlert
 } from 'lucide-react';
@@ -60,9 +59,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [partPassword, setPartPassword] = useState('');
   const [partTerms, setPartTerms] = useState(false);
 
-  // Verification state
-  const [resendCooldown, setResendCooldown] = useState(0);
-
   const resetForm = () => {
     setErrorMsg('');
     setSuccessMsg('');
@@ -83,7 +79,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       onSuccess(targetUser.role as any);
       onClose();
     } else {
-      setErrorMsg('Email tidak ditemukan dalam sistem simulasi. Silakan pilih akun contoh atau lakukan pendaftaran baru.');
+      setErrorMsg('Email tidak ditemukan. Periksa kembali atau buat akun baru.');
     }
   };
 
@@ -160,7 +156,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         mode === 'login' ? 'Masuk ke Platform PSA' :
         mode === 'register_vol' ? 'Pendaftaran Akun Relawan Baru' :
         mode === 'register_partner' ? 'Registrasi Akun Perwakilan Mitra' :
-        'Verifikasi Email Akun Anda'
+        'Konfirmasi Akun Anda'
       }
       subtitle={
         mode === 'verify'
@@ -260,7 +256,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           {/* Quick Demo Credentials Buttons */}
           <div className="pt-2 pb-1 border-t border-slate-100">
-            <p className="text-[11px] text-slate-500 mb-2">Atau masuk cepat dengan akun percontohan:</p>
+            <p className="text-[11px] text-slate-500 mb-2">Masuk cepat dengan akun demo:</p>
             <div className="grid grid-cols-3 gap-1.5">
               <button
                 type="button"
@@ -537,24 +533,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
           <div>
             <h4 className="text-base font-semibold text-slate-900">
-              Tautan Verifikasi Telah Dikirim!
+              Verifikasi Akun
             </h4>
             <p className="text-xs text-slate-600 mt-1 max-w-sm mx-auto">
-              Kami telah mengirimkan tautan aktivasi akun ke alamat{' '}
+              Konfirmasikan akun untuk melanjutkan. Alamat email yang terdaftar:{' '}
               <span className="font-semibold text-slate-900">
                 {currentUser?.email ? maskEmail(currentUser.email) : 'email Anda'}
               </span>
               . Silakan periksa kotak masuk atau folder spam Anda.
-            </p>
-          </div>
-
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-left text-xs space-y-2">
-            <div className="flex items-center gap-2 text-emerald-700 font-medium">
-              <CheckCircle2 size={16} />
-              <span>Simulasi AI Studio Platform:</span>
-            </div>
-            <p className="text-slate-600">
-              Anda dapat mengklik tombol konfirmasi di bawah untuk mensimulasikan aktivasi instan tanpa perlu meninggalkan halaman ini.
             </p>
           </div>
 
@@ -567,15 +553,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               }}
               className="w-full py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-xs"
             >
-              Konfirmasi & Lanjutkan ke Profil (Simulasi)
-            </button>
-            <button
-              onClick={() => {
-                alert('Tautan verifikasi ulang berhasil dikirim!');
-              }}
-              className="text-xs text-slate-500 hover:text-slate-800 transition-colors py-1"
-            >
-              Kirim ulang email verifikasi
+              Konfirmasi & Lanjutkan ke Profil
             </button>
           </div>
         </div>

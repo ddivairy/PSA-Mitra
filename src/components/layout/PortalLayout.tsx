@@ -124,7 +124,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
     ];
   }
 
-  const userName = currentUser?.name ? currentUser.name.split(' ')[0] : 'James';
+  const userName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Pengguna';
   const userInitial = userName.charAt(0).toUpperCase();
 
   const handleActionClick = () => {
@@ -175,7 +175,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         >
           <img src={psaLogo} alt="Logo PSA" className="brand-mark shrink-0 object-contain" />
           <div className="flex items-center justify-between flex-1 pr-3 overflow-hidden">
-            <span className="brand-name font-black tracking-wider text-sm">WORKSPACE</span>
+            <span className="brand-name font-black tracking-wider text-sm">PORTAL PSA</span>
             <ChevronRight 
               size={15} 
               className={`brand-name text-slate-400 transition-transform duration-200 ${railExpanded ? 'rotate-180' : ''}`} 
@@ -273,7 +273,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               {portalRoleBadge}
             </div>
             <div className="greeting">
-              Hi, {userName}! What are your plans today?
+              Halo, {userName}! Apa yang ingin Anda lakukan hari ini?
             </div>
           </div>
 
@@ -287,7 +287,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 value={topSearchQuery}
                 onChange={(e) => setTopSearchQuery(e.target.value)}
                 aria-label="Pencarian tugas atau program"
-                placeholder="Search tasks..."
+                placeholder="Cari tugas atau program..."
               />
             </label>
 
@@ -321,9 +321,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 {showNotifPopover && (
                   <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-32px)] rounded-3xl bg-white shadow-2xl border border-slate-100 py-3 z-50">
                     <div className="px-5 py-2 border-b border-slate-100 flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#0F172A]">Notifications</span>
+                      <span className="text-xs font-bold text-[#0F172A]">Notifikasi</span>
                       <span className="text-[10px] text-white font-bold bg-[#E85D75] px-2 py-0.5 rounded-full">
-                        {notifications.length} New
+                        {notifications.length} baru
                       </span>
                     </div>
                     <div className="max-h-72 overflow-y-auto divide-y divide-slate-50">

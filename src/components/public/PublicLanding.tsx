@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { 
   ArrowRight, 
-  CheckCircle2, 
   Calendar, 
   MapPin, 
   Users, 
   Building2, 
   HeartHandshake, 
-  Sparkles,
   ChevronRight,
   HelpCircle,
   ShieldCheck
@@ -59,11 +57,6 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Content */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">
-                <Sparkles size={14} />
-                <span>Platform Resmi Kemitraan & Relawan PSA Versi 1.0</span>
-              </div>
-
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.15] text-balance">
                 Sinergi Nyata Relawan &amp; Organisasi untuk Indonesia Berdaya
               </h1>
@@ -253,8 +246,8 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 font-mono">1</span>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Buat Akun &amp; Verifikasi Email</h4>
-                    <p className="text-xs text-slate-600 mt-0.5">Daftarkan nama dan email Anda, konfirmasi tautan aktivasi akun.</p>
+                    <h4 className="text-xs font-bold text-slate-900">Buat &amp; Konfirmasi Akun</h4>
+                    <p className="text-xs text-slate-600 mt-0.5">Daftarkan data diri dan konfirmasikan akun sebelum melengkapi profil.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -424,12 +417,12 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
       </section>
 
       {/* Bottom CTA Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#0B2238] text-white rounded-3xl p-8 sm:p-12 text-center space-y-5 border border-[#5C80B6]/30 shadow-xl">
+      <section className="public-cta-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="public-cta rounded-[20px] p-8 text-center text-white space-y-5 border border-[#5C80B6]/30 shadow-xl sm:p-12">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight max-w-xl mx-auto text-balance">
             Siap Berkontribusi Nyata untuk Perubahan Sosial Positif?
           </h2>
-          <p className="text-slate-300 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
+          <p className="public-cta-description text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
             Bergabunglah bersama ribuan relawan di seluruh pelosok Indonesia atau ajukan program kemitraan organisasi Anda hari ini.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">

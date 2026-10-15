@@ -167,7 +167,7 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
     <div className="space-y-6">
       {/* Workspace Intro Header */}
       <WorkspaceIntroHeader
-        eyebrow="YOUR WORKSPACE · VOLUNTEER HUB"
+        eyebrow="PORTAL RELAWAN"
         title={`Selamat Datang, ${volunteerProfile.fullName || currentUser?.name || 'Relawan PSA'}!`}
         description="Pantau status aplikasi program kerelawanan, lengkapi portofolio keahlian, dan temukan inisiatif berdampak nyata."
         actions={

@@ -146,7 +146,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
     <div className="space-y-6">
       {/* Workspace Intro Header */}
       <WorkspaceIntroHeader
-        eyebrow="YOUR WORKSPACE · PARTNER DASHBOARD"
+        eyebrow="PORTAL MITRA"
         title={currentOrg?.name || 'Organisasi Mitra PSA'}
         description={`PIC Resmi: ${currentOrg?.picName || currentUser?.name || 'Admin'} (${currentOrg?.picRole || 'Koordinator Kemitraan'}) · Sektor ${currentOrg?.sector || 'Sosial'}`}
         actions={

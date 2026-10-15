@@ -128,7 +128,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     <div className="space-y-6">
       {/* Workspace Intro Section */}
       <WorkspaceIntroHeader
-        eyebrow="YOUR WORKSPACE · INTERNAL PSA GOVERNANCE"
+        eyebrow="ADMINISTRASI PSA"
         title="Dashboard Pengawasan & Tata Kelola PSA"
         description="Pusat kendali verifikasi organisasi mitra, evaluasi proposal kolaborasi, dan pengawasan operasional relawan Indonesia."
         actions={

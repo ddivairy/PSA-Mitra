@@ -85,7 +85,7 @@ export const AboutPage: React.FC = () => {
             Standar Rancang Bangun
           </div>
           <h2 className="text-2xl font-bold text-slate-900">
-            Prinsip Produk PSA Versi 1.0
+            Prinsip Produk PSA
           </h2>
           <p className="text-xs text-slate-600 mt-1">
             Panduan inti yang melandasi perancangan antarmuka pengguna dan arsitektur data sistem ini:
