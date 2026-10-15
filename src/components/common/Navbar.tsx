@@ -67,8 +67,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
     { id: 'admin-partnerships', label: 'Pengajuan Kemitraan' },
     { id: 'admin-proposals', label: 'Proposal Program' },
     { id: 'admin-applications', label: 'Seleksi Relawan' },
-    { id: 'admin-analytics', label: 'Analitik Wilayah' },
-    { id: 'admin-audit', label: 'Audit Log' },
+    { id: 'admin-analytics', label: 'Analytics' },
+    { id: 'admin-users-activity', label: 'Users & Activity' },
   ];
 
   return (
@@ -142,7 +142,9 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
               onClick={() => onNavigate(role === 'public' ? 'public-home' : role === 'volunteer' ? 'vol-dashboard' : role === 'partner' ? 'part-dashboard' : 'admin-dashboard')}
               className="flex items-center gap-2.5 text-left group"
             >
-              <img src={psaLogo} alt="Logo PSA" className="w-10 h-11 object-contain shrink-0" />
+              <div className="w-9 h-9 rounded-xl bg-[#0B2238] text-white flex items-center justify-center font-bold text-lg shadow-xs group-hover:bg-[#5C80B6] transition-colors">
+                <img src={psaLogo} alt="Logo PSA" className="h-full w-full object-contain" />
+              </div>
               <div>
                 <span className="text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap block leading-tight">
                   Partnership Platform

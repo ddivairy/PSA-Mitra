@@ -2,19 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Users, 
   Building2, 
-  ShieldCheck, 
   LogOut, 
-  Bell, 
   Home,
   FileText,
   UserCheck,
   FolderGit2,
   BarChart3,
-  History,
   LayoutDashboard,
+  Gauge,
   Search,
-  Sun,
-  Moon,
+  Bell,
   Plus,
   ChevronRight
 } from 'lucide-react';
@@ -47,56 +44,37 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
     role, 
     currentUser, 
     logoutToPublic, 
-    notifications, 
-    unreadNotifsCount, 
+    unreadNotifsCount,
     markNotificationsAsRead,
     partners,
     applications,
     programs
   } = useApp();
 
-  const [railExpanded, setRailExpanded] = useState(false);
-  const [showNotifPopover, setShowNotifPopover] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [topSearchQuery, setTopSearchQuery] = useState('');
+  const [railExpanded, setRailExpanded] = useState(false);
   const railRef = useRef<HTMLElement>(null);
 
-  // Close sidebar when clicking anywhere outside
   useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
-      if (railExpanded && railRef.current && !railRef.current.contains(e.target as Node)) {
-        setRailExpanded(false);
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-      }
+    const closeOnOutsideClick = (event: MouseEvent | TouchEvent) => {
+      if (railExpanded && railRef.current && !railRef.current.contains(event.target as Node)) setRailExpanded(false);
     };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    document.addEventListener('touchstart', handleOutsideClick);
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    document.addEventListener('touchstart', closeOnOutsideClick);
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-      document.removeEventListener('touchstart', handleOutsideClick);
+      document.removeEventListener('mousedown', closeOnOutsideClick);
+      document.removeEventListener('touchstart', closeOnOutsideClick);
     };
   }, [railExpanded]);
 
-  // Automatically close sidebar whenever active portal tab changes
-  useEffect(() => {
-    setRailExpanded(false);
-    if (document.activeElement instanceof HTMLElement && railRef.current?.contains(document.activeElement)) {
-      document.activeElement.blur();
-    }
-  }, [currentTab]);
+  useEffect(() => setRailExpanded(false), [currentTab]);
 
   const pendingPartnerships = partners.filter(p => p.status === 'submitted' || p.status === 'under_review').length;
   const pendingProposals = programs.filter(p => p.proposalStatus === 'submitted' || p.proposalStatus === 'under_review').length;
   const volunteerPending = applications.filter(a => (a.volunteerId === currentUser?.id) && (a.status === 'under_review' || a.status === 'submitted')).length;
 
   let navItems: PortalNavItem[] = [];
-  let portalRoleBadge = '';
-
   if (role === 'volunteer') {
-    portalRoleBadge = 'Relawan Aktif';
     navItems = [
       { id: 'vol-dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { id: 'vol-applications', label: 'Aplikasi Saya', icon: FileText, badge: volunteerPending > 0 ? `${volunteerPending}` : undefined },
@@ -104,7 +82,6 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
       { id: 'public-programs', label: 'Program PSA', icon: Search },
     ];
   } else if (role === 'partner') {
-    portalRoleBadge = 'Mitra Organisasi';
     navItems = [
       { id: 'part-dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { id: 'part-programs', label: 'Program Kolaborasi', icon: FolderGit2 },
@@ -113,20 +90,45 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
       { id: 'part-organization', label: 'Profil Organisasi', icon: Building2 },
     ];
   } else if (role === 'admin') {
-    portalRoleBadge = 'PSA Admin';
     navItems = [
-      { id: 'admin-dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'admin-partnerships', label: 'Verifikasi Mitra', icon: Building2, badge: pendingPartnerships > 0 ? `${pendingPartnerships}` : undefined },
-      { id: 'admin-proposals', label: 'Review Proposal', icon: FolderGit2, badge: pendingProposals > 0 ? `${pendingProposals}` : undefined },
-      { id: 'admin-applications', label: 'Seleksi Relawan', icon: Users },
-      { id: 'admin-analytics', label: 'Analitik Wilayah', icon: BarChart3 },
-      { id: 'admin-audit', label: 'Audit Trail', icon: History },
+      { id: 'admin-overview', label: 'Overview', icon: Gauge },
+      { id: 'admin-partnerships', label: 'Mitra', icon: Building2, badge: pendingPartnerships > 0 ? `${pendingPartnerships}` : undefined },
+      { id: 'admin-proposals', label: 'Program', icon: FolderGit2, badge: pendingProposals > 0 ? `${pendingProposals}` : undefined },
+      { id: 'admin-applications', label: 'Peserta', icon: Users },
+      { id: 'admin-analytics', label: 'Analytics', icon: BarChart3 },
     ];
   }
 
   const userName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Pengguna';
   const userInitial = userName.charAt(0).toUpperCase();
 
+  const currentOrg = partners.find(partner => partner.id === currentUser?.orgId) || partners[0];
+  const orgPrograms = programs.filter(program => program.partnerId === currentOrg?.id);
+  const orgProgramIds = orgPrograms.map(program => program.id);
+  const orgApplications = applications.filter(application => orgProgramIds.includes(application.programId));
+  const userApplications = applications.filter(application => application.volunteerId === currentUser?.id || application.volunteerEmail === currentUser?.email);
+  const pageTitle = navItems.find(item => item.id === currentTab)?.label || 'Dashboard';
+  const roleLabel = role === 'admin' ? 'Admin PSA' : role === 'partner' ? 'Mitra' : 'Relawan';
+  const kpis = role === 'admin'
+    ? [
+        { label: 'Mitra menunggu', value: pendingPartnerships },
+        { label: 'Proposal ditinjau', value: pendingProposals },
+        { label: 'Total aplikasi', value: applications.length },
+        { label: 'Mitra disetujui', value: partners.filter(partner => partner.status === 'approved').length },
+      ]
+    : role === 'partner'
+      ? [
+          { label: 'Program', value: orgPrograms.length },
+          { label: 'Relawan mendaftar', value: orgApplications.length },
+          { label: 'Program aktif', value: orgPrograms.filter(program => program.publishedStatus === 'published').length },
+          { label: 'Status kemitraan', value: currentOrg?.status === 'approved' ? 'Aktif' : 'Review' },
+        ]
+      : [
+          { label: 'Aplikasi terkirim', value: userApplications.length },
+          { label: 'Sedang ditinjau', value: userApplications.filter(application => ['submitted', 'under_review'].includes(application.status)).length },
+          { label: 'Diterima', value: userApplications.filter(application => application.status === 'accepted').length },
+          { label: 'Program tersedia', value: programs.filter(program => program.publishedStatus === 'published').length },
+        ];
   const handleActionClick = () => {
     if (onOpenQuickAction) {
       onOpenQuickAction();
@@ -146,7 +148,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
   };
 
   return (
-    <div className={`app-wrapper ${isDarkMode ? 'dark' : ''}`}>
+    <div className="app-wrapper">
       {/* 
         ========================================================================
         AUTHENTIC SIDE RAIL NAVIGATION (from style.html)
@@ -155,31 +157,28 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         - visible on both mobile and desktop
         ========================================================================
       */}
-      <aside 
+      <aside
         ref={railRef}
-        className={`side-rail ${railExpanded ? 'expanded' : ''}`} 
+        className={`side-rail ${railExpanded ? 'expanded' : ''}`}
         aria-label="Main navigation"
         onMouseLeave={() => {
-          if (document.activeElement instanceof HTMLElement && railRef.current?.contains(document.activeElement)) {
-            document.activeElement.blur();
-          }
+          if (document.activeElement instanceof HTMLElement && railRef.current?.contains(document.activeElement)) document.activeElement.blur();
         }}
       >
-        <div 
+        <div
           className="rail-brand cursor-pointer select-none"
-          onClick={() => setRailExpanded(!railExpanded)}
-          title={railExpanded ? "Ciutkan Menu" : "Perluas Menu"}
+          onClick={() => setRailExpanded(expanded => !expanded)}
+          title={railExpanded ? 'Ciutkan Menu' : 'Perluas Menu'}
           role="button"
           tabIndex={0}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setRailExpanded(!railExpanded); }}
+          onKeyDown={event => {
+            if (event.key === 'Enter' || event.key === ' ') setRailExpanded(expanded => !expanded);
+          }}
         >
-          <img src={psaLogo} alt="Logo PSA" className="brand-mark shrink-0 object-contain" />
+          <img src={psaLogo} alt="Logo PSA" className="h-[34px] w-[34px] shrink-0 object-contain" />
           <div className="flex items-center justify-between flex-1 pr-3 overflow-hidden">
-            <span className="brand-name font-black tracking-wider text-sm">PORTAL PSA</span>
-            <ChevronRight 
-              size={15} 
-              className={`brand-name text-slate-400 transition-transform duration-200 ${railExpanded ? 'rotate-180' : ''}`} 
-            />
+            <span className="brand-name font-black tracking-wider text-sm">WORKSPACE</span>
+            <ChevronRight size={15} className={`brand-name text-slate-400 transition-transform duration-200 ${railExpanded ? 'rotate-180' : ''}`} />
           </div>
         </div>
 
@@ -201,8 +200,10 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <Icon size={20} className="shrink-0" />
-                <span className="rail-label truncate flex-1 flex items-center justify-between">
+                <span className="rail-icon-slot">
+                  <Icon size={20} className="h-6 w-6 shrink-0" />
+                </span>
+                <span className="rail-label truncate flex-1 items-center justify-between">
                   <span>{item.label}</span>
                   {item.badge && (
                     <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E85D75] text-white">
@@ -226,7 +227,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               className="rail-link text-slate-300 hover:text-white"
               title="Kunjungi Web Publik"
             >
-              <Home size={18} className="shrink-0" />
+              <span className="rail-icon-slot">
+                <Home size={18} className="h-6 w-6 shrink-0" />
+              </span>
               <span className="rail-label text-xs">Web Publik</span>
             </button>
 
@@ -240,25 +243,17 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               className="rail-link text-[#E85D75] hover:bg-[#E85D75]/20"
               title="Keluar"
             >
-              <LogOut size={18} className="shrink-0" />
+              <span className="rail-icon-slot">
+                <LogOut size={18} className="h-6 w-6 shrink-0" />
+              </span>
               <span className="rail-label text-xs font-bold text-[#E85D75]">Keluar</span>
             </button>
           </div>
         </nav>
       </aside>
 
-      {/* Global backdrop overlay when sidebar is expanded - closes sidebar on outside click */}
       {railExpanded && (
-        <div 
-          className="fixed inset-0 bg-[#0B2238]/30 backdrop-blur-[1px] z-40 transition-opacity cursor-pointer"
-          onClick={() => {
-            setRailExpanded(false);
-            if (document.activeElement instanceof HTMLElement) {
-              document.activeElement.blur();
-            }
-          }}
-          aria-hidden="true"
-        />
+        <div className="fixed inset-0 z-40 bg-[#0B2238]/30 backdrop-blur-[1px]" onClick={() => setRailExpanded(false)} aria-hidden="true" />
       )}
 
       {/* 
@@ -267,14 +262,11 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         ========================================================================
       */}
       <div className="workspace">
+        <div className="dashboard-canvas">
         <header className="topbar">
-          <div className="greeting-wrapper">
-            <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#5C80B6] mb-0.5">
-              {portalRoleBadge}
-            </div>
-            <div className="greeting">
-              Halo, {userName}! Apa yang ingin Anda lakukan hari ini?
-            </div>
+          <div className="page-heading">
+            <h1>{pageTitle}</h1>
+            <div className="breadcrumbs"><span>Workspace</span><span>/</span><span>{roleLabel}</span><span>/</span><span>{pageTitle}</span></div>
           </div>
 
           <div className="top-actions">
@@ -291,70 +283,16 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               />
             </label>
 
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Light / Dark Mode Toggle */}
-              <button
-                type="button"
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="icon-button"
-                aria-label={isDarkMode ? 'Beralih ke mode terang' : 'Beralih ke mode gelap'}
-                aria-pressed={isDarkMode}
-              >
-                {isDarkMode ? <Sun size={19} className="text-amber-400" /> : <Moon size={19} />}
+            <div className="topbar-actions">
+              <button type="button" className="round-action" aria-label="Notifikasi" title="Notifikasi" onClick={markNotificationsAsRead}>
+                <Bell size={17} />
+                {unreadNotifsCount > 0 && <span className="dot" aria-hidden="true" />}
               </button>
-
-              {/* Bell Button with Coral Dot */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowNotifPopover(!showNotifPopover);
-                    markNotificationsAsRead();
-                  }}
-                  className="icon-button"
-                  aria-label="Notifikasi"
-                >
-                  <Bell size={19} />
-                  {unreadNotifsCount > 0 && <span className="dot" aria-hidden="true" />}
-                </button>
-
-                {showNotifPopover && (
-                  <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-32px)] rounded-3xl bg-white shadow-2xl border border-slate-100 py-3 z-50">
-                    <div className="px-5 py-2 border-b border-slate-100 flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#0F172A]">Notifikasi</span>
-                      <span className="text-[10px] text-white font-bold bg-[#E85D75] px-2 py-0.5 rounded-full">
-                        {notifications.length} baru
-                      </span>
-                    </div>
-                    <div className="max-h-72 overflow-y-auto divide-y divide-slate-50">
-                      {notifications.length === 0 ? (
-                        <div className="p-5 text-xs text-[#64748B] text-center">Tidak ada notifikasi baru</div>
-                      ) : (
-                        notifications.slice(0, 5).map((n) => (
-                          <div key={n.id} className="p-3.5 hover:bg-slate-50 transition-colors">
-                            <p className="text-xs font-bold text-[#0F172A]">{n.title}</p>
-                            <p className="text-xs text-[#64748B] mt-0.5 line-clamp-2">{n.message}</p>
-                            <span className="text-[10px] text-[#5C80B6] mt-1 block font-mono">{n.timestamp}</span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* User Avatar Placeholder with Gradient */}
               <div className="avatar" role="img" aria-label={`${userName} avatar`}>
                 {userInitial}
               </div>
-
-              {/* Primary Action Button */}
-              <button
-                type="button"
-                onClick={handleActionClick}
-                className="navy-button"
-              >
-                {getActionLabel()}
+              <button type="button" onClick={handleActionClick} className="round-action round-action-primary" aria-label={getActionLabel().replace(/^\+\s*/, '')} title={getActionLabel().replace(/^\+\s*/, '')}>
+                <Plus size={18} />
               </button>
             </div>
           </div>
@@ -362,8 +300,14 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
         {/* Main Content Area */}
         <main className="dashboard-main pt-2">
+          {currentTab.endsWith('dashboard') && (
+            <section className="kpi-grid" aria-label="Ringkasan metrik">
+              {kpis.map(kpi => <article className="kpi-card" key={kpi.label}><span>{kpi.value}</span><p>{kpi.label}</p></article>)}
+            </section>
+          )}
           {children}
         </main>
+        </div>
       </div>
     </div>
   );
