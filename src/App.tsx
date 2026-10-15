@@ -28,11 +28,12 @@ import { PartnerAnalyticsView } from './components/partner/PartnerAnalyticsView'
 
 // Admin pages
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { AdminOverview } from './components/admin/AdminOverview';
 import { PartnershipReviewList } from './components/admin/PartnershipReviewList';
 import { ProgramProposalReviewList } from './components/admin/ProgramProposalReviewList';
 import { VolunteerApplicationsManagement } from './components/admin/VolunteerApplicationsManagement';
 import { GeographicGenderAnalytics } from './components/admin/GeographicGenderAnalytics';
-import { AuditTrailView } from './components/admin/AuditTrailView';
+import { AdminUsersActivity } from './components/admin/AdminUsersActivity';
 
 import { Program, UserRole } from './types';
 
@@ -44,12 +45,17 @@ const MainAppContent: React.FC = () => {
     'vol-profile': '/relawan/profil', 'public-programs': '/relawan/program',
     'part-dashboard': '/mitra/dashboard', 'part-programs': '/mitra/program',
     'part-participants': '/mitra/relawan', 'part-analytics': '/mitra/analitik',
-    'part-organization': '/mitra/organisasi', 'admin-dashboard': '/admin/dashboard',
-    'admin-partnerships': '/admin/verifikasi-mitra', 'admin-proposals': '/admin/proposal',
+    'part-organization': '/mitra/organisasi', 'admin-overview': '/admin/overview',
+    'admin-dashboard': '/admin/dashboard',
+    'admin-partnerships': '/admin/verifikasi-mitra', 'admin-proposals': '/admin/program',
     'admin-applications': '/admin/seleksi-relawan', 'admin-analytics': '/admin/analitik',
-    'admin-audit': '/admin/audit',
+    'admin-users-activity': '/admin/users-activity',
   };
-  const tabFromPath = (path: string) => Object.entries(portalPaths).find(([, value]) => value === path)?.[0];
+  const tabFromPath = (path: string) => path === '/admin/proposal'
+    ? 'admin-proposals'
+    : path === '/admin/audit'
+      ? 'admin-users-activity'
+    : Object.entries(portalPaths).find(([, value]) => value === path)?.[0];
 
   // Navigation tabs state
   const [currentPublicTab, setCurrentPublicTab] = useState<string>('public-home');
@@ -95,7 +101,7 @@ const MainAppContent: React.FC = () => {
       } else if (role === 'partner' && !currentPortalTab.startsWith('part-')) {
         navigatePortal('part-dashboard');
       } else if (role === 'admin' && !currentPortalTab.startsWith('admin-')) {
-        navigatePortal('admin-dashboard');
+        navigatePortal('admin-overview');
       }
     }
   }, [role]);
@@ -121,7 +127,7 @@ const MainAppContent: React.FC = () => {
       setIsViewingPublicSite(false);
       if (newRole === 'volunteer') navigatePortal('vol-dashboard');
       else if (newRole === 'partner') navigatePortal('part-dashboard');
-      else if (newRole === 'admin') navigatePortal('admin-dashboard');
+      else if (newRole === 'admin') navigatePortal('admin-overview');
     }
   };
 
@@ -295,6 +301,9 @@ const MainAppContent: React.FC = () => {
       {/* PSA ADMIN CONSOLE VIEWS */}
       {role === 'admin' && (
         <>
+          {currentPortalTab === 'admin-overview' && (
+            <AdminOverview />
+          )}
           {currentPortalTab === 'admin-dashboard' && (
             <AdminDashboard onNavigate={navigatePortal} />
           )}
@@ -310,8 +319,8 @@ const MainAppContent: React.FC = () => {
           {currentPortalTab === 'admin-analytics' && (
             <GeographicGenderAnalytics />
           )}
-          {currentPortalTab === 'admin-audit' && (
-            <AuditTrailView />
+          {currentPortalTab === 'admin-users-activity' && (
+            <AdminUsersActivity />
           )}
         </>
       )}

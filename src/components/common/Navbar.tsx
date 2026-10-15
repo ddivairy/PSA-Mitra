@@ -67,8 +67,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
     { id: 'admin-partnerships', label: 'Pengajuan Kemitraan' },
     { id: 'admin-proposals', label: 'Proposal Program' },
     { id: 'admin-applications', label: 'Seleksi Relawan' },
-    { id: 'admin-analytics', label: 'Analitik Wilayah' },
-    { id: 'admin-audit', label: 'Audit Log' },
+    { id: 'admin-analytics', label: 'Analytics' },
+    { id: 'admin-users-activity', label: 'Users & Activity' },
   ];
 
   return (

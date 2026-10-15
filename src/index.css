@@ -66,10 +66,13 @@
   top: 0;
   width: 80px;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--navy);
   border-radius: 0 42px 60px 0 / 0 16% 23% 0;
   box-shadow: 12px 18px 32px rgba(11, 34, 56, 0.11);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   transition: width 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 .side-rail:hover, .side-rail.expanded, .side-rail:has(:focus-visible) {
@@ -78,6 +81,7 @@
 }
 .rail-brand {
   height: 94px;
+  flex: none;
   display: flex;
   align-items: center;
   gap: 15px;
@@ -85,6 +89,15 @@
   color: white;
   white-space: nowrap;
   font-weight: 800;
+}
+.rail-icon-slot {
+  width: 48px;
+  min-width: 48px;
+  height: 100%;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .brand-mark {
   height: 34px;
@@ -97,42 +110,109 @@
   font-size: 19px;
   background: rgba(92, 128, 182, 0.2);
 }
-.rail-label, .brand-name {
+.rail-label {
+  display: none;
+  white-space: nowrap;
+}
+.brand-name {
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
   white-space: nowrap;
 }
-.side-rail:hover .rail-label, .side-rail.expanded .rail-label, .side-rail:has(:focus-visible) .rail-label,
+.side-rail:hover .rail-label,
+.side-rail.expanded .rail-label,
+.side-rail:has(:focus-visible) .rail-label {
+  display: flex;
+}
 .side-rail:hover .brand-name, .side-rail.expanded .brand-name, .side-rail:has(:focus-visible) .brand-name { opacity: 1; }
 .rail-nav {
   display: flex;
+  flex: none;
   flex-direction: column;
+  align-items: center;
   gap: 5px;
-  padding: 5px 13px 24px;
+  margin-block: auto;
+  width: 100%;
+  padding: 5px 16px 24px;
 }
 .rail-link {
+  position: relative;
+  isolation: isolate;
   border: 0;
   background: transparent;
   color: #e8eff7;
-  width: 100%;
-  height: 49px;
-  border-radius: 17px;
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  border-radius: 14px;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 17px;
-  padding: 0 11px;
+  gap: 0;
+  padding: 0;
   text-align: left;
   font-weight: 700;
-  transition: all 0.2s;
+  transition: all 0.3s ease-in-out;
   cursor: pointer;
+}
+.rail-link > * {
+  position: relative;
+  z-index: 1;
+}
+.rail-nav > div {
+  width: 100%;
+}
+.side-rail:hover .rail-nav,
+.side-rail.expanded .rail-nav,
+.side-rail:has(:focus-visible) .rail-nav {
+  align-items: stretch;
+}
+.side-rail:hover .rail-link,
+.side-rail.expanded .rail-link,
+.side-rail:has(:focus-visible) .rail-link {
+  width: 100%;
+  min-width: 0;
+  height: 49px;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0;
+}
+.side-rail:hover .rail-link .rail-label,
+.side-rail.expanded .rail-link .rail-label,
+.side-rail:has(:focus-visible) .rail-link .rail-label {
+  margin-left: 8px;
 }
 .rail-link:hover {
   background: rgba(255, 255, 255, 0.12);
 }
 .rail-link.active {
-  background: white;
   color: var(--navy);
+}
+.rail-link.active::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 14px;
+  background: white;
   box-shadow: 0 8px 18px rgba(6, 24, 44, 0.22);
+  transition: all 0.3s ease-in-out;
+}
+.side-rail:hover .rail-link.active::before,
+.side-rail.expanded .rail-link.active::before,
+.side-rail:has(:focus-visible) .rail-link.active::before {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  border-radius: 17px;
 }
 
 /* Workspace Canvas */
@@ -142,6 +222,12 @@
   min-height: 100vh;
   padding: 24px;
   background: #f4f5f7;
+  transition: margin-left 0.3s ease-in-out;
+}
+.side-rail:hover ~ .workspace,
+.side-rail.expanded ~ .workspace,
+.side-rail:has(:focus-visible) ~ .workspace {
+  margin-left: 256px;
 }
 .dashboard-canvas {
   width: 100%;
@@ -569,6 +655,9 @@
     grid-template-columns: 1fr;
   }
   .side-rail:hover, .side-rail.expanded, .side-rail:has(:focus-visible) { width: 240px; }
+  .side-rail:hover ~ .workspace,
+  .side-rail.expanded ~ .workspace,
+  .side-rail:has(:focus-visible) ~ .workspace { margin-left: 240px; }
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
@@ -577,6 +666,9 @@
 @media(max-width: 640px) {
   .side-rail { width: 68px; border-radius: 0 32px 48px 0 / 0 14% 20% 0; }
   .side-rail:hover, .side-rail.expanded, .side-rail:has(:focus-visible) { width: 236px; z-index: 60; box-shadow: 20px 20px 42px rgba(11, 34, 56, 0.45); }
+  .side-rail:hover ~ .workspace,
+  .side-rail.expanded ~ .workspace,
+  .side-rail:has(:focus-visible) ~ .workspace { margin-left: 236px; }
   .workspace {
     margin-left: 68px;
     padding: 12px;
@@ -597,14 +689,24 @@
     font-size: 16px;
   }
   .rail-nav {
-    padding: 4px 8px 24px;
+    padding: 4px 10px 24px;
     gap: 4px;
   }
   .rail-link {
-    height: 46px;
-    padding: 0 12px;
+    height: 48px;
+    width: 48px;
+    min-width: 48px;
     border-radius: 14px;
-    gap: 14px;
+    gap: 0;
+  }
+  .side-rail:hover .rail-link,
+  .side-rail.expanded .rail-link,
+  .side-rail:has(:focus-visible) .rail-link {
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    gap: 0;
+    padding: 0;
   }
   .topbar { align-items: flex-start; flex-direction: column; gap: 14px; }
   .top-actions { width: 100%; }

@@ -46,6 +46,7 @@ export interface OrgDocument {
   type: string;
   size: string;
   uploadedAt: string;
+  verificationStatus?: 'pending' | 'verified' | 'revision_required';
 }
 
 export interface StatusHistoryItem {
@@ -151,6 +152,7 @@ export interface VolunteerApplication {
   volunteerPhone: string;
   volunteerGender?: GenderOption;
   volunteerCity: string;
+  volunteerProvince?: string;
   motivation: string;
   answers: Record<string, string>;
   status: ApplicationStatus;

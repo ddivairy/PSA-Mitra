@@ -1,76 +1,150 @@
 import React, { useState } from 'react';
 import { 
-  BarChart3, 
+  ChevronDown,
   MapPin, 
   Users, 
-  Building2, 
-  CheckCircle2, 
-  FileText,
-  TrendingUp,
-  ShieldCheck,
-  Layers
+  Download
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { INDONESIA_REGIONS } from '../../data/indonesiaRegions';
 
 export const GeographicGenderAnalytics: React.FC = () => {
   const { partners, programs, applications } = useApp();
+  const numberFormatter = new Intl.NumberFormat('id-ID');
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'geography' | 'gender' | 'partners'>('overview');
+  const [activeTab, setActiveTab] = useState<'geography' | 'gender' | 'partners'>('partners');
+  const [expandedPartnerId, setExpandedPartnerId] = useState<string | null>(null);
 
   // Aggregated calculations
-  const totalPartners = partners.length;
-  const activeApprovedPartners = partners.filter(p => p.status === 'approved').length;
-  const totalPrograms = programs.length;
-  const publishedPrograms = programs.filter(p => p.publishedStatus === 'published').length;
   const totalApplicants = applications.length;
-  const acceptedApplicants = applications.filter(a => a.status === 'accepted').length;
 
   // Gender aggregated distribution
   const maleCount = applications.filter(a => a.volunteerGender === 'male').length;
   const femaleCount = applications.filter(a => a.volunteerGender === 'female').length;
   const undisclosedCount = applications.filter(a => !a.volunteerGender || a.volunteerGender === 'prefer_not_to_say').length;
   const totalGender = totalApplicants || 1;
+  const malePercentage = (maleCount / totalGender) * 100;
+  const femalePercentage = (femaleCount / totalGender) * 100;
+  const undisclosedPercentage = (undisclosedCount / totalGender) * 100;
+  const maleEnd = malePercentage;
+  const femaleEnd = maleEnd + femalePercentage;
+  const genderChartBackground = totalApplicants > 0
+    ? `conic-gradient(from -90deg, #2563eb 0% ${maleEnd}%, #f43f5e ${maleEnd}% ${femaleEnd}%, #94a3b8 ${femaleEnd}% 100%)`
+    : '#e2e8f0';
 
-  // City & Province aggregated distribution
-  const provinceMap: Record<string, number> = {};
-  const cityMap: Record<string, number> = {};
+  // City & province aggregated distribution, using saved applicant province or city lookup for legacy records.
+  const geographyMap: Record<string, { count: number; cities: Record<string, number> }> = {};
+  const provinceByCity = new Map(
+    INDONESIA_REGIONS.flatMap(region =>
+      region.cities.map(city => [city.trim().toLocaleLowerCase('id-ID'), region.province] as const)
+    )
+  );
 
   applications.forEach(app => {
-    const c = app.volunteerCity || 'Lainnya';
-    cityMap[c] = (cityMap[c] || 0) + 1;
+    const city = app.volunteerCity.trim() || 'Kota tidak disebutkan';
+    const province = app.volunteerProvince?.trim()
+      || provinceByCity.get(city.toLocaleLowerCase('id-ID'))
+      || 'Provinsi tidak diketahui';
+    const region = geographyMap[province] ?? { count: 0, cities: {} };
+    region.count += 1;
+    region.cities[city] = (region.cities[city] || 0) + 1;
+    geographyMap[province] = region;
   });
 
-  programs.forEach(p => {
-    if (p.province) {
-      provinceMap[p.province] = (provinceMap[p.province] || 0) + 1;
-    }
+  const geographyByProvince = Object.entries(geographyMap)
+    .map(([province, region]) => ({
+      province,
+      count: region.count,
+      cities: Object.entries(region.cities).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'id')),
+    }))
+    .sort((a, b) => b.count - a.count || a.province.localeCompare(b.province, 'id'));
+  const topProvinces = geographyByProvince.map(region => [region.province, region.count] as const);
+  const partnerStats = partners.map(partner => {
+    const partnerPrograms = programs.filter(program => program.partnerId === partner.id);
+    const programIds = new Set(partnerPrograms.map(program => program.id));
+    const partnerApplications = applications.filter(application => programIds.has(application.programId));
+    return {
+      partner,
+      programs: partnerPrograms,
+      applications: partnerApplications,
+      accepted: partnerApplications.filter(application => application.status === 'accepted').length,
+    };
+  });
+  const programStats = programs.map(program => {
+    const programApplications = applications.filter(application => application.programId === program.id);
+    return {
+      program,
+      applications: programApplications.length,
+      accepted: programApplications.filter(application => application.status === 'accepted').length,
+      quotaProgress: program.targetQuota > 0
+        ? Math.min(100, Math.round((program.enrolledCount / program.targetQuota) * 100))
+        : 0,
+    };
   });
 
-  const topCities = Object.entries(cityMap).sort((a, b) => b[1] - a[1]);
-  const topProvinces = Object.entries(provinceMap).sort((a, b) => b[1] - a[1]);
+  const handleExportReport = () => {
+    const rows: string[][] = [
+      ['Bagian', 'Nama', 'Status / Kategori', 'Jumlah program', 'Pendaftar', 'Detail'],
+      ...partnerStats.map(({ partner, programs: partnerPrograms, applications: partnerApplications, accepted }) => [
+        'Mitra',
+        partner.name,
+        partner.status,
+        String(partnerPrograms.length),
+        String(partnerApplications.length),
+        `Diterima: ${accepted}; sektor: ${partner.sector}`,
+      ]),
+      ...programStats.map(({ program, applications: programApplicationCount, accepted, quotaProgress }) => [
+        'Program',
+        program.title,
+        `${program.proposalStatus} / ${program.publishedStatus}`,
+        String(programApplicationCount),
+        String(program.enrolledCount),
+        `Mitra: ${program.partnerName}; kategori: ${program.category}; diterima: ${accepted}; kuota: ${program.enrolledCount}/${program.targetQuota} (${quotaProgress}%)`,
+      ]),
+      ['Gender', 'Laki-laki', '', '', String(maleCount), `Persentase: ${Math.round((maleCount / totalGender) * 100)}%`],
+      ['Gender', 'Perempuan', '', '', String(femaleCount), `Persentase: ${Math.round((femaleCount / totalGender) * 100)}%`],
+      ['Gender', 'Tidak menjawab', '', '', String(undisclosedCount), `Persentase: ${Math.round((undisclosedCount / totalGender) * 100)}%`],
+      ...geographyByProvince.flatMap(({ province, cities }) =>
+        cities.map(([city, count]) => ['Kota pendaftar', city, '', '', String(count), `Provinsi: ${province}`])
+      ),
+      ...topProvinces.map(([province, count]) => ['Provinsi pendaftar', province, '', '', String(count), 'Jumlah pendaftaran']),
+    ];
+    const csv = `\uFEFF${rows.map(row => row.map(value => `"${value.replace(/"/g, '""')}"`).join(',')).join('\r\n')}`;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `laporan-analytics-psa-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div>
-        <div className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1">
-          Laporan Tingkat Platform
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1">
+            Laporan Tingkat Platform
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">Analytics PSA</h1>
+          <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+            Statistik mitra dan program, serta distribusi gender dan wilayah asal pendaftar.
+          </p>
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">Analitik Geografis, Gender &amp; Dampak PSA</h1>
-        <p className="text-xs text-slate-500 mt-1 max-w-2xl">
-          Visualisasi data agregat sesuai ketentuan pasal 10 rancangan platform untuk audit dan evaluasi strategis.
-        </p>
+        <button
+          type="button"
+          onClick={handleExportReport}
+          className="inline-flex items-center justify-center gap-2 self-start rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50 sm:self-auto"
+        >
+          <Download size={15} aria-hidden="true" />
+          Export laporan CSV
+        </button>
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-slate-200 gap-6 text-xs font-medium text-slate-600">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`pb-2.5 transition-colors border-b-2 ${
-            activeTab === 'overview' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent hover:text-slate-900'
-          }`}
-        >
-          Ikhtisar Ekosistem
-        </button>
         <button
           onClick={() => setActiveTab('geography')}
           className={`pb-2.5 transition-colors border-b-2 ${
@@ -97,133 +171,66 @@ export const GeographicGenderAnalytics: React.FC = () => {
         </button>
       </div>
 
-      {/* TAB 1: OVERVIEW */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
-              <span className="text-xs text-slate-500">Mitra Terverifikasi Aktif</span>
-              <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums">
-                {activeApprovedPartners} <span className="text-xs text-slate-400 font-normal">/ {totalPartners}</span>
-              </div>
-              <span className="text-[11px] text-emerald-600">Lolos seleksi PSA</span>
-            </div>
-
-            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
-              <span className="text-xs text-slate-500">Program Dipublikasikan</span>
-              <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums">
-                {publishedPrograms} <span className="text-xs text-slate-400 font-normal">/ {totalPrograms}</span>
-              </div>
-              <span className="text-[11px] text-blue-600">Terbuka untuk umum</span>
-            </div>
-
-            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
-              <span className="text-xs text-slate-500">Total Pendaftar Relawan</span>
-              <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums">
-                {totalApplicants}
-              </div>
-              <span className="text-[11px] text-slate-400">Seluruh inisiatif</span>
-            </div>
-
-            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-1">
-              <span className="text-xs text-slate-500">Tingkat Penerimaan Relawan</span>
-              <div className="text-2xl font-bold text-emerald-700 font-mono tabular-nums">
-                {Math.round((acceptedApplicants / (totalApplicants || 1)) * 100)}%
-              </div>
-              <span className="text-[11px] text-slate-400">{acceptedApplicants} relawan diterima</span>
-            </div>
-          </div>
-
-          {/* Program Distribution Table */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-900">
-              Kapasitas &amp; Rasio Pendaftar Tiap Program
-            </h3>
-            <div className="space-y-3">
-              {programs.map(prog => {
-                const pct = Math.min(100, Math.round((prog.enrolledCount / (prog.targetQuota || 1)) * 100));
-                return (
-                  <div key={prog.id} className="space-y-1.5 text-xs">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <span className="font-bold text-slate-900">{prog.title}</span>
-                        <span className="text-slate-500 ml-2">({prog.partnerName})</span>
-                      </div>
-                      <div className="font-mono tabular-nums text-slate-600">
-                        {prog.enrolledCount} / {prog.targetQuota} ({pct}%)
-                      </div>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full ${pct >= 100 ? 'bg-emerald-600' : 'bg-blue-600'}`} 
-                        style={{ width: `${pct}%` }} 
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: GEOGRAPHY */}
+      {/* TAB 1: GEOGRAPHY */}
       {activeTab === 'geography' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <MapPin size={16} className="text-blue-600" />
-                <span>Sebaran Asal Pendaftar Relawan (Kota/Kab)</span>
+                <span>Sebaran Asal Pendaftar Relawan per Provinsi &amp; Kota/Kab</span>
               </h3>
-              <span className="text-[11px] text-slate-400 font-mono">{topCities.length} Kota Terdata</span>
+              <span className="text-[11px] text-slate-400 font-mono">{geographyByProvince.length} Provinsi</span>
             </div>
 
+            <p className="text-[11px] text-slate-500">
+              Bar provinsi menunjukkan persentase dari seluruh pendaftar; bar kota menunjukkan persentase di dalam provinsi.
+            </p>
             <div className="space-y-3">
-              {topCities.map(([city, count]) => {
-                const pct = Math.round((count / totalGender) * 100);
-                return (
-                  <div key={city} className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="font-medium text-slate-800">{city}</span>
-                      <span className="font-mono text-slate-600">{count} Relawan ({pct}%)</span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div className="h-full bg-blue-600 rounded-full" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Layers size={16} className="text-emerald-600" />
-                <span>Sebaran Lokasi Pelaksanaan Program (Provinsi)</span>
-              </h3>
-              <span className="text-[11px] text-slate-400 font-mono">{topProvinces.length} Provinsi</span>
-            </div>
-
-            <div className="space-y-3">
-              {topProvinces.map(([prov, count]) => (
-                <div key={prov} className="space-y-1 text-xs">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-slate-800">{prov}</span>
-                    <span className="font-mono text-slate-600">{count} Program Aktif</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                    <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${(count / (totalPrograms || 1)) * 100}%` }} />
-                  </div>
-                </div>
-              ))}
+              {geographyByProvince.length === 0 ? (
+                <p className="py-6 text-center text-xs text-slate-500">Belum ada data domisili pendaftar.</p>
+              ) : (
+                geographyByProvince.map(({ province, count, cities }) => {
+                  const provincePercentage = Math.round((count / totalGender) * 100);
+                  return (
+                    <section key={province} className="space-y-2 rounded-lg bg-slate-50 p-3">
+                      <div className="flex justify-between gap-4 text-xs">
+                        <span className="font-semibold text-slate-900">{province}</span>
+                        <span className="shrink-0 font-mono tabular-nums text-slate-600">
+                          {numberFormatter.format(count)} Pendaftar ({provincePercentage}%)
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-white">
+                        <div className="h-full rounded-full bg-emerald-600" style={{ width: `${provincePercentage}%` }} />
+                      </div>
+                      <div className="ml-3 space-y-2 border-l-2 border-blue-100 pl-3 pt-1">
+                        {cities.map(([city, cityCount]) => {
+                          const cityPercentage = Math.round((cityCount / count) * 100);
+                          return (
+                            <div key={city} className="space-y-1 text-xs">
+                              <div className="flex justify-between gap-4">
+                                <span className="text-slate-700">{city}</span>
+                                <span className="shrink-0 font-mono tabular-nums text-slate-500">
+                                  {numberFormatter.format(cityCount)} ({cityPercentage}%)
+                                </span>
+                              </div>
+                              <div className="h-1.5 w-full overflow-hidden rounded-full bg-white">
+                                <div className="h-full rounded-full bg-blue-500" style={{ width: `${cityPercentage}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* TAB 3: GENDER */}
+      {/* TAB 2: GENDER */}
       {activeTab === 'gender' && (
         <div className="max-w-2xl bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-6">
           <div className="border-b border-slate-100 pb-3">
@@ -235,73 +242,132 @@ export const GeographicGenderAnalytics: React.FC = () => {
             </p>
           </div>
 
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-800">Laki-laki</span>
-                <span className="font-mono tabular-nums text-slate-600">{maleCount} Peserta ({Math.round((maleCount / totalGender) * 100)}%)</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-blue-600 rounded-full" style={{ width: `${(maleCount / totalGender) * 100}%` }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-800">Perempuan</span>
-                <span className="font-mono tabular-nums text-slate-600">{femaleCount} Peserta ({Math.round((femaleCount / totalGender) * 100)}%)</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-rose-500 rounded-full" style={{ width: `${(femaleCount / totalGender) * 100}%` }} />
+          <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-center sm:gap-10">
+            <div
+              className="relative h-48 w-48 shrink-0 rounded-full"
+              style={{ background: genderChartBackground }}
+              role="img"
+              aria-label={`Distribusi gender dari ${totalApplicants} pendaftar: ${maleCount} laki-laki, ${femaleCount} perempuan, ${undisclosedCount} memilih tidak menjawab.`}
+            >
+              <div className="absolute inset-6 flex flex-col items-center justify-center rounded-full bg-white">
+                <span className="text-2xl font-bold tabular-nums text-slate-900">{numberFormatter.format(totalApplicants)}</span>
+                <span className="text-xs text-slate-500">Total peserta</span>
               </div>
             </div>
-
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-semibold text-slate-800">Memilih Tidak Menjawab</span>
-                <span className="font-mono tabular-nums text-slate-600">{undisclosedCount} Peserta ({Math.round((undisclosedCount / totalGender) * 100)}%)</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-slate-400 rounded-full" style={{ width: `${(undisclosedCount / totalGender) * 100}%` }} />
-              </div>
-            </div>
+            <ul className="w-full space-y-3 text-xs sm:max-w-xs">
+              {[
+                { label: 'Laki-laki', count: maleCount, percentage: malePercentage, color: 'bg-blue-600' },
+                { label: 'Perempuan', count: femaleCount, percentage: femalePercentage, color: 'bg-rose-500' },
+                { label: 'Memilih Tidak Menjawab', count: undisclosedCount, percentage: undisclosedPercentage, color: 'bg-slate-400' },
+              ].map(item => (
+                <li key={item.label} className="flex items-start justify-between gap-4">
+                  <span className="flex min-w-0 items-center gap-2 font-semibold text-slate-800">
+                    <span className={`mt-0.5 h-3 w-3 shrink-0 rounded-sm ${item.color}`} aria-hidden="true" />
+                    <span>{item.label}</span>
+                  </span>
+                  <span className="shrink-0 text-right font-mono tabular-nums text-slate-600">
+                    {numberFormatter.format(item.count)} ({Math.round(item.percentage)}%)
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
 
-      {/* TAB 4: PARTNERS */}
+      {/* TAB 3: PARTNERS */}
       {activeTab === 'partners' && (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-          <div className="p-4 border-b border-slate-200">
-            <h3 className="text-sm font-bold text-slate-900">Performa &amp; Status Mitra Kemitraan</h3>
+          <div className="border-b border-slate-200 p-4">
+            <h3 className="text-sm font-bold text-slate-900">Performa Mitra Kemitraan</h3>
+            <p className="mt-1 text-xs text-slate-500">Pilih mitra untuk melihat grafik progres programnya.</p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px]">
-                <tr>
-                  <th className="px-5 py-3">Organisasi</th>
-                  <th className="px-5 py-3">Bentuk</th>
-                  <th className="px-5 py-3">Status Mitra</th>
-                  <th className="px-5 py-3">Jumlah Program</th>
-                  <th className="px-5 py-3">Total Peserta Terkumpul</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {partners.map(p => {
-                  const pProgs = programs.filter(pr => pr.partnerId === p.id);
-                  const pApps = applications.filter(a => pProgs.map(pr => pr.id).includes(a.programId));
-                  return (
-                    <tr key={p.id}>
-                      <td className="px-5 py-3.5 font-bold text-slate-900">{p.name}</td>
-                      <td className="px-5 py-3.5 capitalize text-slate-600">{p.type}</td>
-                      <td className="px-5 py-3.5"><span className="uppercase text-[11px] font-semibold text-slate-700">{p.status}</span></td>
-                      <td className="px-5 py-3.5 font-mono">{pProgs.length} Program</td>
-                      <td className="px-5 py-3.5 font-mono font-bold text-blue-600">{pApps.length} Relawan</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="divide-y divide-slate-100">
+            {partnerStats.map(({ partner, programs: partnerPrograms, applications: partnerApplications, accepted }) => {
+              const isExpanded = expandedPartnerId === partner.id;
+              const partnerProgramStats = programStats.filter(item => item.program.partnerId === partner.id);
+              const panelId = `partner-programs-${partner.id}`;
+              return (
+                <section key={partner.id}>
+                  <h4>
+                    <button
+                      type="button"
+                      aria-expanded={isExpanded}
+                      aria-controls={panelId}
+                      onClick={() => setExpandedPartnerId(isExpanded ? null : partner.id)}
+                      className="flex w-full items-center justify-between gap-4 p-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-blue-600"
+                    >
+                      <span className="min-w-0">
+                        <span className="block break-words text-sm font-bold text-slate-900">{partner.name}</span>
+                        <span className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs font-normal text-slate-500">
+                          <span>{numberFormatter.format(partnerPrograms.length)} Program</span>
+                          <span>
+                            {numberFormatter.format(partnerApplications.length)} Pendaftar
+                            <span className="text-emerald-700"> · {numberFormatter.format(accepted)} diterima</span>
+                          </span>
+                        </span>
+                      </span>
+                      <ChevronDown
+                        size={18}
+                        aria-hidden="true"
+                        className={`shrink-0 text-slate-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+                  </h4>
+                  {isExpanded && (
+                    <div id={panelId} className="space-y-4 border-t border-slate-100 bg-slate-50/70 p-4 sm:p-5">
+                      <h5 className="text-xs font-bold text-slate-800">Progres program · keterisian target relawan</h5>
+                      {partnerProgramStats.length === 0 ? (
+                        <p className="rounded-lg border border-dashed border-slate-300 bg-white p-4 text-center text-xs text-slate-500">
+                          Mitra ini belum memiliki program.
+                        </p>
+                      ) : (
+                        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+                          {partnerProgramStats.map(({ program, applications: applicationCount, accepted: programAccepted, quotaProgress }) => (
+                            <article key={program.id} className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+                              <div className="min-w-0">
+                                <h6 className="break-words text-xs font-semibold text-slate-800">{program.title}</h6>
+                              </div>
+                              <dl className="grid grid-cols-2 gap-3 text-xs">
+                                <div>
+                                  <dt className="text-slate-500">Pendaftar</dt>
+                                  <dd className="mt-0.5 font-mono text-slate-700">{numberFormatter.format(applicationCount)}</dd>
+                                </div>
+                                <div>
+                                  <dt className="text-slate-500">Diterima</dt>
+                                  <dd className="mt-0.5 font-mono text-slate-700">{numberFormatter.format(programAccepted)}</dd>
+                                </div>
+                                <div className="col-span-2">
+                                  <div className="mb-1 flex items-center justify-between gap-2">
+                                    <dt className="text-slate-500">Kapasitas terisi</dt>
+                                    <dd className="font-mono tabular-nums text-slate-700">
+                                      {numberFormatter.format(program.enrolledCount)}/{numberFormatter.format(program.targetQuota)} ({quotaProgress}%)
+                                    </dd>
+                                  </div>
+                                  <div
+                                    className="h-3 w-full overflow-hidden rounded-full bg-slate-100"
+                                    role="progressbar"
+                                    aria-label={`Kapasitas terisi ${program.title}`}
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-valuenow={quotaProgress}
+                                  >
+                                    <div
+                                      className={`h-full rounded-full transition-[width] ${quotaProgress >= 100 ? 'bg-emerald-500' : 'bg-blue-600'}`}
+                                      style={{ width: `${quotaProgress}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </dl>
+                            </article>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
           </div>
         </div>
       )}

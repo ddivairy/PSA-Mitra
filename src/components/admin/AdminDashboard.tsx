@@ -267,7 +267,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
             title="Audit Kepatuhan & Keamanan Data"
             description="Seluruh aksi verifikasi dilindungi standar audit trail PSA dan tersimpan aman di basis data terverifikasi."
             buttonText="Buka Log Aktivitas"
-            onButtonClick={() => onNavigate('admin-audit')}
+            onButtonClick={() => onNavigate('admin-users-activity')}
           />
         </div>
       </div>

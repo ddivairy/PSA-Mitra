@@ -1,265 +1,176 @@
-import React, { useState } from 'react';
-import { 
-  FileText, 
-  Search, 
-  Filter, 
-  CheckCircle2, 
-  RotateCcw, 
-  XCircle, 
-  Eye, 
-  Building2,
-  Calendar,
-  Users,
-  MapPin
-} from 'lucide-react';
+import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { StatusBadge } from '../common/StatusBadge';
-import { Modal } from '../common/Modal';
-import { Program, PublicationStatus } from '../../types';
+
+const numberFormatter = new Intl.NumberFormat('id-ID');
 
 export const ProgramProposalReviewList: React.FC = () => {
-  const { programs, reviewProgramProposal, toggleProgramPublication } = useApp();
+  const { programs } = useApp();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedProg, setSelectedProg] = useState<Program | null>(null);
-  const [reviewNotes, setReviewNotes] = useState('');
-
-  const filteredPrograms = programs.filter(p => {
-    const q = searchQuery.toLowerCase().trim();
-    const matchSearch = !q || 
-      p.title.toLowerCase().includes(q) ||
-      p.partnerName.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q);
-
-    const matchStatus = statusFilter === 'all' || p.proposalStatus === statusFilter;
-    return matchSearch && matchStatus;
-  });
-
-  const handleDecision = (decision: 'approved' | 'revision_required' | 'rejected') => {
-    if (!selectedProg) return;
-    reviewProgramProposal(selectedProg.id, decision, reviewNotes.trim() || undefined);
-    setSelectedProg(null);
-    setReviewNotes('');
-  };
+  const pendingCount = programs.filter(program =>
+    program.proposalStatus === 'submitted' || program.proposalStatus === 'under_review'
+  ).length;
+  const approvedCount = programs.filter(program => program.proposalStatus === 'approved').length;
+  const publishedCount = programs.filter(program => program.publishedStatus === 'published').length;
+  const totalRegistrations = programs.reduce((total, program) => total + program.enrolledCount, 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Peninjauan Proposal Program Kolaborasi</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Manajemen Program</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Evaluasi proposal kegiatan yang diajukan oleh mitra sebelum ditayangkan ke publik relawan.
+            Pantau progres pendaftaran, keterisian kuota, dan status seluruh program.
           </p>
         </div>
       </div>
 
-      {/* Filter and Search */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari judul proposal, mitra, atau kategori..."
-            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
-          />
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Ringkasan program">
+        <article className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-xs font-medium text-amber-800">Menunggu review</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-amber-900">{numberFormatter.format(pendingCount)}</p>
+        </article>
+        <article className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-xs font-medium text-emerald-800">Proposal disetujui</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-900">{numberFormatter.format(approvedCount)}</p>
+        </article>
+        <article className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+          <p className="text-xs font-medium text-blue-800">Program dipublikasikan</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-blue-900">{numberFormatter.format(publishedCount)}</p>
+        </article>
+        <article className="rounded-xl border border-violet-200 bg-violet-50 p-4">
+          <p className="text-xs font-medium text-violet-800">Total pendaftaran</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-violet-900">{numberFormatter.format(totalRegistrations)}</p>
+        </article>
+      </section>
+
+      <section className="space-y-3" aria-labelledby="program-progress-heading">
+        <div>
+          <h2 id="program-progress-heading" className="text-lg font-bold text-slate-900">Tracking progres program</h2>
+          <p className="mt-1 text-xs text-slate-500">Pantau keterisian target relawan dan periode setiap program.</p>
         </div>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="all">Semua Status Proposal</option>
-          <option value="submitted">Terkirim (Menunggu Review)</option>
-          <option value="under_review">Sedang Ditinjau</option>
-          <option value="revision_required">Perlu Revisi</option>
-          <option value="approved">Disetujui</option>
-          <option value="rejected">Ditolak</option>
-        </select>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px] tracking-wider">
-              <tr>
-                <th className="px-5 py-3">Judul Program</th>
-                <th className="px-5 py-3">Mitra Pengusul</th>
-                <th className="px-5 py-3">Kategori &amp; Format</th>
-                <th className="px-5 py-3">Target Relawan</th>
-                <th className="px-5 py-3">Status Proposal</th>
-                <th className="px-5 py-3">Status Publikasi</th>
-                <th className="px-5 py-3 text-right">Tindakan</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredPrograms.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-slate-500">
-                    Tidak ada proposal program yang cocok.
-                  </td>
-                </tr>
-              ) : (
-                filteredPrograms.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3.5 max-w-xs">
-                      <div className="font-bold text-slate-900 line-clamp-1">{p.title}</div>
-                      <div className="text-[11px] text-slate-400">Dibuat: {p.createdAt}</div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="font-medium text-slate-800">{p.partnerName}</div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="text-blue-600 font-medium">{p.category}</span>
-                      <span className="text-slate-400 block text-[11px] uppercase">{p.format}</span>
-                    </td>
-                    <td className="px-5 py-3.5 font-mono">
-                      {p.enrolledCount} / {p.targetQuota}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <StatusBadge status={p.proposalStatus} size="sm" />
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <select
-                        value={p.publishedStatus}
-                        onChange={(e) => toggleProgramPublication(p.id, e.target.value as PublicationStatus)}
-                        className="text-[11px] py-1 px-2 border border-slate-300 rounded bg-white text-slate-700 font-medium"
-                      >
-                        <option value="published">Tayang (Buka)</option>
-                        <option value="closed">Tutup Pendaftaran</option>
-                        <option value="draft">Draf (Sembunyi)</option>
-                      </select>
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedProg(p);
-                          setReviewNotes(p.reviewNotes || '');
-                        }}
-                        className="px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
-                      >
-                        Tinjau Proposal
-                      </button>
-                    </td>
+        {programs.length === 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+            Belum ada program untuk dipantau.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
+            <div className="divide-y divide-slate-100 lg:hidden">
+              {programs.map(program => {
+                const progress = program.targetQuota > 0
+                  ? Math.min(100, Math.round((program.enrolledCount / program.targetQuota) * 100))
+                  : 0;
+                return (
+                  <article key={program.id} className="space-y-3 p-4">
+                    <div className="min-w-0">
+                      <h3 className="break-words text-sm font-bold text-slate-900">{program.title}</h3>
+                      <p className="mt-0.5 break-words text-xs text-slate-500">{program.partnerName}</p>
+                    </div>
+                    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                      <div className="min-w-0">
+                        <dt className="text-slate-500">Periode</dt>
+                        <dd className="mt-0.5 break-words font-medium text-slate-700">
+                          {program.startDate} – {program.endDate}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-slate-500">Pendaftar / Target</dt>
+                        <dd className="mt-0.5 font-mono font-medium text-slate-700">
+                          {numberFormatter.format(program.enrolledCount)} / {numberFormatter.format(program.targetQuota)}
+                        </dd>
+                      </div>
+                      <div className="col-span-2">
+                        <dt className="text-slate-500">Progres Kuota</dt>
+                        <dd className="mt-1 flex items-center gap-2">
+                          <div
+                            className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"
+                            role="progressbar"
+                            aria-label={`Progres kuota ${program.title}`}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={progress}
+                          >
+                            <div
+                              className={`h-full rounded-full ${progress >= 100 ? 'bg-emerald-500' : 'bg-blue-500'}`}
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                          <span className="w-9 text-right font-mono text-slate-600">{progress}%</span>
+                        </dd>
+                      </div>
+                      <div className="col-span-2">
+                        <dt className="text-slate-500">Status</dt>
+                        <dd className="mt-1.5 flex flex-wrap gap-1.5">
+                          <StatusBadge status={program.proposalStatus} size="sm" />
+                          <StatusBadge status={program.publishedStatus} size="sm" />
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                );
+              })}
+            </div>
+            <div className="hidden lg:block">
+              <table className="w-full table-fixed text-left text-xs">
+                <thead className="border-b border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th className="w-[28%] px-3 py-3 xl:px-4">Program &amp; Mitra</th>
+                    <th className="w-[20%] px-3 py-3 xl:px-4">Periode</th>
+                    <th className="w-[18%] px-3 py-3 xl:px-4">Pendaftar / Target</th>
+                    <th className="w-[19%] px-3 py-3 xl:px-4">Progres Kuota</th>
+                    <th className="w-[15%] px-3 py-3 xl:px-4">Status</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Review Dialog */}
-      {selectedProg && (
-        <Modal
-          isOpen={!!selectedProg}
-          onClose={() => setSelectedProg(null)}
-          title={`Peninjauan Proposal: ${selectedProg.title}`}
-          subtitle={`Diajukan oleh ${selectedProg.partnerName} · Tanggal ${selectedProg.createdAt}`}
-          maxWidth="3xl"
-        >
-          <div className="space-y-5 text-xs">
-            {/* Quick Summary Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
-              <div>
-                <span className="text-slate-400 block text-[11px]">Kategori</span>
-                <span className="font-semibold text-slate-900">{selectedProg.category}</span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[11px]">Format Kegiatan</span>
-                <span className="font-semibold text-slate-900 uppercase">{selectedProg.format}</span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[11px]">Target Relawan</span>
-                <span className="font-semibold text-slate-900 font-mono tabular-nums">{selectedProg.targetQuota} Orang</span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[11px]">Batas Pendaftaran</span>
-                <span className="font-semibold text-rose-600">{selectedProg.deadline}</span>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="space-y-1">
-              <span className="font-bold text-slate-900">Deskripsi &amp; Konsep Program:</span>
-              <p className="p-3 bg-white border border-slate-200 rounded-lg text-slate-700 leading-relaxed">
-                {selectedProg.description}
-              </p>
-            </div>
-
-            {/* Schedule & Requirements */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1">
-                <span className="font-bold text-slate-900">Jadwal &amp; Lokasi:</span>
-                <p className="text-slate-600">{selectedProg.schedule}</p>
-                <p className="text-slate-500 text-[11px]">{selectedProg.address || selectedProg.city || 'Online'}</p>
-              </div>
-
-              <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-1">
-                <span className="font-bold text-slate-900">PIC Penanggung Jawab:</span>
-                <p className="text-slate-600 font-medium">{selectedProg.picName}</p>
-                <p className="text-slate-500 text-[11px]">{selectedProg.picContact}</p>
-              </div>
-            </div>
-
-            {/* Review Notes Input */}
-            <div className="space-y-1.5 pt-2 border-t border-slate-100">
-              <label className="block font-bold text-slate-900">
-                Catatan Reviewer PSA untuk Mitra:
-              </label>
-              <textarea
-                rows={2}
-                value={reviewNotes}
-                onChange={(e) => setReviewNotes(e.target.value)}
-                placeholder="Berikan instruksi revisi atau apresiasi persetujuan..."
-                className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={() => setSelectedProg(null)}
-                className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-900"
-              >
-                Batal
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDecision('rejected')}
-                className="px-3.5 py-2 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1.5"
-              >
-                <XCircle size={14} />
-                <span>Tolak Proposal</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDecision('revision_required')}
-                className="px-3.5 py-2 text-xs font-semibold text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg flex items-center gap-1.5"
-              >
-                <RotateCcw size={14} />
-                <span>Minta Revisi</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDecision('approved')}
-                className="px-5 py-2 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs flex items-center gap-1.5"
-              >
-                <CheckCircle2 size={14} />
-                <span>Setujui &amp; Publikasikan Program</span>
-              </button>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {programs.map(program => {
+                    const progress = program.targetQuota > 0
+                      ? Math.min(100, Math.round((program.enrolledCount / program.targetQuota) * 100))
+                      : 0;
+                    return (
+                      <tr key={program.id} className="hover:bg-slate-50">
+                        <td className="break-words px-3 py-3.5 xl:px-4">
+                          <p className="font-bold text-slate-900">{program.title}</p>
+                          <p className="mt-0.5 text-[11px] text-slate-500">{program.partnerName}</p>
+                        </td>
+                        <td className="break-words px-3 py-3.5 text-slate-600 xl:px-4">
+                          {program.startDate} – {program.endDate}
+                        </td>
+                        <td className="break-words px-3 py-3.5 font-mono text-slate-700 xl:px-4">
+                          {numberFormatter.format(program.enrolledCount)} / {numberFormatter.format(program.targetQuota)}
+                        </td>
+                        <td className="px-3 py-3.5 xl:px-4">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"
+                              role="progressbar"
+                              aria-label={`Progres kuota ${program.title}`}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                              aria-valuenow={progress}
+                            >
+                              <div
+                                className={`h-full rounded-full ${progress >= 100 ? 'bg-emerald-500' : 'bg-blue-500'}`}
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                            <span className="w-9 text-right font-mono text-slate-600">{progress}%</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-3.5 xl:px-4">
+                          <div className="flex flex-col items-start gap-1.5">
+                            <StatusBadge status={program.proposalStatus} size="sm" />
+                            <StatusBadge status={program.publishedStatus} size="sm" />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
-        </Modal>
-      )}
+        )}
+      </section>
     </div>
   );
 };

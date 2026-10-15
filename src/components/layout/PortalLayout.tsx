@@ -8,8 +8,8 @@ import {
   UserCheck,
   FolderGit2,
   BarChart3,
-  History,
   LayoutDashboard,
+  Gauge,
   Search,
   Bell,
   Plus,
@@ -91,12 +91,11 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
     ];
   } else if (role === 'admin') {
     navItems = [
-      { id: 'admin-dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'admin-partnerships', label: 'Verifikasi Mitra', icon: Building2, badge: pendingPartnerships > 0 ? `${pendingPartnerships}` : undefined },
-      { id: 'admin-proposals', label: 'Review Proposal', icon: FolderGit2, badge: pendingProposals > 0 ? `${pendingProposals}` : undefined },
-      { id: 'admin-applications', label: 'Seleksi Relawan', icon: Users },
-      { id: 'admin-analytics', label: 'Analitik Wilayah', icon: BarChart3 },
-      { id: 'admin-audit', label: 'Audit Trail', icon: History },
+      { id: 'admin-overview', label: 'Overview', icon: Gauge },
+      { id: 'admin-partnerships', label: 'Mitra', icon: Building2, badge: pendingPartnerships > 0 ? `${pendingPartnerships}` : undefined },
+      { id: 'admin-proposals', label: 'Program', icon: FolderGit2, badge: pendingProposals > 0 ? `${pendingProposals}` : undefined },
+      { id: 'admin-applications', label: 'Peserta', icon: Users },
+      { id: 'admin-analytics', label: 'Analytics', icon: BarChart3 },
     ];
   }
 
@@ -198,8 +197,10 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <Icon size={20} className="shrink-0" />
-                <span className="rail-label truncate flex-1 flex items-center justify-between">
+                <span className="rail-icon-slot">
+                  <Icon size={20} className="h-6 w-6 shrink-0" />
+                </span>
+                <span className="rail-label truncate flex-1 items-center justify-between">
                   <span>{item.label}</span>
                   {item.badge && (
                     <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E85D75] text-white">
@@ -223,7 +224,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               className="rail-link text-slate-300 hover:text-white"
               title="Kunjungi Web Publik"
             >
-              <Home size={18} className="shrink-0" />
+              <span className="rail-icon-slot">
+                <Home size={18} className="h-6 w-6 shrink-0" />
+              </span>
               <span className="rail-label text-xs">Web Publik</span>
             </button>
 
@@ -237,7 +240,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               className="rail-link text-[#E85D75] hover:bg-[#E85D75]/20"
               title="Keluar"
             >
-              <LogOut size={18} className="shrink-0" />
+              <span className="rail-icon-slot">
+                <LogOut size={18} className="h-6 w-6 shrink-0" />
+              </span>
               <span className="rail-label text-xs font-bold text-[#E85D75]">Keluar</span>
             </button>
           </div>
