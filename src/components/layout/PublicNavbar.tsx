@@ -10,6 +10,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import psaLogo from '../../assets/images/2D PSA LOGO.png';
 
 interface PublicNavbarProps {
   currentTab: string;
@@ -53,7 +54,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               className="flex items-center gap-2.5 text-left group"
             >
               <div className="w-9 h-9 rounded-xl bg-[#0B2238] text-white flex items-center justify-center font-bold text-lg shadow-xs group-hover:bg-[#5C80B6] transition-colors">
-                PSA
+                <img src={psaLogo} alt="Logo PSA" className="h-full w-full object-contain" />
               </div>
               <div>
                 <span className="text-lg font-bold tracking-tight text-[#0F172A] whitespace-nowrap block leading-tight">

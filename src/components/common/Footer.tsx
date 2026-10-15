@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mail, Phone, MapPin, ExternalLink, ShieldCheck } from 'lucide-react';
+import psaLogo from '../../assets/images/2D PSA LOGO.png';
 
 interface FooterProps {
   onNavigate: (tab: string) => void;
@@ -15,7 +16,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAuth }) => {
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-[#5C80B6] text-white flex items-center justify-center font-bold text-base">
-                PSA
+                <img src={psaLogo} alt="Logo PSA" className="h-full w-full object-contain" />
               </div>
               <span className="text-lg font-bold text-white tracking-tight">
                 PSA Partnership Platform

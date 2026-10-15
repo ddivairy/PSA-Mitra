@@ -16,6 +16,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import psaLogo from '../../assets/images/2D PSA LOGO.png';
 
 interface PortalNavItem {
   id: string;
@@ -172,7 +173,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
             if (event.key === 'Enter' || event.key === ' ') setRailExpanded(expanded => !expanded);
           }}
         >
-          <span className="brand-mark shrink-0" aria-hidden="true">✦</span>
+          <img src={psaLogo} alt="Logo PSA" className="h-[34px] w-[34px] shrink-0 object-contain" />
           <div className="flex items-center justify-between flex-1 pr-3 overflow-hidden">
             <span className="brand-name font-black tracking-wider text-sm">WORKSPACE</span>
             <ChevronRight size={15} className={`brand-name text-slate-400 transition-transform duration-200 ${railExpanded ? 'rotate-180' : ''}`} />
