@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { 
   Users, 
@@ -12,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole } from '../../types';
-import psaLogo from '../../assets/images/2D PSA LOGO.png';
+const psaLogo = '/images/2D PSA LOGO.png';
 
 interface NavbarProps {
   currentTab: string;

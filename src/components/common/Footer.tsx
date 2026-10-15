@@ -1,6 +1,8 @@
+'use client';
+
 import React from 'react';
 import { Mail, Phone, MapPin, ExternalLink, ShieldCheck } from 'lucide-react';
-import psaLogo from '../../assets/images/2D PSA LOGO.png';
+const psaLogo = '/images/2D PSA LOGO.png';
 
 interface FooterProps {
   onNavigate: (tab: string) => void;

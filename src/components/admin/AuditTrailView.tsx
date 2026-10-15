@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { ShieldCheck, Search, Filter, History, Clock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';

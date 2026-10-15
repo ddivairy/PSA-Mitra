@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Program, ProgramCategory, ProgramFormat } from '../../types';
 import { useApp } from '../../context/AppContext';
@@ -46,7 +48,7 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
   // Step 3: PIC & Resources
   const [picName, setPicName] = useState(partnerOrg ? partnerOrg.picName : '');
   const [picContact, setPicContact] = useState(partnerOrg ? `${partnerOrg.picPhone} / ${partnerOrg.picEmail}` : '');
-  const [selectedImage, setSelectedImage] = useState('/src/assets/images/program_youth_mentoring_1791874040738.jpg');
+  const [selectedImage, setSelectedImage] = useState('/images/program_youth_mentoring_1791874040738.jpg');
 
   const availableCities = INDONESIA_REGIONS.find(r => r.province === province)?.cities || [];
 
@@ -419,30 +421,30 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div 
-                    onClick={() => setSelectedImage('/src/assets/images/program_youth_mentoring_1791874040738.jpg')}
+                    onClick={() => setSelectedImage('/images/program_youth_mentoring_1791874040738.jpg')}
                     className={`rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
                       selectedImage.includes('youth') ? 'border-blue-600 ring-2 ring-blue-200' : 'border-slate-200'
                     }`}
                   >
-                    <img src="/src/assets/images/program_youth_mentoring_1791874040738.jpg" alt="Edukasi" className="w-full h-24 object-cover" />
+                    <img src="/images/program_youth_mentoring_1791874040738.jpg" alt="Edukasi" className="w-full h-24 object-cover" />
                     <p className="p-1.5 text-[11px] font-medium text-slate-700 text-center">Edukasi &amp; Anak</p>
                   </div>
                   <div 
-                    onClick={() => setSelectedImage('/src/assets/images/program_mangrove_restoration_1791874041219.jpg')}
+                    onClick={() => setSelectedImage('/images/program_mangrove_restoration_1791874041219.jpg')}
                     className={`rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
                       selectedImage.includes('mangrove') ? 'border-blue-600 ring-2 ring-blue-200' : 'border-slate-200'
                     }`}
                   >
-                    <img src="/src/assets/images/program_mangrove_restoration_1791874041219.jpg" alt="Lingkungan" className="w-full h-24 object-cover" />
+                    <img src="/images/program_mangrove_restoration_1791874041219.jpg" alt="Lingkungan" className="w-full h-24 object-cover" />
                     <p className="p-1.5 text-[11px] font-medium text-slate-700 text-center">Lingkungan Alam</p>
                   </div>
                   <div 
-                    onClick={() => setSelectedImage('/src/assets/images/hero_volunteer_community_1791874040463.jpg')}
+                    onClick={() => setSelectedImage('/images/hero_volunteer_community_1791874040463.jpg')}
                     className={`rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
                       selectedImage.includes('community') ? 'border-blue-600 ring-2 ring-blue-200' : 'border-slate-200'
                     }`}
                   >
-                    <img src="/src/assets/images/hero_volunteer_community_1791874040463.jpg" alt="Sosial" className="w-full h-24 object-cover" />
+                    <img src="/images/hero_volunteer_community_1791874040463.jpg" alt="Sosial" className="w-full h-24 object-cover" />
                     <p className="p-1.5 text-[11px] font-medium text-slate-700 text-center">Pemberdayaan Warga</p>
                   </div>
                 </div>

@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Building2, FolderGit2, UserRoundCheck, Users } from 'lucide-react';
 import { useApp } from '../../context/AppContext';

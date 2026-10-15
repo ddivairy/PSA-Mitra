@@ -1,3 +1,5 @@
+'use client';
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   User,
@@ -74,69 +76,80 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [role, setRoleState] = useState<UserRole>('public');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const [users, setUsers] = useState<User[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_users`);
-    return saved ? JSON.parse(saved) : INITIAL_USERS;
-  });
+  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
+  const [volunteerProfile, setVolunteerProfile] = useState<VolunteerProfile>(INITIAL_VOLUNTEER_PROFILE);
+  const [partners, setPartners] = useState<PartnerOrganization[]>(INITIAL_PARTNERS);
+  const [programs, setPrograms] = useState<Program[]>(INITIAL_PROGRAMS);
+  const [applications, setApplications] = useState<VolunteerApplication[]>(INITIAL_APPLICATIONS);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  const [volunteerProfile, setVolunteerProfile] = useState<VolunteerProfile>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_volProfile`);
-    return saved ? JSON.parse(saved) : INITIAL_VOLUNTEER_PROFILE;
-  });
-
-  const [partners, setPartners] = useState<PartnerOrganization[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_partners`);
-    return saved ? JSON.parse(saved) : INITIAL_PARTNERS;
-  });
-
-  const [programs, setPrograms] = useState<Program[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_programs`);
-    return saved ? JSON.parse(saved) : INITIAL_PROGRAMS;
-  });
-
-  const [applications, setApplications] = useState<VolunteerApplication[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_apps`);
-    return saved ? JSON.parse(saved) : INITIAL_APPLICATIONS;
-  });
-
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_logs`);
-    return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
-  });
-
-  const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_notifs`);
-    return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
-  });
-
-  // Save to localStorage
+  // Load from localStorage on client mount
   useEffect(() => {
+    try {
+      const savedUsers = localStorage.getItem(`${STORAGE_KEY}_users`);
+      if (savedUsers) setUsers(JSON.parse(savedUsers));
+
+      const savedVol = localStorage.getItem(`${STORAGE_KEY}_volProfile`);
+      if (savedVol) setVolunteerProfile(JSON.parse(savedVol));
+
+      const savedPartners = localStorage.getItem(`${STORAGE_KEY}_partners`);
+      if (savedPartners) setPartners(JSON.parse(savedPartners));
+
+      const savedPrograms = localStorage.getItem(`${STORAGE_KEY}_programs`);
+      if (savedPrograms) setPrograms(JSON.parse(savedPrograms));
+
+      const savedApps = localStorage.getItem(`${STORAGE_KEY}_apps`);
+      if (savedApps) setApplications(JSON.parse(savedApps));
+
+      const savedLogs = localStorage.getItem(`${STORAGE_KEY}_logs`);
+      if (savedLogs) setAuditLogs(JSON.parse(savedLogs));
+
+      const savedNotifs = localStorage.getItem(`${STORAGE_KEY}_notifs`);
+      if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
+    } catch (e) {
+      console.error('Failed to load saved state from localStorage:', e);
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Save to localStorage only after initial client load is complete
+  useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(users));
-  }, [users]);
+  }, [users, isLoaded]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem(`${STORAGE_KEY}_volProfile`, JSON.stringify(volunteerProfile));
-  }, [volunteerProfile]);
+  }, [volunteerProfile, isLoaded]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem(`${STORAGE_KEY}_partners`, JSON.stringify(partners));
-  }, [partners]);
+  }, [partners, isLoaded]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem(`${STORAGE_KEY}_programs`, JSON.stringify(programs));
-  }, [programs]);
+  }, [programs, isLoaded]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem(`${STORAGE_KEY}_apps`, JSON.stringify(applications));
-  }, [applications]);
+  }, [applications, isLoaded]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem(`${STORAGE_KEY}_logs`, JSON.stringify(auditLogs));
-  }, [auditLogs]);
+  }, [auditLogs, isLoaded]);
 
   useEffect(() => {
+    if (!isLoaded) return;
     localStorage.setItem(`${STORAGE_KEY}_notifs`, JSON.stringify(notifications));
-  }, [notifications]);
+  }, [notifications, isLoaded]);
 
   // Derived current user
   const currentUser = users.find(u => u.id === currentUserId) || null;

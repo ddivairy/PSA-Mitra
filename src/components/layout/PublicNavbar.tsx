@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useState } from 'react';
 import { 
   Menu, 
@@ -9,7 +11,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import psaLogo from '../../assets/images/2D PSA LOGO.png';
+const psaLogo = '/images/2D PSA LOGO.png';
 
 interface PublicNavbarProps {
   currentTab: string;

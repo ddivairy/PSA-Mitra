@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Program } from '../../types';
 import { useApp } from '../../context/AppContext';

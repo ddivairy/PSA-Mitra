@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Users, 
@@ -16,7 +18,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import psaLogo from '../../assets/images/2D PSA LOGO.png';
+const psaLogo = '/images/2D PSA LOGO.png';
 
 interface PortalNavItem {
   id: string;

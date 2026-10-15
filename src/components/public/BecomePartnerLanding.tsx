@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { 
   Building2, 
@@ -100,7 +102,7 @@ export const BecomePartnerLanding: React.FC<BecomePartnerLandingProps> = ({
             <div className="lg:col-span-5">
               <div className="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 aspect-[4/3] bg-slate-100">
                 <img
-                  src="/src/assets/images/partner_collaboration_handshake_1791874040258.jpg"
+                  src="/images/partner_collaboration_handshake_1791874040258.jpg"
                   alt="Pertemuan strategis kemitraan PSA dan organisasi mitra"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"

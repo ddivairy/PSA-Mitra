@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo, useState } from 'react';
 import { Bell, CheckCheck, History, Search, ShieldCheck, Users } from 'lucide-react';
 import { useApp } from '../../context/AppContext';

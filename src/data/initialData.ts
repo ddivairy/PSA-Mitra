@@ -228,7 +228,7 @@ export const INITIAL_PROGRAMS: Program[] = [
     picContact: '081398765432 / csr@lestarihijau.id',
     proposalStatus: 'approved',
     publishedStatus: 'published',
-    image: '/src/assets/images/program_mangrove_restoration_1791874041219.jpg',
+    image: '/images/program_mangrove_restoration_1791874041219.jpg',
     createdAt: '2026-02-20',
   },
   {
@@ -265,7 +265,7 @@ export const INITIAL_PROGRAMS: Program[] = [
     picContact: '081122334455 / program@lenteraedukasi.org',
     proposalStatus: 'approved',
     publishedStatus: 'published',
-    image: '/src/assets/images/program_youth_mentoring_1791874040738.jpg',
+    image: '/images/program_youth_mentoring_1791874040738.jpg',
     createdAt: '2026-03-04',
   },
   {
@@ -298,7 +298,7 @@ export const INITIAL_PROGRAMS: Program[] = [
     picContact: '081398765432',
     proposalStatus: 'approved',
     publishedStatus: 'published',
-    image: '/src/assets/images/hero_volunteer_community_1791874040463.jpg',
+    image: '/images/hero_volunteer_community_1791874040463.jpg',
     createdAt: '2026-03-06',
   },
   {
@@ -329,7 +329,7 @@ export const INITIAL_PROGRAMS: Program[] = [
     picContact: '081122334455',
     proposalStatus: 'approved',
     publishedStatus: 'published',
-    image: '/src/assets/images/partner_collaboration_handshake_1791874040258.jpg',
+    image: '/images/partner_collaboration_handshake_1791874040258.jpg',
     createdAt: '2026-03-10',
   },
 ];

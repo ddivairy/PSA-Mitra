@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { 
   ArrowRight, 
@@ -112,7 +114,7 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
             <div className="lg:col-span-5">
               <div className="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 aspect-[4/3] lg:aspect-[16/11] bg-slate-100">
                 <img
-                  src="/src/assets/images/hero_volunteer_community_1791874040463.jpg"
+                  src="/images/hero_volunteer_community_1791874040463.jpg"
                   alt="Relawan PSA bergotong royong dalam inisiatif pembangunan sosial desa"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
