@@ -12,14 +12,13 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Program } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
-import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
-import { FeatureHighlightsGrid, FeatureHighlightItem } from '../dashboard/FeatureHighlightsGrid';
 import { InteractiveCalendarWidget } from '../dashboard/InteractiveCalendarWidget';
 import { AnalyticsOverviewWidget, AnalyticsGaugeItem } from '../dashboard/AnalyticsOverviewWidget';
 import { NotificationsPanelWidget, NoticeItem } from '../dashboard/NotificationsPanelWidget';
 import { AssignmentsTrackerWidget, AssignmentProgressItem } from '../dashboard/AssignmentsTrackerWidget';
 import { TodayTasksWidget, TodayTaskItem } from '../dashboard/TodayTasksWidget';
 import { HighlightActionCard } from '../dashboard/HighlightActionCard';
+import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
 
 interface VolunteerDashboardProps {
   onNavigate: (tab: string) => void;
@@ -57,33 +56,6 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
     const matchCity = p.city === volunteerProfile.city;
     return matchInterest || matchCity;
   }).slice(0, 2);
-
-  const featureItems: FeatureHighlightItem[] = [
-    {
-      id: 'vf-1',
-      icon: '▦',
-      title: 'Eksplorasi Program',
-      description: 'Temukan program kerelawanan di bidang pendidikan, lingkungan, kesehatan, dan pemberdayaan.',
-      actionText: 'Jelajahi program',
-      onAction: () => onNavigate('public-programs'),
-    },
-    {
-      id: 'vf-2',
-      icon: '✎',
-      title: 'Profil & Portofolio',
-      description: 'Perbarui minat keahlian, sertifikat kerelawanan, dan riwayat pengalaman lapangan.',
-      actionText: 'Kelola profil',
-      onAction: () => onNavigate('vol-profile'),
-    },
-    {
-      id: 'vf-3',
-      icon: '◎',
-      title: 'Pantau Seleksi Aplikasi',
-      description: 'Lihat status evaluasi berkas, jadwal wawancara, dan surat penerimaan program secara real-time.',
-      actionText: 'Lihat aplikasi',
-      onAction: () => onNavigate('vol-applications'),
-    },
-  ];
 
   const volunteerTasks: TodayTaskItem[] = [
     {
@@ -189,9 +161,7 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
           </div>
         }
       />
-
       {/* 3 Modular Feature Highlights Grid (from style.html) */}
-      <FeatureHighlightsGrid items={featureItems} />
 
       {/* Main 2-Column Dashboard Grid */}
       <div className="dashboard-grid">

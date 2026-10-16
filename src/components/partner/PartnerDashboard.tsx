@@ -13,14 +13,13 @@ import {
 import { useApp } from '../../context/AppContext';
 import { StatusBadge } from '../common/StatusBadge';
 import { CreateProposalModal } from './CreateProposalModal';
-import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
-import { FeatureHighlightsGrid, FeatureHighlightItem } from '../dashboard/FeatureHighlightsGrid';
 import { InteractiveCalendarWidget } from '../dashboard/InteractiveCalendarWidget';
 import { AnalyticsOverviewWidget, AnalyticsGaugeItem } from '../dashboard/AnalyticsOverviewWidget';
 import { NotificationsPanelWidget, NoticeItem } from '../dashboard/NotificationsPanelWidget';
 import { AssignmentsTrackerWidget, AssignmentProgressItem } from '../dashboard/AssignmentsTrackerWidget';
 import { TodayTasksWidget, TodayTaskItem } from '../dashboard/TodayTasksWidget';
 import { HighlightActionCard } from '../dashboard/HighlightActionCard';
+import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
 
 interface PartnerDashboardProps {
   onNavigate: (tab: string) => void;
@@ -36,33 +35,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
   const orgParticipants = applications.filter(a => orgProgramIds.includes(a.programId));
 
   const isApprovedPartner = currentOrg?.status === 'approved';
-
-  const featureItems: FeatureHighlightItem[] = [
-    {
-      id: 'pf-1',
-      icon: '▦',
-      title: 'Inisiasi Program Baru',
-      description: 'Ajukan proposal program sosial, tentukan kriteria relawan, dan rancang linimasa kegiatan.',
-      actionText: 'Ajukan program',
-      onAction: () => isApprovedPartner ? setIsProposalModalOpen(true) : onNavigate('part-organization'),
-    },
-    {
-      id: 'pf-2',
-      icon: '✎',
-      title: 'Kelola Berkas & MoA',
-      description: 'Pastikan profil organisasi, surat permohonan kerjasama, dan kontak PIC selalu mutakhir.',
-      actionText: 'Perbarui profil',
-      onAction: () => onNavigate('part-organization'),
-    },
-    {
-      id: 'pf-3',
-      icon: '◎',
-      title: 'Data & Seleksi Relawan',
-      description: 'Pantau pelamar yang mendaftar pada program Anda, terima calon relawan, dan unduh rekap data.',
-      actionText: 'Daftar relawan',
-      onAction: () => onNavigate('part-participants'),
-    },
-  ];
 
   const partnerTasks: TodayTaskItem[] = [
     {
@@ -170,7 +142,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
           </div>
         }
       />
-
       {/* Partnership Status Alert Banner */}
       {currentOrg && (
         <div>
@@ -186,12 +157,12 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
               <StatusBadge status="approved" size="sm" />
             </div>
           ) : (
-            <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl flex items-center justify-between gap-4">
+            <div className="p-4 bg-[#5C80B6]/5 border border-[#5C80B6]/20 rounded-2xl flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <Clock size={18} className="text-amber-600 shrink-0 animate-pulse" />
+                <Clock size={18} className="text-[#5C80B6] shrink-0" />
                 <div>
-                  <p className="text-xs font-bold text-amber-900">Pengajuan Kemitraan Dalam Tahap Review</p>
-                  <p className="text-xs text-amber-700">Tim admin PSA sedang memeriksa kelengkapan dokumen organisasi Anda (SLA estimasi 1-2 hari kerja).</p>
+                  <p className="text-xs font-bold text-[#0B2238]">Pengajuan Kemitraan Dalam Tahap Review</p>
+                  <p className="text-xs text-[#5C80B6]">Tim admin PSA sedang memeriksa kelengkapan dokumen organisasi Anda (SLA estimasi 1-2 hari kerja).</p>
                 </div>
               </div>
               <StatusBadge status={currentOrg.status} size="sm" />
@@ -201,7 +172,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
       )}
 
       {/* 3 Modular Feature Highlights Grid (from style.html) */}
-      <FeatureHighlightsGrid items={featureItems} />
 
       {/* Main 2-Column Dashboard Grid */}
       <div className="dashboard-grid">

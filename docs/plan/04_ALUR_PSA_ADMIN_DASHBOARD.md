@@ -26,7 +26,7 @@
          │          │
          │          └──► (Otomatis Dicatat ke Audit Trail)
          │
-         ├──► [ Menu: Review Proposal Program Kolaborasi ]
+         ├──► [ Menu: Program ]
          │          │
          │          ├──► [ Buka Modal Evaluasi Proposal ]
          │          │       ├── Cek Urgensi, Jadwal & Kualifikasi
@@ -39,16 +39,21 @@
          │          │
          │          └──► (Otomatis Dicatat ke Audit Trail)
          │
-         ├──► [ Menu: Pengawasan Seleksi Relawan Lintas Program ]
-         │          └── Tinjau Transparansi Keputusan Seleksi & Intervensi jika Diperlukan
+         ├──► [ Menu: Peserta ]
+         │          ├── Ringkasan data pendaftar relawan lintas program
+         │          └── Tinjau detail pendaftaran, domisili, gender, dan keputusan seleksi
          │
-         ├──► [ Menu: Analitik Wilayah & Gender Nasional ]
-         │          ├── Grafik Persebaran Program per Provinsi
-         │          ├── Grafik Peringkat Kota Asal Pendaftar Se-Indonesia
-         │          └── Demografi Gender Agregat Beretika Data
+         ├──► [ Menu: Analytics ]
+         │          ├── Statistik per mitra dan program
+         │          ├── Distribusi gender pendaftar
+         │          ├── Sebaran kota dan provinsi asal pendaftar
+         │          └── Ekspor laporan CSV
          │
-         └──► [ Menu: Audit Trail & Log Sistem ]
-                    └── Pelacakan Kronologis Seluruh Mutasi Status dan Aktor Pengambil Keputusan
+         └──► [ Menu: Users & Activity ]
+                    ├── Daftar akun dan role pengguna
+                    ├── Ringkasan cakupan hak akses per role
+                    ├── Notifikasi platform dan status baca
+                    └── Pelacakan kronologis aksi dan aktor melalui audit log
 ```
 
 ---
@@ -61,12 +66,13 @@ Konsol dirancang dengan pendekatan antarmuka enterprise berkeamanan tinggi:
   - Header: Logo PSA, judul *"PSA Admin Console"*, dan subtitle *"Pusat Tata Kelola & Approval"*.
   - Profil Admin: Nama admin aktif (*Dewi Anjani*), status peran *"PSA Admin"*, badge avatar beraksen emas/amber.
   - Menu Navigasi Pengawasan:
+    - *Overview* (Ringkasan statistik mitra, program, peserta, dan grafik status pendaftaran)
     - *Ikhtisar & Antrean* (Ikon Dashboard)
-    - *Verifikasi Kemitraan* (Ikon Gedung, dilengkapi badge counter jumlah pengajuan yang menunggu review)
-    - *Review Proposal Program* (Ikon Folder, dilengkapi badge counter proposal baru)
-    - *Seleksi Pendaftar Relawan* (Ikon Pengguna)
-    - *Analitik Wilayah & Gender* (Ikon Grafik Analitik)
-    - *Audit Trail & Log Sistem* (Ikon Histori Waktu)
+    - *Mitra* (Ikon Gedung, dilengkapi badge counter jumlah pengajuan yang menunggu review; mencakup verifikasi dokumen dan keputusan status kemitraan)
+    - *Program* (Ikon Folder, dilengkapi badge counter proposal baru, halaman review/approval proposal dan tracking progres pendaftar)
+    - *Peserta* (Ikon Pengguna; data pendaftar, distribusi gender, lokasi, dan detail seleksi)
+    - *Analytics* (Ikon Grafik Analitik; statistik mitra/program, gender, kota, provinsi, dan ekspor laporan CSV)
+    - *Users & Activity* (Ikon keamanan; akun/role, ringkasan hak akses, notifikasi, dan audit log)
   - Bagian Bawah: Tombol *"Kunjungi Website Publik"* dan *"Keluar (Logout)"*.
 - **Topbar Atas**:
   - Breadcrumb dinamis posisi menu admin.
@@ -76,6 +82,10 @@ Konsol dirancang dengan pendekatan antarmuka enterprise berkeamanan tinggi:
 ---
 
 ## 3. Rincian Antarmuka Fitur Admin
+
+### 3.0 Overview Platform
+
+Halaman ringkasan statistik ekosistem untuk membantu admin memantau jumlah mitra, program, peserta unik, dan pendaftaran. Overview menampilkan grafik doughnut distribusi pendaftar berdasarkan gender serta grafik kolom daerah asal pendaftar yang dibentuk otomatis dari data pendaftaran.
 
 ### 3.1 Dashboard Ikhtisar & Antrean Tindakan Mendesak
 

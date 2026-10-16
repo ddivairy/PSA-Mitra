@@ -17,16 +17,16 @@ export const HighlightActionCard: React.FC<HighlightActionCardProps> = ({
 }) => {
   return (
     <section className="card premium" aria-labelledby="premium-heading">
-      <div className="eyebrow text-xs font-extrabold tracking-widest text-[#bcd2ed] uppercase">
+      <div className="eyebrow text-[10px] font-semibold tracking-wide text-[#64748B] uppercase">
         {eyebrow}
       </div>
       <h2
         id="premium-heading"
-        className="text-xl font-extrabold text-white mt-2 mb-2 tracking-tight"
+        className="text-base font-semibold text-[#0F172A] mt-2 mb-2 tracking-tight"
       >
         {title}
       </h2>
-      <p className="text-xs text-[#d6e3f2] leading-relaxed max-w-xs mb-3">
+      <p className="text-xs text-[#64748B] leading-relaxed max-w-xs mb-3">
         {description}
       </p>
       <button

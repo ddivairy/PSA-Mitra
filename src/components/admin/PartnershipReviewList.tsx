@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  Building2, 
   Search, 
-  Filter, 
   FileText, 
   CheckCircle2, 
   RotateCcw, 
-  XCircle, 
-  Eye, 
-  ExternalLink,
-  ShieldCheck,
-  AlertCircle
+  XCircle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StatusBadge } from '../common/StatusBadge';
@@ -18,10 +12,11 @@ import { Modal } from '../common/Modal';
 import { PartnerOrganization } from '../../types';
 
 export const PartnershipReviewList: React.FC = () => {
-  const { partners, reviewPartnership } = useApp();
+  const { partners, reviewPartnership, updatePartnerDocumentVerification } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [activePartnerGroup, setActivePartnerGroup] = useState<'pending' | 'approved'>('pending');
   const [selectedOrg, setSelectedOrg] = useState<PartnerOrganization | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
 
@@ -36,11 +31,23 @@ export const PartnershipReviewList: React.FC = () => {
     const matchStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchSearch && matchStatus;
   });
+  const pendingPartners = filteredPartners.filter(partner => partner.status !== 'approved');
+  const approvedPartners = filteredPartners.filter(partner => partner.status === 'approved');
+  const visiblePartners = activePartnerGroup === 'approved' ? approvedPartners : pendingPartners;
 
   const handleDecision = (decision: 'approved' | 'revision_required' | 'rejected') => {
     if (!selectedOrg) return;
-    if (decision === 'revision_required' && !reviewNotes.trim()) {
-      alert('Mohon cantumkan rincian catatan revisi agar mitra memahami apa yang perlu diperbaiki.');
+    if ((decision === 'revision_required' || decision === 'rejected') && !reviewNotes.trim()) {
+      alert(decision === 'revision_required'
+        ? 'Mohon cantumkan rincian catatan revisi agar mitra memahami apa yang perlu diperbaiki.'
+        : 'Mohon cantumkan alasan penolakan agar mitra memahami keputusan PSA.');
+      return;
+    }
+    if (decision === 'approved' && (
+      selectedOrg.documents.length === 0 ||
+      selectedOrg.documents.some(doc => (doc.verificationStatus ?? (selectedOrg.status === 'approved' ? 'verified' : 'pending')) !== 'verified')
+    )) {
+      alert('Verifikasi semua dokumen mitra sebelum menyetujui kemitraan.');
       return;
     }
     reviewPartnership(selectedOrg.id, decision, reviewNotes.trim() || undefined);
@@ -48,16 +55,53 @@ export const PartnershipReviewList: React.FC = () => {
     setReviewNotes('');
   };
 
+  const handleDocumentVerification = (
+    documentId: string,
+    status: 'verified' | 'revision_required'
+  ) => {
+    if (!selectedOrg) return;
+    const document = selectedOrg.documents.find(item => item.id === documentId);
+    if (!document || !updatePartnerDocumentVerification(selectedOrg.id, documentId, status)) {
+      alert('Dokumen tidak ditemukan. Muat ulang halaman dan coba lagi.');
+      return;
+    }
+    setSelectedOrg(current => current ? {
+      ...current,
+      documents: current.documents.map(item => item.id === documentId
+        ? { ...item, verificationStatus: status }
+        : item),
+    } : current);
+  };
+
+  const pendingPartnersCount = partners.filter(partner => partner.status === 'submitted' || partner.status === 'under_review').length;
+  const approvedPartnersCount = partners.filter(partner => partner.status === 'approved').length;
+  const revisionPartnersCount = partners.filter(partner => partner.status === 'revision_required').length;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Peninjauan Pengajuan Kemitraan Organisasi</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Manajemen Mitra</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Verifikasi kelayakan badan usaha, yayasan, dan komunitas sebelum diizinkan membuka program kolaborasi.
+            Verifikasi dokumen, tinjau status kemitraan, dan tetapkan keputusan untuk setiap organisasi.
           </p>
         </div>
       </div>
+
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Ringkasan status mitra">
+        <article className="rounded-xl border border-amber-300 bg-amber-100 p-4">
+          <p className="text-xs font-medium text-amber-800">Menunggu verifikasi</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-amber-900">{pendingPartnersCount}</p>
+        </article>
+        <article className="rounded-xl border border-emerald-300 bg-emerald-100 p-4">
+          <p className="text-xs font-medium text-emerald-800">Mitra disetujui</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-900">{approvedPartnersCount}</p>
+        </article>
+        <article className="rounded-xl border border-orange-300 bg-orange-100 p-4">
+          <p className="text-xs font-medium text-orange-800">Perlu revisi</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-orange-900">{revisionPartnersCount}</p>
+        </article>
+      </section>
 
       {/* Filter and Search */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row gap-3">
@@ -74,67 +118,153 @@ export const PartnershipReviewList: React.FC = () => {
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => {
+            const nextStatus = e.target.value;
+            setStatusFilter(nextStatus);
+            if (nextStatus === 'approved') setActivePartnerGroup('approved');
+            else if (nextStatus !== 'all') setActivePartnerGroup('pending');
+          }}
           className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">Semua Status Review</option>
+          <option value="draft">Draf</option>
           <option value="submitted">Terkirim (Menunggu Review)</option>
           <option value="under_review">Sedang Ditinjau</option>
           <option value="revision_required">Perlu Revisi</option>
           <option value="approved">Disetujui (Mitra Resmi)</option>
           <option value="rejected">Ditolak</option>
+          <option value="withdrawn">Ditarik</option>
         </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-100 p-1" role="tablist" aria-label="Kelompok status mitra">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activePartnerGroup === 'pending'}
+          onClick={() => setActivePartnerGroup('pending')}
+          className={`rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
+            activePartnerGroup === 'pending' ? 'bg-white text-amber-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Pending / Belum disetujui <span className="ml-1 tabular-nums">({pendingPartners.length})</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activePartnerGroup === 'approved'}
+          onClick={() => setActivePartnerGroup('approved')}
+          className={`rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
+            activePartnerGroup === 'approved' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Sudah disetujui <span className="ml-1 tabular-nums">({approvedPartners.length})</span>
+        </button>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="divide-y divide-slate-100 xl:hidden">
+          {visiblePartners.length === 0 ? (
+            <div className="px-5 py-10 text-center text-xs text-slate-500">
+              Tidak ada mitra di kelompok ini yang sesuai filter.
+            </div>
+          ) : (
+            visiblePartners.map((org) => {
+              const verifiedDocuments = org.documents.filter(doc =>
+                (doc.verificationStatus ?? (org.status === 'approved' ? 'verified' : 'pending')) === 'verified'
+              ).length;
+              return (
+                <article key={org.id} className="space-y-3 p-4">
+                  <div className="min-w-0">
+                    <h3 className="break-words text-sm font-bold text-slate-900">{org.name}</h3>
+                    <p className="mt-0.5 break-words text-xs text-slate-500">{org.city}, {org.province}</p>
+                  </div>
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                    <div className="min-w-0">
+                      <dt className="text-slate-500">Bentuk / Sektor</dt>
+                      <dd className="mt-0.5 break-words font-medium capitalize text-slate-800">{org.type}</dd>
+                      <dd className="break-words text-[11px] text-slate-500">{org.sector}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-slate-500">PIC &amp; Kontak</dt>
+                      <dd className="mt-0.5 break-words font-medium text-slate-800">{org.picName}</dd>
+                      <dd className="break-all text-[11px] text-slate-500">{org.picEmail}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-500">Berkas</dt>
+                      <dd className="mt-0.5 font-mono text-slate-600">
+                        {verifiedDocuments}/{org.documents.length} valid
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-slate-500">Status</dt>
+                      <dd className="mt-1"><StatusBadge status={org.status} size="sm" /></dd>
+                    </div>
+                  </dl>
+                  <button
+                    onClick={() => {
+                      setSelectedOrg(org);
+                      setReviewNotes(org.reviewNotes || '');
+                    }}
+                    className="w-full rounded-md bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-800"
+                  >
+                    Tinjau Berkas
+                  </button>
+                </article>
+              );
+            })
+          )}
+        </div>
+        <div className="hidden xl:block">
+          <table className="w-full table-fixed text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px] tracking-wider">
               <tr>
-                <th className="px-5 py-3">Nama Organisasi</th>
-                <th className="px-5 py-3">Bentuk / Sektor</th>
-                <th className="px-5 py-3">PIC &amp; Kontak</th>
-                <th className="px-5 py-3">Berkas</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3 text-right">Tindakan</th>
+                <th className="w-[22%] px-3 py-3">Nama Organisasi</th>
+                <th className="w-[19%] px-3 py-3">Bentuk / Sektor</th>
+                <th className="w-[23%] px-3 py-3">PIC &amp; Kontak</th>
+                <th className="w-[10%] px-3 py-3">Berkas</th>
+                <th className="w-[14%] px-3 py-3">Status</th>
+                <th className="w-[12%] px-3 py-3 text-right">Tindakan</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredPartners.length === 0 ? (
+              {visiblePartners.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
-                    Tidak ada pengajuan yang sesuai filter.
+                    Tidak ada mitra di kelompok ini yang sesuai filter.
                   </td>
                 </tr>
               ) : (
-                filteredPartners.map((org) => (
+                visiblePartners.map((org) => (
                   <tr key={org.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3.5">
+                    <td className="break-words px-3 py-3.5">
                       <div className="font-bold text-slate-900">{org.name}</div>
-                      <div className="text-[11px] text-slate-400">{org.city}, {org.province}</div>
+                      <div className="break-words text-[11px] text-slate-400">{org.city}, {org.province}</div>
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="break-words px-3 py-3.5">
                       <div className="font-medium text-slate-800 capitalize">{org.type}</div>
-                      <div className="text-[11px] text-slate-500 line-clamp-1">{org.sector}</div>
+                      <div className="break-words text-[11px] text-slate-500">{org.sector}</div>
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="break-words px-3 py-3.5">
                       <div className="text-slate-800 font-medium">{org.picName}</div>
-                      <div className="text-[11px] text-slate-400">{org.picEmail}</div>
+                      <div className="break-all text-[11px] text-slate-400">{org.picEmail}</div>
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-slate-600">
-                      {org.documents.length} Dokumen
+                    <td className="break-words px-3 py-3.5 font-mono text-slate-600">
+                      {org.documents.filter(doc =>
+                        (doc.verificationStatus ?? (org.status === 'approved' ? 'verified' : 'pending')) === 'verified'
+                      ).length}/{org.documents.length} valid
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-3 py-3.5">
                       <StatusBadge status={org.status} size="sm" />
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-3 py-3.5 text-right">
                       <button
                         onClick={() => {
                           setSelectedOrg(org);
                           setReviewNotes(org.reviewNotes || '');
                         }}
-                        className="px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                        className="rounded-md bg-blue-50 px-2 py-1.5 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-800"
                       >
                         Tinjau Berkas
                       </button>
@@ -207,21 +337,59 @@ export const PartnershipReviewList: React.FC = () => {
             {/* Documents List */}
             <div className="space-y-2 pt-2 border-t border-slate-100">
               <h4 className="font-bold text-slate-900">
-                Dokumen Legalitas &amp; Surat Komitmen ({selectedOrg.documents.length}):
+              Verifikasi Dokumen Legalitas &amp; Surat Komitmen ({selectedOrg.documents.length}):
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {selectedOrg.documents.map((doc) => (
-                  <div key={doc.id} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2 truncate">
-                      <FileText size={16} className="text-blue-600 shrink-0" />
-                      <span className="font-semibold text-slate-800 truncate">{doc.name}</span>
+              {selectedOrg.documents.length === 0 ? (
+                <p className="col-span-full rounded-lg border border-dashed border-slate-300 p-4 text-center text-slate-500">
+                  Mitra belum mengunggah dokumen legalitas.
+                </p>
+              ) : selectedOrg.documents.map((doc) => {
+                const documentStatus = doc.verificationStatus ?? (selectedOrg.status === 'approved' ? 'verified' : 'pending');
+                return (
+                  <div key={doc.id} className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2 min-w-0">
+                        <FileText size={16} className="text-blue-600 shrink-0 mt-0.5" />
+                        <div className="min-w-0">
+                          <p className="font-semibold text-slate-800 break-words">{doc.name}</p>
+                          <p className="text-[10px] text-slate-500">{doc.type} · {doc.size} · Diunggah {doc.uploadedAt}</p>
+                        </div>
+                      </div>
+                      <span className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold ${
+                        documentStatus === 'verified'
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : documentStatus === 'revision_required'
+                            ? 'bg-orange-50 text-orange-700'
+                            : 'bg-amber-50 text-amber-700'
+                      }`}>
+                        {documentStatus === 'verified' ? 'Terverifikasi' : documentStatus === 'revision_required' ? 'Perlu revisi' : 'Belum diperiksa'}
+                      </span>
                     </div>
-                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono shrink-0">
-                      Terunggah ({doc.size})
-                    </span>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDocumentVerification(doc.id, 'revision_required')}
+                        className="rounded-md border border-orange-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-orange-700 hover:bg-orange-50"
+                      >
+                        Tandai perlu revisi
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDocumentVerification(doc.id, 'verified')}
+                        className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-50"
+                      >
+                        <CheckCircle2 size={13} />
+                        Tandai valid
+                      </button>
+                    </div>
                   </div>
-                ))}
+                );
+              })}
               </div>
+              <p className="text-[11px] text-slate-500">
+              Setujui kemitraan hanya setelah seluruh dokumen ditandai valid.
+              </p>
             </div>
 
             {/* Review Decision Notes Input */}

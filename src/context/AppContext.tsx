@@ -45,11 +45,17 @@ interface AppContextType {
 
   // Volunteer actions
   updateVolunteerProfile: (profile: Partial<VolunteerProfile>) => void;
-  applyToProgram: (programId: string, motivation: string, answers: Record<string, string>) => { success: boolean; message: string; applicationId?: string };
+  applyToProgram: (
+    programId: string,
+    motivation: string,
+    answers: Record<string, string>,
+    attachment?: VolunteerApplication['attachment']
+  ) => { success: boolean; message: string; applicationId?: string };
   withdrawApplication: (applicationId: string) => void;
 
   // Partner actions
   updatePartnerOrg: (orgId: string, data: Partial<PartnerOrganization>) => void;
+  updatePartnerDocumentVerification: (orgId: string, documentId: string, status: NonNullable<PartnerOrganization['documents'][number]['verificationStatus']>) => boolean;
   submitPartnershipApplication: (orgId: string) => void;
   resubmitPartnershipApplication: (orgId: string, updatedFields?: Partial<PartnerOrganization>) => void;
   createProgramProposal: (proposalData: Omit<Program, 'id' | 'createdAt' | 'proposalStatus' | 'publishedStatus' | 'enrolledCount'>) => { success: boolean; programId: string };
@@ -303,7 +309,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setVolunteerProfile(prev => ({ ...prev, ...updated }));
   };
 
-  const applyToProgram = (programId: string, motivation: string, answers: Record<string, string>) => {
+  const applyToProgram = (
+    programId: string,
+    motivation: string,
+    answers: Record<string, string>,
+    attachment?: VolunteerApplication['attachment']
+  ) => {
     const prog = programs.find(p => p.id === programId);
     if (!prog) return { success: false, message: 'Program tidak ditemukan.' };
 
@@ -332,8 +343,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       volunteerPhone: currentUser?.phone || '081234567890',
       volunteerGender: volunteerProfile.gender || 'male',
       volunteerCity: volunteerProfile.city || 'DKI Jakarta',
+      volunteerProvince: volunteerProfile.province || 'DKI Jakarta',
       motivation,
       answers,
+      attachment,
       status: 'submitted',
       submittedAt: new Date().toLocaleString('id-ID', {
         year: 'numeric',
@@ -390,6 +403,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updatePartnerOrg = (orgId: string, data: Partial<PartnerOrganization>) => {
     setPartners(prev => prev.map(org => org.id === orgId ? { ...org, ...data } : org));
+  };
+
+  const updatePartnerDocumentVerification = (
+    orgId: string,
+    documentId: string,
+    status: NonNullable<PartnerOrganization['documents'][number]['verificationStatus']>
+  ) => {
+    const organization = partners.find(org => org.id === orgId);
+    const document = organization?.documents.find(item => item.id === documentId);
+    if (!organization || !document) return false;
+
+    if (document.verificationStatus !== status) {
+      setPartners(prev => prev.map(org => org.id === orgId
+        ? {
+            ...org,
+            documents: org.documents.map(item => item.id === documentId
+              ? { ...item, verificationStatus: status }
+              : item),
+          }
+        : org
+      ));
+      addAuditLog(
+        `PARTNER_DOCUMENT_${status.toUpperCase()}`,
+        'partnership',
+        orgId,
+        `Status dokumen "${document.name}" diubah menjadi ${status}`
+      );
+    }
+    return true;
   };
 
   const submitPartnershipApplication = (orgId: string) => {
@@ -622,6 +664,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         withdrawApplication,
 
         updatePartnerOrg,
+        updatePartnerDocumentVerification,
         submitPartnershipApplication,
         resubmitPartnershipApplication,
         createProgramProposal,

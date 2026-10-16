@@ -217,40 +217,60 @@ export const PartnerParticipantsList: React.FC = () => {
           title={`Tinjau Pendaftar: ${reviewingApp.volunteerName}`}
           subtitle={`Program: ${reviewingApp.programTitle}`}
           maxWidth="2xl"
+          variant="pastel"
         >
-          <div className="space-y-5 text-xs">
+          <div className="space-y-5 text-sm">
             {/* Applicant details strip */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
-                <span className="text-slate-400 block text-[11px]">Email</span>
-                <span className="font-semibold text-slate-900">{reviewingApp.volunteerEmail}</span>
+                <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-slate-400">Email</span>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-4 font-semibold text-slate-800">{reviewingApp.volunteerEmail}</div>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">No. Telepon / WA</span>
-                <span className="font-semibold text-slate-900">{reviewingApp.volunteerPhone}</span>
+                <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-slate-400">No. Telepon / WA</span>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-4 font-semibold text-slate-800">{reviewingApp.volunteerPhone}</div>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">Kota Domisili</span>
-                <span className="font-semibold text-slate-900">{reviewingApp.volunteerCity}</span>
+                <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-slate-400">Kota Domisili</span>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-4 font-semibold text-slate-800">{reviewingApp.volunteerCity}</div>
               </div>
             </div>
 
+            {reviewingApp.attachment && (
+              <div className="space-y-2">
+                <span className="block text-[11px] font-medium uppercase tracking-wider text-slate-400">Lampiran Pendukung</span>
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-4">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-slate-800">{reviewingApp.attachment.name}</p>
+                    <p className="mt-1 text-xs text-slate-400">{Math.ceil(reviewingApp.attachment.size / 1024)} KB</p>
+                  </div>
+                  <a
+                    href={reviewingApp.attachment.dataUrl}
+                    download={reviewingApp.attachment.name}
+                    className="rounded-lg bg-[#0B2238] px-3 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                  >
+                    Unduh lampiran
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* Motivation statement */}
-            <div className="space-y-1">
-              <span className="font-bold text-slate-800">Motivasi &amp; Pernyataan Pendaftar:</span>
-              <p className="p-3 bg-white border border-slate-200 rounded-lg text-slate-700 italic leading-relaxed">
+            <div className="space-y-2">
+              <span className="block text-[11px] font-medium uppercase tracking-wider text-slate-400">Motivasi &amp; Pernyataan Pendaftar</span>
+              <p className="rounded-2xl border border-slate-200/80 bg-white p-4 leading-relaxed text-slate-700">
                 "{reviewingApp.motivation}"
               </p>
             </div>
 
             {/* Additional answers if any */}
             {reviewingApp.answers && Object.keys(reviewingApp.answers).length > 0 && (
-              <div className="space-y-1">
-                <span className="font-bold text-slate-800">Jawaban Tambahan:</span>
-                <div className="bg-white border border-slate-200 rounded-lg p-3 space-y-1">
+              <div className="space-y-2">
+                <span className="block text-[11px] font-medium uppercase tracking-wider text-slate-400">Jawaban Tambahan</span>
+                <div className="space-y-3 rounded-2xl border border-slate-200/80 bg-white p-4">
                   {Object.entries(reviewingApp.answers).map(([q, a]) => (
-                    <div key={q}>
-                      <span className="text-slate-500 font-medium">{q}: </span>
+                    <div key={q} className="border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                      <span className="font-medium text-slate-500">{q}: </span>
                       <span className="text-slate-800">{a}</span>
                     </div>
                   ))}
@@ -259,8 +279,8 @@ export const PartnerParticipantsList: React.FC = () => {
             )}
 
             {/* Decision note input */}
-            <div className="space-y-1 pt-2 border-t border-slate-100">
-              <label className="block font-bold text-slate-800">
+            <div className="space-y-2 border-t border-slate-200/80 pt-4">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-slate-400">
                 Catatan Keputusan untuk Peserta (Opsional):
               </label>
               <textarea
@@ -268,16 +288,16 @@ export const PartnerParticipantsList: React.FC = () => {
                 value={decisionNotes}
                 onChange={(e) => setDecisionNotes(e.target.value)}
                 placeholder="Contoh: Selamat bergabung di tim lapangan / Jadwal briefing akan dikirimkan via WA grup..."
-                className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full rounded-2xl border border-slate-200/80 bg-white p-4 text-sm text-slate-700 outline-none transition focus:border-[#5C80B6] focus:ring-2 focus:ring-[#5C80B6]/20"
               />
             </div>
 
             {/* Decision action buttons */}
-            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-end gap-2.5">
+            <div className="flex flex-col-reverse gap-2 border-t border-slate-200/80 pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
               <button
                 type="button"
                 onClick={() => setReviewingApp(null)}
-                className="px-3.5 py-2 text-xs font-medium text-slate-600 hover:text-slate-900"
+                className="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:text-slate-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
               >
                 Tutup
               </button>
@@ -285,7 +305,7 @@ export const PartnerParticipantsList: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleDecision('rejected')}
-                className="px-3.5 py-2 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded-xl border border-rose-100 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-500"
               >
                 <XCircle size={14} />
                 <span>Tolak</span>
@@ -294,7 +314,7 @@ export const PartnerParticipantsList: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleDecision('waitlisted')}
-                className="px-3.5 py-2 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded-xl border border-purple-100 bg-purple-50 px-4 py-2.5 text-sm font-semibold text-purple-600 transition-colors hover:bg-purple-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500"
               >
                 <Clock size={14} />
                 <span>Daftar Tunggu</span>
@@ -303,7 +323,7 @@ export const PartnerParticipantsList: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleDecision('accepted')}
-                className="px-4 py-2 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded-xl bg-[#0B2238] px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5C80B6]"
               >
                 <CheckCircle2 size={14} />
                 <span>Terima Relawan</span>
