@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Users, 
   Building2, 
   ShieldCheck, 
   LogOut, 
@@ -45,17 +44,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
     }
   };
 
-  const navLinks = role === 'public' ? [
+  const navLinks = role === 'public' || role === 'volunteer' ? [
     { id: 'public-home', label: 'Beranda' },
     { id: 'public-about', label: 'Tentang PSA' },
     { id: 'public-programs', label: 'Program Kolaborasi' },
     { id: 'public-partners', label: 'Mitra Terdaftar' },
     { id: 'public-become-partner', label: 'Kemitraan Baru' },
-  ] : role === 'volunteer' ? [
-    { id: 'vol-dashboard', label: 'Ringkasan' },
-    { id: 'public-programs', label: 'Cari Program' },
-    { id: 'vol-applications', label: 'Aplikasi Saya' },
-    { id: 'vol-profile', label: 'Profil Relawan' },
   ] : role === 'partner' ? [
     { id: 'part-dashboard', label: 'Dashboard Mitra' },
     { id: 'part-programs', label: 'Program Saya' },
@@ -85,14 +79,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
               }`}
             >
               Publik
-            </button>
-            <button
-              onClick={() => { setRole('volunteer'); onNavigate('vol-dashboard'); }}
-              className={`px-2.5 py-0.5 rounded text-xs transition-colors whitespace-nowrap ${
-                role === 'volunteer' ? 'bg-[#5C80B6] text-white font-medium shadow-xs' : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              Relawan
             </button>
             <button
               onClick={() => { setRole('partner'); onNavigate('part-dashboard'); }}
@@ -139,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
           {/* Zone 1: Single text element wordmark */}
           <div className="flex items-center gap-3 shrink-0">
             <button 
-              onClick={() => onNavigate(role === 'public' ? 'public-home' : role === 'volunteer' ? 'vol-dashboard' : role === 'partner' ? 'part-dashboard' : 'admin-dashboard')}
+              onClick={() => onNavigate(role === 'public' ? 'public-home' : role === 'volunteer' ? 'public-programs' : role === 'partner' ? 'part-dashboard' : 'admin-dashboard')}
               className="flex items-center gap-2.5 text-left group"
             >
               <div className="w-9 h-9 rounded-xl bg-[#0B2238] text-white flex items-center justify-center font-bold text-lg shadow-xs group-hover:bg-[#5C80B6] transition-colors">

@@ -16,7 +16,6 @@ import {
 import { useApp } from '../../context/AppContext';
 import { INDONESIA_REGIONS } from '../../data/indonesiaRegions';
 import { OrgType, OrgDocument } from '../../types';
-import { StatusBadge } from '../common/StatusBadge';
 
 export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({ onComplete }) => {
   const { 
@@ -194,15 +193,11 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-slate-900">Profil &amp; Formulir Kemitraan Organisasi</h1>
-              {partnerOrg && <StatusBadge status={partnerOrg.status} size="sm" />}
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
               Kelengkapan legalitas dan identitas organisasi mitra untuk verifikasi kerja sama PSA.
             </p>
           </div>
-          <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 self-start sm:self-auto font-mono">
-            Langkah {step} dari 4
-          </span>
         </div>
 
         <div className="space-y-2">

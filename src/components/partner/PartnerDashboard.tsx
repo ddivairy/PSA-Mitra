@@ -15,10 +15,8 @@ import { StatusBadge } from '../common/StatusBadge';
 import { CreateProposalModal } from './CreateProposalModal';
 import { InteractiveCalendarWidget } from '../dashboard/InteractiveCalendarWidget';
 import { AnalyticsOverviewWidget, AnalyticsGaugeItem } from '../dashboard/AnalyticsOverviewWidget';
-import { NotificationsPanelWidget, NoticeItem } from '../dashboard/NotificationsPanelWidget';
 import { AssignmentsTrackerWidget, AssignmentProgressItem } from '../dashboard/AssignmentsTrackerWidget';
 import { TodayTasksWidget, TodayTaskItem } from '../dashboard/TodayTasksWidget';
-import { HighlightActionCard } from '../dashboard/HighlightActionCard';
 
 interface PartnerDashboardProps {
   onNavigate: (tab: string) => void;
@@ -95,21 +93,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
       label: 'Seleksi Terpenuhi',
       percentage: 68,
       isCoral: true,
-    },
-  ];
-
-  const partnerNotices: NoticeItem[] = [
-    {
-      id: 'pn-1',
-      title: 'Status Kemitraan: Aktif & Terverifikasi',
-      description: 'Organisasi Anda berhak mengajukan hingga 5 proposal program kolaborasi aktif.',
-      timeBadge: 'Hari ini',
-    },
-    {
-      id: 'pn-2',
-      title: '12 Relawan baru mendaftar hari ini',
-      description: 'Pelamar baru menunggu peninjauan pada dashboard data relawan.',
-      timeBadge: '2 jam',
     },
   ];
 
@@ -230,12 +213,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
 
         {/* Right Column (Stack) */}
         <div className="stack">
-          {/* Notifications Panel */}
-          <NotificationsPanelWidget
-            initialNotices={partnerNotices}
-            onNoticeClick={() => onNavigate('part-participants')}
-          />
-
           {/* Monthly Interactive Calendar */}
           <InteractiveCalendarWidget />
 
@@ -245,14 +222,6 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
             items={partnerGauges}
           />
 
-          {/* Premium Callout Card */}
-          <HighlightActionCard
-            eyebrow="LEBIH BANYAK DAMPAK"
-            title="Kolaborasi Berkelanjutan PSA"
-            description="Dapatkan akses prioritas ke ribuan relawan terverifikasi di 34 provinsi dengan proposal terstandarisasi."
-            buttonText="Pelajari Panduan Mitra"
-            onButtonClick={() => onNavigate('part-organization')}
-          />
         </div>
       </div>
 

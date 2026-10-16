@@ -5,6 +5,7 @@ import { PortalLayout } from './components/layout/PortalLayout';
 import { Footer } from './components/common/Footer';
 import { AuthModal } from './components/public/AuthModal';
 import { RoleSwitcherDock } from './components/common/RoleSwitcherDock';
+import { CreateProposalModal } from './components/partner/CreateProposalModal';
 
 // Public pages
 import { PublicLanding } from './components/public/PublicLanding';
@@ -14,9 +15,6 @@ import { PartnersDirectory } from './components/public/PartnersDirectory';
 import { BecomePartnerLanding } from './components/public/BecomePartnerLanding';
 
 // Volunteer pages
-import { VolunteerDashboard } from './components/volunteer/VolunteerDashboard';
-import { VolunteerProfileStepForm } from './components/volunteer/VolunteerProfileStepForm';
-import { VolunteerApplicationsList } from './components/volunteer/VolunteerApplicationsList';
 import { VolunteerApplyModal } from './components/volunteer/VolunteerApplyModal';
 
 // Partner pages
@@ -41,8 +39,7 @@ const MainAppContent: React.FC = () => {
   const { role, setRole, currentUser } = useApp();
 
   const portalPaths: Record<string, string> = {
-    'vol-dashboard': '/relawan/dashboard', 'vol-applications': '/relawan/aplikasi',
-    'vol-profile': '/relawan/profil', 'public-programs': '/relawan/program',
+    'public-programs': '/relawan/program',
     'part-dashboard': '/mitra/dashboard', 'part-programs': '/mitra/program',
     'part-participants': '/mitra/relawan', 'part-analytics': '/mitra/analitik',
     'part-organization': '/mitra/organisasi', 'admin-overview': '/admin/overview',
@@ -59,7 +56,7 @@ const MainAppContent: React.FC = () => {
 
   // Navigation tabs state
   const [currentPublicTab, setCurrentPublicTab] = useState<string>('public-home');
-  const [currentPortalTab, setCurrentPortalTab] = useState<string>(() => tabFromPath(window.location.pathname) || 'vol-dashboard');
+  const [currentPortalTab, setCurrentPortalTab] = useState<string>(() => tabFromPath(window.location.pathname) || 'public-programs');
   const navigatePortal = (tab: string) => {
     setCurrentPortalTab(tab);
     const path = portalPaths[tab];
@@ -88,17 +85,17 @@ const MainAppContent: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register_vol' | 'register_partner'>('login');
   const [applyingProgram, setApplyingProgram] = useState<Program | null>(null);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
   const [selectedProgramForDetail, setSelectedProgramForDetail] = useState<Program | null>(null);
 
   // Sync portal tab when role changes
   useEffect(() => {
-    if (role === 'public') {
+    if (role === 'public' || role === 'volunteer') {
       setIsViewingPublicSite(true);
+      if (role === 'volunteer') setCurrentPublicTab('public-programs');
     } else {
       setIsViewingPublicSite(false);
-      if (role === 'volunteer' && !currentPortalTab.startsWith('vol-') && currentPortalTab !== 'public-programs') {
-        navigatePortal('vol-dashboard');
-      } else if (role === 'partner' && !currentPortalTab.startsWith('part-')) {
+      if (role === 'partner' && !currentPortalTab.startsWith('part-')) {
         navigatePortal('part-dashboard');
       } else if (role === 'admin' && !currentPortalTab.startsWith('admin-')) {
         navigatePortal('admin-overview');
@@ -120,13 +117,12 @@ const MainAppContent: React.FC = () => {
   };
 
   const handleRoleChangedFromDock = (newRole: UserRole) => {
-    if (newRole === 'public') {
+    if (newRole === 'public' || newRole === 'volunteer') {
       setIsViewingPublicSite(true);
-      setCurrentPublicTab('public-home');
+      setCurrentPublicTab(newRole === 'volunteer' ? 'public-programs' : 'public-home');
     } else {
       setIsViewingPublicSite(false);
-      if (newRole === 'volunteer') navigatePortal('vol-dashboard');
-      else if (newRole === 'partner') navigatePortal('part-dashboard');
+      if (newRole === 'partner') navigatePortal('part-dashboard');
       else if (newRole === 'admin') navigatePortal('admin-overview');
     }
   };
@@ -200,9 +196,13 @@ const MainAppContent: React.FC = () => {
           onClose={() => setAuthModalOpen(false)}
           initialMode={authInitialMode}
           onSuccess={(newUserRole) => {
-            setIsViewingPublicSite(false);
-            if (newUserRole === 'volunteer') navigatePortal('vol-dashboard');
-            else if (newUserRole === 'partner') navigatePortal('part-dashboard');
+            if (newUserRole === 'volunteer') {
+              setIsViewingPublicSite(true);
+              setCurrentPublicTab('public-programs');
+            } else {
+              setIsViewingPublicSite(false);
+            }
+            if (newUserRole === 'partner') navigatePortal('part-dashboard');
             else if (newUserRole === 'admin') navigatePortal('admin-dashboard');
           }}
         />
@@ -214,8 +214,8 @@ const MainAppContent: React.FC = () => {
             onClose={() => setApplyingProgram(null)}
             onSuccess={() => {
               alert('Aplikasi pendaftaran berhasil dikirim!');
-              setIsViewingPublicSite(false);
-              navigatePortal('vol-applications');
+              setIsViewingPublicSite(true);
+              setCurrentPublicTab('public-programs');
             }}
           />
         )}
@@ -226,8 +226,8 @@ const MainAppContent: React.FC = () => {
     );
   }
 
-  // 2. AUTHENTICATED PORTAL WORKSPACE (Volunteer, Partner, or Admin)
-  // Has its own dedicated Left Sidebar + Breadcrumb Topbar + Workspace Canvas
+  // 2. AUTHENTICATED PORTAL WORKSPACE (Partner or Admin)
+  // Volunteers use the public site to browse and apply to programs.
   return (
     <PortalLayout
       currentTab={currentPortalTab}
@@ -239,42 +239,8 @@ const MainAppContent: React.FC = () => {
         setIsViewingPublicSite(true);
         setCurrentPublicTab('public-home');
       }}
+      onOpenQuickAction={() => setIsProposalModalOpen(true)}
     >
-      {/* VOLUNTEER PORTAL VIEWS */}
-      {role === 'volunteer' && (
-        <>
-          {currentPortalTab === 'vol-dashboard' && (
-            <VolunteerDashboard
-              onNavigate={navigatePortal}
-              onOpenApply={handleOpenApply}
-              onOpenDetail={(prog) => {
-                setSelectedProgramForDetail(prog);
-                navigatePortal('public-programs');
-              }}
-            />
-          )}
-          {currentPortalTab === 'vol-applications' && (
-            <div className="py-8 px-4 sm:px-6 lg:px-8">
-              <VolunteerApplicationsList onExplorePrograms={() => navigatePortal('public-programs')} />
-            </div>
-          )}
-          {currentPortalTab === 'vol-profile' && (
-            <div className="py-8 px-4 sm:px-6 lg:px-8">
-              <VolunteerProfileStepForm onComplete={() => navigatePortal('vol-dashboard')} />
-            </div>
-          )}
-          {currentPortalTab === 'public-programs' && (
-            <div className="py-4">
-              <ProgramsDirectory
-                onOpenApply={handleOpenApply}
-                selectedProgramForDetail={selectedProgramForDetail}
-                onClearSelectedProgram={() => setSelectedProgramForDetail(null)}
-              />
-            </div>
-          )}
-        </>
-      )}
-
       {/* PARTNER PORTAL VIEWS */}
       {role === 'partner' && (
         <>
@@ -296,6 +262,14 @@ const MainAppContent: React.FC = () => {
             </div>
           )}
         </>
+      )}
+
+      {role === 'partner' && currentPortalTab === 'part-programs' && (
+        <CreateProposalModal
+          isOpen={isProposalModalOpen}
+          onClose={() => setIsProposalModalOpen(false)}
+          onSuccess={() => setIsProposalModalOpen(false)}
+        />
       )}
 
       {/* PSA ADMIN CONSOLE VIEWS */}
@@ -333,7 +307,8 @@ const MainAppContent: React.FC = () => {
           onClose={() => setApplyingProgram(null)}
           onSuccess={() => {
             alert('Aplikasi pendaftaran berhasil dikirim!');
-            navigatePortal('vol-applications');
+            setIsViewingPublicSite(true);
+            setCurrentPublicTab('public-programs');
           }}
         />
       )}

@@ -140,7 +140,7 @@
   display: flex;
   flex: none;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 5px;
   margin-block: auto;
   width: 100%;
@@ -152,19 +152,19 @@
   border: 0;
   background: transparent;
   color: #e8eff7;
-  width: 48px;
-  min-width: 48px;
+  width: 100%;
+  min-width: 0;
   height: 48px;
   margin: 0 auto;
   border-radius: 14px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 0;
   padding: 0;
   text-align: left;
   font-weight: 700;
-  transition: all 0.3s ease-in-out;
+  transition: background-color 0.2s ease-in-out;
   cursor: pointer;
 }
 .rail-link > * {
@@ -178,16 +178,6 @@
 .side-rail.expanded .rail-nav,
 .side-rail:has(:focus-visible) .rail-nav {
   align-items: stretch;
-}
-.side-rail:hover .rail-link,
-.side-rail.expanded .rail-link,
-.side-rail:has(:focus-visible) .rail-link {
-  width: 100%;
-  min-width: 0;
-  height: 49px;
-  justify-content: flex-start;
-  gap: 0;
-  padding: 0;
 }
 .side-rail:hover .rail-link .rail-label,
 .side-rail.expanded .rail-link .rail-label,
@@ -261,6 +251,49 @@
   gap: 16px;
   flex-wrap: wrap;
 }
+.partner-topbar {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+}
+.partner-dashboard-main {
+  padding-top: 0;
+}
+.partner-analytics-kpis {
+  container-type: inline-size;
+}
+.partner-analytics-gender-card {
+  container-type: inline-size;
+}
+.partner-analytics-gender-layout {
+  width: 100%;
+}
+@container (min-width: 520px) {
+  .partner-analytics-gender-layout {
+    flex-direction: row;
+    justify-content: center;
+    gap: 40px;
+  }
+  .partner-analytics-gender-layout ul {
+    max-width: 20rem;
+  }
+}
+@container (max-width: 560px) {
+  .partner-analytics-kpis {
+    gap: 12px;
+  }
+  .partner-analytics-kpi-card {
+    padding: 12px;
+  }
+  .partner-analytics-kpi-label,
+  .partner-analytics-kpi-caption {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+  .partner-analytics-kpi-value {
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+}
 .greeting {
   font-size: clamp(18px, 2vw, 24px);
   font-weight: 600;
@@ -279,7 +312,30 @@
   gap: 8px;
   flex-wrap: nowrap;
 }
-.topbar-actions { display: flex; gap: 8px; }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.partner-topbar .top-actions {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+.partner-topbar .search-shell {
+  flex: 1 1 140px;
+  min-width: 0;
+  width: auto;
+}
+.partner-topbar .search-shell input {
+  min-width: 0;
+  width: 100%;
+}
+.partner-program-actions {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.partner-program-actions .navy-button {
+  flex-shrink: 1;
+  min-width: 0;
+  white-space: normal;
+}
 .round-action { width: 38px; height: 38px; display: grid; place-items: center; position: relative; border: 1px solid #e5e7eb; border-radius: 50%; background: white; color: #374151; cursor: pointer; }
 .round-action-primary { background: var(--navy); border-color: var(--navy); color: white; }
 .round-action .dot { right: 5px; top: 4px; }
@@ -668,10 +724,11 @@
   .features {
     grid-template-columns: 1fr;
   }
-  .side-rail:hover, .side-rail.expanded, .side-rail:has(:focus-visible) { width: 240px; }
-  .side-rail:hover ~ .workspace,
-  .side-rail.expanded ~ .workspace,
-  .side-rail:has(:focus-visible) ~ .workspace { margin-left: 240px; }
+  .side-rail:hover, .side-rail.expanded, .side-rail:has(:focus-visible) {
+    width: min(240px, calc(100vw - 68px));
+    z-index: 60;
+    box-shadow: 20px 20px 42px rgba(11, 34, 56, 0.35);
+  }
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
@@ -679,10 +736,10 @@
 
 @media(max-width: 640px) {
   .side-rail { width: 68px; border-radius: 0 32px 48px 0 / 0 14% 20% 0; }
-  .side-rail:hover, .side-rail.expanded, .side-rail:has(:focus-visible) { width: 236px; z-index: 60; box-shadow: 20px 20px 42px rgba(11, 34, 56, 0.45); }
-  .side-rail:hover ~ .workspace,
-  .side-rail.expanded ~ .workspace,
-  .side-rail:has(:focus-visible) ~ .workspace { margin-left: 236px; }
+  .side-rail:hover, .side-rail.expanded, .side-rail:has(:focus-visible) {
+    width: min(236px, calc(100vw - 68px));
+    box-shadow: 20px 20px 42px rgba(11, 34, 56, 0.45);
+  }
   .workspace {
     margin-left: 68px;
     padding: 12px;
@@ -708,19 +765,10 @@
   }
   .rail-link {
     height: 48px;
-    width: 48px;
-    min-width: 48px;
-    border-radius: 14px;
-    gap: 0;
-  }
-  .side-rail:hover .rail-link,
-  .side-rail.expanded .rail-link,
-  .side-rail:has(:focus-visible) .rail-link {
     width: 100%;
     min-width: 0;
-    height: 46px;
+    border-radius: 14px;
     gap: 0;
-    padding: 0;
   }
   .topbar { align-items: flex-start; flex-direction: column; gap: 14px; }
   .top-actions { width: 100%; }

@@ -4,8 +4,6 @@ import {
   Building2, 
   LogOut, 
   Home,
-  FileText,
-  UserCheck,
   FolderGit2,
   BarChart3,
   LayoutDashboard,
@@ -70,17 +68,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
   const pendingPartnerships = partners.filter(p => p.status === 'submitted' || p.status === 'under_review').length;
   const pendingProposals = programs.filter(p => p.proposalStatus === 'submitted' || p.proposalStatus === 'under_review').length;
-  const volunteerPending = applications.filter(a => (a.volunteerId === currentUser?.id) && (a.status === 'under_review' || a.status === 'submitted')).length;
-
   let navItems: PortalNavItem[] = [];
-  if (role === 'volunteer') {
-    navItems = [
-      { id: 'vol-dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'vol-applications', label: 'Aplikasi Saya', icon: FileText, badge: volunteerPending > 0 ? `${volunteerPending}` : undefined },
-      { id: 'vol-profile', label: 'Profil Saya', icon: UserCheck },
-      { id: 'public-programs', label: 'Program PSA', icon: Search },
-    ];
-  } else if (role === 'partner') {
+  if (role === 'partner') {
     navItems = [
       { id: 'part-dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { id: 'part-programs', label: 'Program Kolaborasi', icon: FolderGit2 },
@@ -102,7 +91,6 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
   const orgPrograms = programs.filter(program => program.partnerId === currentOrg?.id);
   const orgProgramIds = orgPrograms.map(program => program.id);
   const orgApplications = applications.filter(application => orgProgramIds.includes(application.programId));
-  const userApplications = applications.filter(application => application.volunteerId === currentUser?.id || application.volunteerEmail === currentUser?.email);
   const pageTitle = navItems.find(item => item.id === currentTab)?.label || 'Dashboard';
   const roleLabel = role === 'admin' ? 'Admin PSA' : role === 'partner' ? 'Mitra' : 'Relawan';
   const userName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Pengguna';
@@ -114,24 +102,15 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         { label: 'Total aplikasi', value: applications.length },
         { label: 'Mitra disetujui', value: partners.filter(partner => partner.status === 'approved').length },
       ]
-    : role === 'partner'
-      ? [
+    : [
           { label: 'Program', value: orgPrograms.length },
           { label: 'Relawan mendaftar', value: orgApplications.length },
           { label: 'Program aktif', value: orgPrograms.filter(program => program.publishedStatus === 'published').length },
           { label: 'Status kemitraan', value: currentOrg?.status === 'approved' ? 'Aktif' : 'Review' },
-        ]
-      : [
-          { label: 'Aplikasi terkirim', value: userApplications.length },
-          { label: 'Sedang ditinjau', value: userApplications.filter(application => ['submitted', 'under_review'].includes(application.status)).length },
-          { label: 'Diterima', value: userApplications.filter(application => application.status === 'accepted').length },
-          { label: 'Program tersedia', value: programs.filter(program => program.publishedStatus === 'published').length },
         ];
   const handleActionClick = () => {
     if (onOpenQuickAction) {
       onOpenQuickAction();
-    } else if (role === 'volunteer') {
-      onNavigate('public-programs');
     } else if (role === 'partner') {
       onNavigate('part-programs');
     } else {
@@ -140,9 +119,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
   };
 
   const getActionLabel = () => {
-    if (role === 'volunteer') return '+ Jelajahi Program';
-    if (role === 'partner') return '+ Buat Program';
-    return '+ Evaluasi Baru';
+    return role === 'partner' ? '+ Buat Program' : '+ Evaluasi Baru';
   };
 
   return (
@@ -260,7 +237,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
       */}
       <div className="workspace">
         <div className="dashboard-canvas">
-        <header className="topbar">
+        <header className={`topbar ${role === 'partner' ? 'partner-topbar' : ''}`}>
           <div className="page-heading">
             <h1>{pageTitle}</h1>
             <div className="breadcrumbs"><span>Workspace</span><span>/</span><span>{roleLabel}</span><span>/</span><span>{pageTitle}</span></div>
@@ -280,7 +257,17 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               />
             </label>
 
-            <div className="topbar-actions">
+            <div className={`topbar-actions ${role === 'partner' && currentTab === 'part-programs' ? 'partner-program-actions' : ''}`}>
+              {role === 'partner' && currentTab === 'part-programs' && (
+                <button
+                  type="button"
+                  onClick={handleActionClick}
+                  className="navy-button flex min-w-0 items-center gap-1.5"
+                >
+                  <Plus size={16} aria-hidden="true" />
+                  <span className="min-w-0 whitespace-normal text-center leading-tight">Buat Proposal Program Baru</span>
+                </button>
+              )}
               <button type="button" className="round-action" aria-label="Notifikasi" title="Notifikasi" onClick={markNotificationsAsRead}>
                 <Bell size={17} />
                 {unreadNotifsCount > 0 && <span className="dot" aria-hidden="true" />}
@@ -288,17 +275,12 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               <div className="avatar" role="img" aria-label={`${userName} avatar`}>
                 {userInitial}
               </div>
-              {role !== 'admin' && (
-                <button type="button" onClick={handleActionClick} className="round-action round-action-primary" aria-label={getActionLabel().replace(/^\+\s*/, '')} title={getActionLabel().replace(/^\+\s*/, '')}>
-                  <Plus size={18} />
-                </button>
-              )}
             </div>
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="dashboard-main pt-2">
+        <main className={`dashboard-main ${role === 'partner' ? 'partner-dashboard-main' : 'pt-2'}`}>
           {currentTab.endsWith('dashboard') && (
             <section className="kpi-grid" aria-label="Ringkasan metrik">
               {kpis.map(kpi => <article className="kpi-card" key={kpi.label}><span>{kpi.value}</span><p>{kpi.label}</p></article>)}

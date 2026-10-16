@@ -26,6 +26,7 @@ export const PartnerParticipantsList: React.FC = () => {
 
   const [selectedProgramId, setSelectedProgramId] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [activeApplicationGroup, setActiveApplicationGroup] = useState<'pending' | 'accepted' | 'rejected' | 'withdrawn'>('pending');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Selected app for review modal
@@ -56,6 +57,19 @@ export const PartnerParticipantsList: React.FC = () => {
       return true;
     });
   }, [applications, orgProgramIds, selectedProgramId, selectedStatus, searchQuery]);
+
+  const pendingApps = filteredApps.filter(app =>
+    app.status === 'submitted' || app.status === 'under_review' || app.status === 'waitlisted'
+  );
+  const acceptedApps = filteredApps.filter(app => app.status === 'accepted');
+  const rejectedApps = filteredApps.filter(app => app.status === 'rejected');
+  const withdrawnApps = filteredApps.filter(app => app.status === 'withdrawn');
+  const visibleApps = {
+    pending: pendingApps,
+    accepted: acceptedApps,
+    rejected: rejectedApps,
+    withdrawn: withdrawnApps,
+  }[activeApplicationGroup];
 
   const handleDecision = (decision: ApplicationStatus) => {
     if (!reviewingApp) return;
@@ -93,28 +107,10 @@ export const PartnerParticipantsList: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Title & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Manajemen Peserta &amp; Relawan</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Tinjau berkas pendaftaran calon relawan untuk program yang diselenggarakan oleh <strong>{currentOrg?.name}</strong>.
-          </p>
-        </div>
-
-        <button
-          onClick={handleExportCSV}
-          className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2 self-start sm:self-auto shadow-xs"
-        >
-          <Download size={14} />
-          <span>Ekspor Data (CSV)</span>
-        </button>
-      </div>
-
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-8 space-y-6">
       {/* Filter and search bar */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row gap-3">
-        <div className="relative flex-1">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row md:items-center gap-3">
+        <div className="relative min-w-0 flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -128,7 +124,7 @@ export const PartnerParticipantsList: React.FC = () => {
         <select
           value={selectedProgramId}
           onChange={(e) => setSelectedProgramId(e.target.value)}
-          className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
+          className="min-w-0 text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">Semua Program ({orgPrograms.length})</option>
           {orgPrograms.map(p => (
@@ -138,8 +134,15 @@ export const PartnerParticipantsList: React.FC = () => {
 
         <select
           value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
-          className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
+          onChange={(e) => {
+            const nextStatus = e.target.value;
+            setSelectedStatus(nextStatus);
+            if (nextStatus === 'accepted') setActiveApplicationGroup('accepted');
+            else if (nextStatus === 'rejected') setActiveApplicationGroup('rejected');
+            else if (nextStatus === 'withdrawn') setActiveApplicationGroup('withdrawn');
+            else if (nextStatus !== 'all') setActiveApplicationGroup('pending');
+          }}
+          className="min-w-0 text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">Semua Status</option>
           <option value="submitted">Terkirim (Baru)</option>
@@ -147,56 +150,159 @@ export const PartnerParticipantsList: React.FC = () => {
           <option value="accepted">Diterima</option>
           <option value="waitlisted">Daftar Tunggu</option>
           <option value="rejected">Ditolak</option>
+          <option value="withdrawn">Mengundurkan diri</option>
         </select>
+        <button
+          type="button"
+          onClick={handleExportCSV}
+          className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50"
+        >
+          <Download size={14} />
+          <span>Ekspor Data (CSV)</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-100 p-1 sm:grid-cols-4" role="tablist" aria-label="Kelompok status peserta">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeApplicationGroup === 'pending'}
+          onClick={() => setActiveApplicationGroup('pending')}
+          className={`rounded-lg px-2 py-2.5 text-xs font-semibold transition-colors ${
+            activeApplicationGroup === 'pending' ? 'bg-white text-amber-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Belum diterima <span className="ml-1 tabular-nums">({pendingApps.length})</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeApplicationGroup === 'accepted'}
+          onClick={() => setActiveApplicationGroup('accepted')}
+          className={`rounded-lg px-2 py-2.5 text-xs font-semibold transition-colors ${
+            activeApplicationGroup === 'accepted' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Sudah diterima <span className="ml-1 tabular-nums">({acceptedApps.length})</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeApplicationGroup === 'rejected'}
+          onClick={() => setActiveApplicationGroup('rejected')}
+          className={`rounded-lg px-2 py-2.5 text-xs font-semibold transition-colors ${
+            activeApplicationGroup === 'rejected' ? 'bg-white text-rose-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Ditolak <span className="ml-1 tabular-nums">({rejectedApps.length})</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeApplicationGroup === 'withdrawn'}
+          onClick={() => setActiveApplicationGroup('withdrawn')}
+          className={`rounded-lg px-2 py-2.5 text-xs font-semibold transition-colors ${
+            activeApplicationGroup === 'withdrawn' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Mengundurkan diri <span className="ml-1 tabular-nums">({withdrawnApps.length})</span>
+        </button>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="divide-y divide-slate-100 2xl:hidden">
+          {visibleApps.length === 0 ? (
+            <div className="px-5 py-10 text-center text-xs text-slate-500">
+              Tidak ada pendaftar yang cocok dengan filter.
+            </div>
+          ) : (
+            visibleApps.map(app => (
+              <article key={app.id} className="space-y-3 p-4">
+                <div className="min-w-0">
+                  <h3 className="break-words text-sm font-bold text-slate-900">{app.volunteerName}</h3>
+                  <p className="break-all text-[11px] text-slate-500">{app.volunteerEmail}</p>
+                  <p className="text-[11px] text-slate-400">{app.volunteerPhone}</p>
+                </div>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                  <div className="col-span-2 min-w-0">
+                    <dt className="text-slate-500">Program Dilamar</dt>
+                    <dd className="mt-0.5 break-words font-medium text-slate-800">{app.programTitle}</dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-slate-500">Domisili</dt>
+                    <dd className="mt-0.5 break-words text-slate-700">{app.volunteerCity || 'Tidak disebutkan'}</dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-slate-500">Tanggal Lamar</dt>
+                    <dd className="mt-0.5 break-words font-mono text-[11px] text-slate-600">{app.submittedAt}</dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="text-slate-500">Status</dt>
+                    <dd className="mt-1"><StatusBadge status={app.status} size="sm" /></dd>
+                  </div>
+                </dl>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReviewingApp(app);
+                    setDecisionNotes(app.reviewNotes || '');
+                  }}
+                  className="w-full rounded-md bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-800"
+                >
+                  Tinjau &amp; Keputusan
+                </button>
+              </article>
+            ))
+          )}
+        </div>
+        <div className="hidden 2xl:block">
+          <table className="w-full table-fixed text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px] tracking-wider">
               <tr>
-                <th className="px-5 py-3">Nama Relawan</th>
-                <th className="px-5 py-3">Program Dilamar</th>
-                <th className="px-5 py-3">Domisili</th>
-                <th className="px-5 py-3">Tanggal Lamar</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3 text-right">Aksi</th>
+                <th className="w-[20%] px-3 py-3">Nama Relawan</th>
+                <th className="w-[24%] px-3 py-3">Program Dilamar</th>
+                <th className="w-[14%] px-3 py-3">Domisili</th>
+                <th className="w-[16%] px-3 py-3">Tanggal Lamar</th>
+                <th className="w-[13%] px-3 py-3">Status</th>
+                <th className="w-[13%] px-3 py-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredApps.length === 0 ? (
+              {visibleApps.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
+                  <td colSpan={6} className="px-3 py-10 text-center text-slate-500">
                     Tidak ada pendaftar yang cocok dengan filter.
                   </td>
                 </tr>
               ) : (
-                filteredApps.map((app) => (
+                visibleApps.map((app) => (
                   <tr key={app.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-5 py-3.5">
+                    <td className="break-words px-3 py-3.5">
                       <div className="font-bold text-slate-900">{app.volunteerName}</div>
-                      <div className="text-[11px] text-slate-400">{app.volunteerEmail} · {app.volunteerPhone}</div>
+                      <div className="break-all text-[11px] text-slate-400">{app.volunteerEmail}</div>
+                      <div className="text-[11px] text-slate-400">{app.volunteerPhone}</div>
                     </td>
-                    <td className="px-5 py-3.5 max-w-xs">
-                      <span className="font-medium text-slate-800 line-clamp-1">{app.programTitle}</span>
+                    <td className="break-words px-3 py-3.5">
+                      <span className="font-medium text-slate-800">{app.programTitle}</span>
                     </td>
-                    <td className="px-5 py-3.5 text-slate-600">
-                      {app.volunteerCity}
+                    <td className="break-words px-3 py-3.5 text-slate-600">
+                      {app.volunteerCity || 'Tidak disebutkan'}
                     </td>
-                    <td className="px-5 py-3.5 text-slate-500 font-mono text-[11px]">
+                    <td className="break-words px-3 py-3.5 font-mono text-[11px] text-slate-500">
                       {app.submittedAt}
                     </td>
-                    <td className="px-5 py-3.5">
+                    <td className="px-3 py-3.5">
                       <StatusBadge status={app.status} size="sm" />
                     </td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-3 py-3.5 text-right">
                       <button
+                        type="button"
                         onClick={() => {
                           setReviewingApp(app);
                           setDecisionNotes(app.reviewNotes || '');
                         }}
-                        className="px-3 py-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                        className="rounded-md bg-blue-50 px-2 py-1.5 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-800"
                       >
                         Tinjau &amp; Keputusan
                       </button>

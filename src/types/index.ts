@@ -89,7 +89,8 @@ export type ProgramCategory =
   | 'Lingkungan' 
   | 'Kesehatan' 
   | 'Pemberdayaan Masyarakat' 
-  | 'Teknologi & Digital';
+  | 'Teknologi & Digital'
+  | (string & {});
 
 export type ProgramFormat = 'offline' | 'online' | 'hybrid';
 

@@ -3,8 +3,6 @@ import {
   Menu, 
   X, 
   ArrowRight, 
-  ExternalLink, 
-  User as UserIcon,
   Building2,
   ShieldCheck,
   LogOut
@@ -37,7 +35,6 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   ];
 
   const getPortalLabel = () => {
-    if (role === 'volunteer') return 'Portal Relawan';
     if (role === 'partner') return 'Portal Mitra';
     if (role === 'admin') return 'Admin Dashboard';
     return 'Portal';
@@ -91,16 +88,21 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           <div className="flex items-center gap-3 shrink-0">
             {role !== 'public' && currentUser ? (
               <div className="flex items-center gap-2">
-                <button
-                  onClick={onEnterPortal}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#0B2238] hover:bg-[#0B2238]/90 rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
-                >
-                  {role === 'volunteer' && <UserIcon size={14} className="text-[#5C80B6]" />}
-                  {role === 'partner' && <Building2 size={14} className="text-[#5C80B6]" />}
-                  {role === 'admin' && <ShieldCheck size={14} className="text-[#5C80B6]" />}
-                  <span>Masuk ke {getPortalLabel()}</span>
-                  <ArrowRight size={14} />
-                </button>
+                {role === 'volunteer' ? (
+                  <span className="hidden text-xs font-semibold text-slate-600 sm:inline">
+                    Relawan: {currentUser.name}
+                  </span>
+                ) : (
+                  <button
+                    onClick={onEnterPortal}
+                    className="px-4 py-2 text-xs font-semibold text-white bg-[#0B2238] hover:bg-[#0B2238]/90 rounded-xl shadow-xs transition-colors flex items-center gap-1.5"
+                  >
+                    {role === 'partner' && <Building2 size={14} className="text-[#5C80B6]" />}
+                    {role === 'admin' && <ShieldCheck size={14} className="text-[#5C80B6]" />}
+                    <span>Masuk ke {getPortalLabel()}</span>
+                    <ArrowRight size={14} />
+                  </button>
+                )}
                 <button
                   onClick={logoutToPublic}
                   className="p-2 text-[#64748B] hover:text-[#E85D75] rounded-xl hover:bg-slate-100 transition-colors"
@@ -158,15 +160,21 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
           {role !== 'public' ? (
             <div className="pt-3 border-t border-slate-100 space-y-2">
-              <button
-                onClick={() => {
-                  onEnterPortal();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full py-2.5 text-center text-xs font-semibold text-white bg-[#0B2238] rounded-xl"
-              >
-                Masuk ke {getPortalLabel()}
-              </button>
+              {role === 'volunteer' ? (
+                <p className="px-3 py-2 text-xs font-medium text-slate-600">
+                  Masuk sebagai relawan: {currentUser?.name}
+                </p>
+              ) : (
+                <button
+                  onClick={() => {
+                    onEnterPortal();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full py-2.5 text-center text-xs font-semibold text-white bg-[#0B2238] rounded-xl"
+                >
+                  Masuk ke {getPortalLabel()}
+                </button>
+              )}
               <button
                 onClick={() => {
                   logoutToPublic();

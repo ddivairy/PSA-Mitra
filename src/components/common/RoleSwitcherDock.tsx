@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Users, 
   Building2, 
   ShieldCheck, 
   Globe, 
@@ -17,17 +16,8 @@ interface RoleSwitcherDockProps {
 }
 
 export const RoleSwitcherDock: React.FC<RoleSwitcherDockProps> = ({ onRoleChanged }) => {
-  const { role, setRole, resetAllData, currentUser } = useApp();
+  const { role, setRole, resetAllData } = useApp();
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const getRoleName = (r: UserRole) => {
-    switch (r) {
-      case 'volunteer': return 'Relawan (Budi Santoso)';
-      case 'partner': return 'Mitra (PT Bumi Lestari)';
-      case 'admin': return 'Admin PSA (Dewi Anjani)';
-      default: return 'Pengunjung Publik';
-    }
-  };
 
   const handleSelectRole = (targetRole: UserRole) => {
     setRole(targetRole);
@@ -70,21 +60,6 @@ export const RoleSwitcherDock: React.FC<RoleSwitcherDockProps> = ({ onRoleChange
                 <span>Pengunjung Publik</span>
               </div>
               {role === 'public' && <span className="text-[10px] text-blue-600 font-bold">Aktif</span>}
-            </button>
-
-            <button
-              onClick={() => handleSelectRole('volunteer')}
-              className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-between transition-colors ${
-                role === 'volunteer'
-                  ? 'bg-blue-50 text-blue-800 font-bold border border-blue-200'
-                  : 'text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Users size={15} className="text-blue-600" />
-                <span>Portal Relawan (Budi)</span>
-              </div>
-              {role === 'volunteer' && <span className="text-[10px] text-blue-600 font-bold">Aktif</span>}
             </button>
 
             <button

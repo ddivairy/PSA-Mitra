@@ -26,6 +26,7 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
   // Step 1: Basic info
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<ProgramCategory>('Pendidikan');
+  const [customCategory, setCustomCategory] = useState('');
   const [summary, setSummary] = useState('');
   const [description, setDescription] = useState('');
   const [objectivesText, setObjectivesText] = useState('');
@@ -53,8 +54,10 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
   const handleNext = () => {
     setErrorMsg('');
     if (step === 1) {
-      if (!title.trim() || !summary.trim() || !description.trim()) {
-        setErrorMsg('Mohon lengkapi judul, ringkasan, dan deskripsi program.');
+      if (!title.trim() || !summary.trim() || !description.trim() || (category === 'Lainnya' && !customCategory.trim())) {
+        setErrorMsg(category === 'Lainnya' && !customCategory.trim()
+          ? 'Mohon isi kategori program lainnya.'
+          : 'Mohon lengkapi judul, ringkasan, dan deskripsi program.');
         return;
       }
     } else if (step === 2) {
@@ -80,12 +83,13 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
     e.preventDefault();
     const objectives = objectivesText.split('\n').map(s => s.trim()).filter(Boolean);
     const requirements = requirementsText.split('\n').map(s => s.trim()).filter(Boolean);
+    const finalCategory = category === 'Lainnya' ? customCategory.trim() : category;
 
     const res = createProgramProposal({
       partnerId: partnerOrg.id,
       partnerName: partnerOrg.name,
       title,
-      category,
+      category: finalCategory,
       summary,
       description,
       objectives: objectives.length > 0 ? objectives : ['Meningkatkan dampak sosial di komunitas target'],
@@ -166,7 +170,7 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
                 </label>
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as ProgramCategory)}
+                  onChange={(e) => setCategory(e.target.value)}
                   className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
                 >
                   <option value="Pendidikan">Pendidikan</option>
@@ -174,7 +178,18 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
                   <option value="Kesehatan">Kesehatan</option>
                   <option value="Pemberdayaan Masyarakat">Pemberdayaan Masyarakat</option>
                   <option value="Teknologi & Digital">Teknologi &amp; Digital</option>
+                  <option value="Lainnya">Lainnya</option>
                 </select>
+                {category === 'Lainnya' && (
+                  <input
+                    type="text"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="Tulis kategori program"
+                    aria-label="Kategori program lainnya"
+                    className="mt-2 w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+                  />
+                )}
               </div>
 
               <div>
@@ -457,7 +472,7 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
                 <div className="border-b border-slate-200 pb-2">
                   <span className="text-[11px] text-slate-400 block uppercase font-mono">Pratinjau Proposal</span>
                   <h3 className="text-sm font-bold text-slate-900">{title}</h3>
-                  <span className="text-blue-600 font-semibold">{category} · {format.toUpperCase()}</span>
+                  <span className="text-blue-600 font-semibold">{category === 'Lainnya' ? customCategory || category : category} · {format.toUpperCase()}</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-slate-600">
