@@ -89,15 +89,15 @@ export const PartnershipReviewList: React.FC = () => {
       </div>
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Ringkasan status mitra">
-        <article className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <article className="rounded-xl border border-amber-300 bg-amber-100 p-4">
           <p className="text-xs font-medium text-amber-800">Menunggu verifikasi</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-amber-900">{pendingPartnersCount}</p>
         </article>
-        <article className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <article className="rounded-xl border border-emerald-300 bg-emerald-100 p-4">
           <p className="text-xs font-medium text-emerald-800">Mitra disetujui</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-900">{approvedPartnersCount}</p>
         </article>
-        <article className="rounded-xl border border-orange-200 bg-orange-50 p-4">
+        <article className="rounded-xl border border-orange-300 bg-orange-100 p-4">
           <p className="text-xs font-medium text-orange-800">Perlu revisi</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-orange-900">{revisionPartnersCount}</p>
         </article>

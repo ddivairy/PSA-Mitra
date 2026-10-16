@@ -155,6 +155,12 @@ export interface VolunteerApplication {
   volunteerProvince?: string;
   motivation: string;
   answers: Record<string, string>;
+  attachment?: {
+    name: string;
+    type: string;
+    size: number;
+    dataUrl: string;
+  };
   status: ApplicationStatus;
   submittedAt: string;
   reviewNotes?: string;

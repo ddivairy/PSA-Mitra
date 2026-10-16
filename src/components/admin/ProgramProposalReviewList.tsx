@@ -26,19 +26,19 @@ export const ProgramProposalReviewList: React.FC = () => {
       </div>
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Ringkasan program">
-        <article className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <article className="rounded-xl border border-amber-300 bg-amber-100 p-4">
           <p className="text-xs font-medium text-amber-800">Menunggu review</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-amber-900">{numberFormatter.format(pendingCount)}</p>
         </article>
-        <article className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <article className="rounded-xl border border-emerald-300 bg-emerald-100 p-4">
           <p className="text-xs font-medium text-emerald-800">Proposal disetujui</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-emerald-900">{numberFormatter.format(approvedCount)}</p>
         </article>
-        <article className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+        <article className="rounded-xl border border-blue-300 bg-blue-100 p-4">
           <p className="text-xs font-medium text-blue-800">Program dipublikasikan</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-blue-900">{numberFormatter.format(publishedCount)}</p>
         </article>
-        <article className="rounded-xl border border-violet-200 bg-violet-50 p-4">
+        <article className="rounded-xl border border-violet-300 bg-violet-100 p-4">
           <p className="text-xs font-medium text-violet-800">Total pendaftaran</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-violet-900">{numberFormatter.format(totalRegistrations)}</p>
         </article>

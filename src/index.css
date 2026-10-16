@@ -85,10 +85,18 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  padding-left: 24px;
+  padding: 70px 0 0 23px;
+  justify-content: flex-start;
   color: white;
   white-space: nowrap;
   font-weight: 800;
+}
+.rail-brand img {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  object-fit: contain;
+  transform: translateY(0);
 }
 .rail-icon-slot {
   width: 48px;
@@ -110,15 +118,18 @@
   font-size: 19px;
   background: rgba(92, 128, 182, 0.2);
 }
+
 .rail-label {
   display: none;
   white-space: nowrap;
 }
+
 .brand-name {
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
   white-space: nowrap;
 }
+
 .side-rail:hover .rail-label,
 .side-rail.expanded .rail-label,
 .side-rail:has(:focus-visible) .rail-label {
@@ -189,30 +200,31 @@
 .rail-link.active {
   color: var(--navy);
 }
+
 .rail-link.active::before {
   content: "";
   position: absolute;
   z-index: -1;
-  top: 50%;
-  left: 50%;
+  top: 0;
+  left: 0;
   width: 48px;
   height: 48px;
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
+  box-sizing: border-box;
   border-radius: 14px;
   background: white;
-  box-shadow: 0 8px 18px rgba(6, 24, 44, 0.22);
-  transition: all 0.3s ease-in-out;
+  box-shadow: 0 8px 18px rgba(6, 24, 44, 0.12);
+  transition:
+    width 0.3s ease,
+    height 0.3s ease,
+    border-radius 0.3s ease,
+    box-shadow 0.3s ease;
 }
 .side-rail:hover .rail-link.active::before,
 .side-rail.expanded .rail-link.active::before,
 .side-rail:has(:focus-visible) .rail-link.active::before {
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  transform: none;
-  border-radius: 17px;
+  border-radius: 14px;
 }
 
 /* Workspace Canvas */
@@ -453,9 +465,9 @@
 /* Notifications inside Panel */
 .notice-row {
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   gap: 11px;
-  padding: 12px 0;
+  padding: 12px 0 12px 8px;
   border-top: 1px solid var(--line);
 }
 .notice-row:first-of-type {
@@ -464,10 +476,12 @@
 .notice-bullet {
   width: 9px;
   height: 9px;
+  min-width: 9px;
   background: var(--steel);
   border-radius: 50%;
-  flex: none;
+  flex: 0 0 9px;
   margin-top: 6px;
+  margin-left: 0;
 }
 .time-badge {
   font-size: 10px;

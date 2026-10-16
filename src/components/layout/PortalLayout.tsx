@@ -12,8 +12,7 @@ import {
   Gauge,
   Search,
   Bell,
-  Plus,
-  ChevronRight
+  Plus
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import psaLogo from '../../assets/images/2D PSA LOGO.png';
@@ -106,6 +105,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
   const userApplications = applications.filter(application => application.volunteerId === currentUser?.id || application.volunteerEmail === currentUser?.email);
   const pageTitle = navItems.find(item => item.id === currentTab)?.label || 'Dashboard';
   const roleLabel = role === 'admin' ? 'Admin PSA' : role === 'partner' ? 'Mitra' : 'Relawan';
+  const userName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Pengguna';
+  const userInitial = userName.charAt(0).toUpperCase();
   const kpis = role === 'admin'
     ? [
         { label: 'Mitra menunggu', value: pendingPartnerships },
@@ -173,9 +174,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
           }}
         >
           <img src={psaLogo} alt="Logo PSA" className="h-[34px] w-[34px] shrink-0 object-contain" />
-          <div className="flex items-center justify-between flex-1 pr-3 overflow-hidden">
+          <div className="flex flex-1 overflow-hidden">
             <span className="brand-name font-black tracking-wider text-sm">WORKSPACE</span>
-            <ChevronRight size={15} className={`brand-name text-slate-400 transition-transform duration-200 ${railExpanded ? 'rotate-180' : ''}`} />
           </div>
         </div>
 
@@ -203,7 +203,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 <span className="rail-label truncate flex-1 items-center justify-between">
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E85D75] text-white">
+                    <span className="ml-2 mr-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E85D75] text-white">
                       {item.badge}
                     </span>
                   )}
@@ -285,9 +285,14 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 <Bell size={17} />
                 {unreadNotifsCount > 0 && <span className="dot" aria-hidden="true" />}
               </button>
-              <button type="button" onClick={handleActionClick} className="round-action round-action-primary" aria-label={getActionLabel().replace(/^\+\s*/, '')} title={getActionLabel().replace(/^\+\s*/, '')}>
-                <Plus size={18} />
-              </button>
+              <div className="avatar" role="img" aria-label={`${userName} avatar`}>
+                {userInitial}
+              </div>
+              {role !== 'admin' && (
+                <button type="button" onClick={handleActionClick} className="round-action round-action-primary" aria-label={getActionLabel().replace(/^\+\s*/, '')} title={getActionLabel().replace(/^\+\s*/, '')}>
+                  <Plus size={18} />
+                </button>
+              )}
             </div>
           </div>
         </header>

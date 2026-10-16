@@ -45,7 +45,12 @@ interface AppContextType {
 
   // Volunteer actions
   updateVolunteerProfile: (profile: Partial<VolunteerProfile>) => void;
-  applyToProgram: (programId: string, motivation: string, answers: Record<string, string>) => { success: boolean; message: string; applicationId?: string };
+  applyToProgram: (
+    programId: string,
+    motivation: string,
+    answers: Record<string, string>,
+    attachment?: VolunteerApplication['attachment']
+  ) => { success: boolean; message: string; applicationId?: string };
   withdrawApplication: (applicationId: string) => void;
 
   // Partner actions
@@ -304,7 +309,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setVolunteerProfile(prev => ({ ...prev, ...updated }));
   };
 
-  const applyToProgram = (programId: string, motivation: string, answers: Record<string, string>) => {
+  const applyToProgram = (
+    programId: string,
+    motivation: string,
+    answers: Record<string, string>,
+    attachment?: VolunteerApplication['attachment']
+  ) => {
     const prog = programs.find(p => p.id === programId);
     if (!prog) return { success: false, message: 'Program tidak ditemukan.' };
 
@@ -336,6 +346,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       volunteerProvince: volunteerProfile.province || 'DKI Jakarta',
       motivation,
       answers,
+      attachment,
       status: 'submitted',
       submittedAt: new Date().toLocaleString('id-ID', {
         year: 'numeric',
