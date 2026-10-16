@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Users, 
@@ -148,7 +149,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
   };
 
   return (
-    <div className="app-wrapper">
+    <div className={`app-wrapper ${role === 'admin' ? 'admin-portal' : ''}`}>
       {/* 
         ========================================================================
         AUTHENTIC SIDE RAIL NAVIGATION (from style.html)
@@ -265,7 +266,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         <header className="topbar">
           <div className="page-heading">
             <h1>{pageTitle}</h1>
-            <div className="breadcrumbs"><span>Portal PSA</span><span>/</span><span>{roleLabel}</span><span>/</span><span>{pageTitle}</span></div>
+            <div className="breadcrumbs">
+              <span>Portal PSA</span><span>/</span><span>{roleLabel}</span><span>/</span><span>{pageTitle}</span>
+            </div>
           </div>
 
           <div className="top-actions">
@@ -333,7 +336,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         </header>
 
         {/* Main Content Area */}
-        <main className="dashboard-main pt-2">
+        <main className={`dashboard-main pt-2 ${role === 'admin' ? 'admin-dashboard-main' : ''}`}>
           {currentTab.endsWith('dashboard') && (
             <section className="kpi-grid" aria-label="Ringkasan metrik">
               {kpis.map(kpi => <article className="kpi-card" key={kpi.label}><span>{kpi.value}</span><p>{kpi.label}</p></article>)}

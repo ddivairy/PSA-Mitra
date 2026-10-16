@@ -128,7 +128,6 @@ export const GeographicGenderAnalytics: React.FC = () => {
           <div className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1">
             Laporan Tingkat Platform
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Analytics PSA</h1>
           <p className="text-xs text-slate-500 mt-1 max-w-2xl">
             Statistik mitra dan program, serta distribusi gender dan wilayah asal pendaftar.
           </p>
