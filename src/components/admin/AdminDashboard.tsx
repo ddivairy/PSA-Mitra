@@ -19,6 +19,7 @@ import { NotificationsPanelWidget } from '../dashboard/NotificationsPanelWidget'
 import { AssignmentsTrackerWidget } from '../dashboard/AssignmentsTrackerWidget';
 import { TodayTasksWidget, TodayTaskItem } from '../dashboard/TodayTasksWidget';
 import { HighlightActionCard } from '../dashboard/HighlightActionCard';
+import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
 
 interface AdminDashboardProps {
   onNavigate: (tab: string) => void;
@@ -97,6 +98,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
 
   return (
     <div className="space-y-6">
+      {/* Workspace Intro Section */}
+      <WorkspaceIntroHeader
+        eyebrow="ADMINISTRASI PSA"
+        title="Dashboard Pengawasan & Tata Kelola PSA"
+        description="Pusat kendali verifikasi organisasi mitra, evaluasi proposal kolaborasi, dan pengawasan operasional relawan Indonesia."
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate('admin-analytics')}
+              className="steel-button"
+            >
+              Analitik Wilayah
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('admin-audit')}
+              className="navy-button"
+            >
+              Audit Trail
+            </button>
+          </div>
+        }
+      />
       {/* 3 Modular Feature Highlight Cards (from style.html) */}
 
       {/* Main 2-Column Dashboard Grid (style.html) */}

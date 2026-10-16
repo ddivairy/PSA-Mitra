@@ -15,9 +15,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAuth }) => {
           {/* Brand & mission */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#5C80B6] text-white flex items-center justify-center font-bold text-base">
-                <img src={psaLogo} alt="Logo PSA" className="h-full w-full object-contain" />
-              </div>
+              <img src={psaLogo} alt="Logo PSA" className="w-9 h-10 object-contain shrink-0" />
               <span className="text-lg font-bold text-white tracking-tight">
                 PSA Partnership Platform
               </span>
@@ -143,8 +141,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAuth }) => {
               <ShieldCheck size={14} className="text-emerald-400" />
               Verifikasi Kemitraan Resmi Terpadu
             </span>
-            <span>·</span>
-            <span>Versi Dokumen: 1.0</span>
           </div>
         </div>
       </div>

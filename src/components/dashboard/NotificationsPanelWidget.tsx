@@ -49,7 +49,7 @@ export const NotificationsPanelWidget: React.FC<NotificationsPanelWidgetProps> =
     <section className="card panel" aria-labelledby="notifications-heading">
       <div className="panel-head">
         <h2 id="notifications-heading" className="text-base font-extrabold text-[#0F172A]">
-          Notifications
+          Notifikasi
         </h2>
         {notices.length > 0 && (
           <button
@@ -57,7 +57,7 @@ export const NotificationsPanelWidget: React.FC<NotificationsPanelWidgetProps> =
             onClick={handleClearAll}
             className="text-button"
           >
-            Clear all
+            Hapus semua
           </button>
         )}
       </div>

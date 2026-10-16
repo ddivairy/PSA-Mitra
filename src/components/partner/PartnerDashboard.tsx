@@ -17,6 +17,8 @@ import { InteractiveCalendarWidget } from '../dashboard/InteractiveCalendarWidge
 import { AnalyticsOverviewWidget, AnalyticsGaugeItem } from '../dashboard/AnalyticsOverviewWidget';
 import { AssignmentsTrackerWidget, AssignmentProgressItem } from '../dashboard/AssignmentsTrackerWidget';
 import { TodayTasksWidget, TodayTaskItem } from '../dashboard/TodayTasksWidget';
+import { HighlightActionCard } from '../dashboard/HighlightActionCard';
+import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
 
 interface PartnerDashboardProps {
   onNavigate: (tab: string) => void;
@@ -98,6 +100,32 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
 
   return (
     <div className="space-y-6">
+      {/* Workspace Intro Header */}
+      <WorkspaceIntroHeader
+        eyebrow="PORTAL MITRA"
+        title={currentOrg?.name || 'Organisasi Mitra PSA'}
+        description={`PIC Resmi: ${currentOrg?.picName || currentUser?.name || 'Admin'} (${currentOrg?.picRole || 'Koordinator Kemitraan'}) · Sektor ${currentOrg?.sector || 'Sosial'}`}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate('part-organization')}
+              className="steel-button"
+            >
+              Profil Organisasi
+            </button>
+            {isApprovedPartner && (
+              <button
+                type="button"
+                onClick={() => setIsProposalModalOpen(true)}
+                className="navy-button"
+              >
+                + Ajukan Program Baru
+              </button>
+            )}
+          </div>
+        }
+      />
       {/* Partnership Status Alert Banner */}
       {currentOrg && (
         <div>

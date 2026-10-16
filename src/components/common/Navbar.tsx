@@ -128,9 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
               onClick={() => onNavigate(role === 'public' ? 'public-home' : role === 'volunteer' ? 'public-programs' : role === 'partner' ? 'part-dashboard' : 'admin-dashboard')}
               className="flex items-center gap-2.5 text-left group"
             >
-              <div className="w-9 h-9 rounded-xl bg-[#0B2238] text-white flex items-center justify-center font-bold text-lg shadow-xs group-hover:bg-[#5C80B6] transition-colors">
-                <img src={psaLogo} alt="Logo PSA" className="h-full w-full object-contain" />
-              </div>
+              <img src={psaLogo} alt="Logo PSA" className="w-10 h-11 object-contain shrink-0" />
               <div>
                 <span className="text-lg font-bold tracking-tight text-slate-900 whitespace-nowrap block leading-tight">
                   Partnership Platform

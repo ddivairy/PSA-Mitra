@@ -55,14 +55,9 @@ export const VolunteerApplicationsManagement: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard Peserta</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Data pendaftar relawan lintas program dan status seleksinya.
-          </p>
-        </div>
-      </div>
+      <p className="text-xs text-slate-500">
+        Data pendaftar relawan lintas program dan status seleksinya.
+      </p>
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Ringkasan peserta">
         <article className="rounded-xl border border-blue-300 bg-blue-100 p-4">

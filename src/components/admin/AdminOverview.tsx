@@ -92,7 +92,6 @@ export const AdminOverview: React.FC = () => {
     <div className="space-y-6">
       <header>
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5C80B6]">Ringkasan platform</p>
-        <h2 className="mt-1 text-2xl font-extrabold text-[#0B2238]">Overview</h2>
         <p className="mt-1 text-sm text-slate-500">Pantau perkembangan mitra, program, dan partisipasi relawan.</p>
       </header>
 

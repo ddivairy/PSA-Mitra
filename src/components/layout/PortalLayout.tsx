@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Users, 
@@ -42,6 +43,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
     currentUser, 
     logoutToPublic, 
     unreadNotifsCount,
+    notifications,
     markNotificationsAsRead,
     partners,
     applications,
@@ -50,6 +52,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
   const [topSearchQuery, setTopSearchQuery] = useState('');
   const [railExpanded, setRailExpanded] = useState(false);
+  const [showNotifPopover, setShowNotifPopover] = useState(false);
   const railRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -123,7 +126,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
   };
 
   return (
-    <div className="app-wrapper">
+    <div className={`app-wrapper ${role === 'admin' ? 'admin-portal' : ''}`}>
       {/* 
         ========================================================================
         AUTHENTIC SIDE RAIL NAVIGATION (from style.html)
@@ -152,7 +155,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         >
           <img src={psaLogo} alt="Logo PSA" className="h-[34px] w-[34px] shrink-0 object-contain" />
           <div className="flex flex-1 overflow-hidden">
-            <span className="brand-name font-black tracking-wider text-sm">WORKSPACE</span>
+            <span className="brand-name font-black tracking-wider text-sm">PORTAL PSA</span>
           </div>
         </div>
 
@@ -240,7 +243,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         <header className={`topbar ${role === 'partner' ? 'partner-topbar' : ''}`}>
           <div className="page-heading">
             <h1>{pageTitle}</h1>
-            <div className="breadcrumbs"><span>Workspace</span><span>/</span><span>{roleLabel}</span><span>/</span><span>{pageTitle}</span></div>
+            <div className="breadcrumbs">
+              <span>Portal PSA</span><span>/</span><span>{roleLabel}</span><span>/</span><span>{pageTitle}</span>
+            </div>
           </div>
 
           <div className="top-actions">
@@ -251,9 +256,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 id="top-search"
                 type="search"
                 value={topSearchQuery}
-                onChange={(e) => setTopSearchQuery(e.target.value)}
+                onChange={(event) => setTopSearchQuery(event.target.value)}
                 aria-label="Pencarian tugas atau program"
-                placeholder="Search tasks..."
+                placeholder="Cari tugas atau program..."
               />
             </label>
 
@@ -268,10 +273,43 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                   <span className="min-w-0 whitespace-normal text-center leading-tight">Buat Proposal Program Baru</span>
                 </button>
               )}
-              <button type="button" className="round-action" aria-label="Notifikasi" title="Notifikasi" onClick={markNotificationsAsRead}>
-                <Bell size={17} />
-                {unreadNotifsCount > 0 && <span className="dot" aria-hidden="true" />}
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNotifPopover(!showNotifPopover);
+                    markNotificationsAsRead();
+                  }}
+                  className="round-action"
+                  aria-label="Notifikasi"
+                  aria-expanded={showNotifPopover}
+                >
+                  <Bell size={17} />
+                  {unreadNotifsCount > 0 && <span className="dot" aria-hidden="true" />}
+                </button>
+                {showNotifPopover && (
+                  <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-32px)] rounded-2xl border border-slate-100 bg-white py-2 shadow-xl z-50">
+                    <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2">
+                      <span className="text-xs font-bold text-[#0F172A]">Notifikasi</span>
+                      <span className="text-[10px] text-[#64748B]">{notifications.length} pembaruan</span>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto divide-y divide-slate-50">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center text-xs text-[#64748B]">Tidak ada notifikasi baru</div>
+                      ) : (
+                        notifications.slice(0, 5).map((notification) => (
+                          <div key={notification.id} className="p-3 transition-colors hover:bg-slate-50">
+                            <p className="text-xs font-bold text-[#0F172A]">{notification.title}</p>
+                            <p className="mt-0.5 line-clamp-2 text-xs text-[#64748B]">{notification.message}</p>
+                            <span className="mt-1 block text-[10px] text-[#5C80B6]">{notification.timestamp}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="avatar" role="img" aria-label={`${userName} avatar`}>
                 {userInitial}
               </div>
@@ -280,7 +318,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
         </header>
 
         {/* Main Content Area */}
-        <main className={`dashboard-main ${role === 'partner' ? 'partner-dashboard-main' : 'pt-2'}`}>
+        <main className={`dashboard-main ${role === 'partner' ? 'partner-dashboard-main' : 'pt-2'} ${role === 'admin' ? 'admin-dashboard-main' : ''}`}>
           {currentTab.endsWith('dashboard') && (
             <section className="kpi-grid" aria-label="Ringkasan metrik">
               {kpis.map(kpi => <article className="kpi-card" key={kpi.label}><span>{kpi.value}</span><p>{kpi.label}</p></article>)}

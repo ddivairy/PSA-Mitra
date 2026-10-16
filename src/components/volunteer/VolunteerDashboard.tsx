@@ -18,6 +18,7 @@ import { NotificationsPanelWidget, NoticeItem } from '../dashboard/Notifications
 import { AssignmentsTrackerWidget, AssignmentProgressItem } from '../dashboard/AssignmentsTrackerWidget';
 import { TodayTasksWidget, TodayTaskItem } from '../dashboard/TodayTasksWidget';
 import { HighlightActionCard } from '../dashboard/HighlightActionCard';
+import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
 
 interface VolunteerDashboardProps {
   onNavigate: (tab: string) => void;
@@ -136,6 +137,30 @@ export const VolunteerDashboard: React.FC<VolunteerDashboardProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Workspace Intro Header */}
+      <WorkspaceIntroHeader
+        eyebrow="PORTAL RELAWAN"
+        title={`Selamat Datang, ${volunteerProfile.fullName || currentUser?.name || 'Relawan PSA'}!`}
+        description="Pantau status aplikasi program kerelawanan, lengkapi portofolio keahlian, dan temukan inisiatif berdampak nyata."
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate('vol-profile')}
+              className="steel-button"
+            >
+              Profil Saya
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('public-programs')}
+              className="navy-button"
+            >
+              + Jelajahi Program
+            </button>
+          </div>
+        }
+      />
       {/* 3 Modular Feature Highlights Grid (from style.html) */}
 
       {/* Main 2-Column Dashboard Grid */}

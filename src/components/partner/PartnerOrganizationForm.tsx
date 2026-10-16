@@ -510,7 +510,7 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
                     >
                       <Upload size={24} className="mx-auto text-slate-400 mb-1.5" />
                       <p className="text-xs font-medium text-slate-700">Klik untuk menambahkan berkas legalitas</p>
-                      <p className="text-[11px] text-slate-400">Simulasi unggah file otomatis terpasang dengan format resmi</p>
+                      <p className="text-[11px] text-slate-400">Berkas contoh akan ditampilkan di sini.</p>
                     </div>
                   ) : (
                     documents.map((doc) => (
