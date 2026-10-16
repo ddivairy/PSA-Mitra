@@ -34,12 +34,12 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
 
   const faqs = [
     {
-      q: 'Apakah membuat akun otomatis menjadikan saya diterima sebagai relawan atau mitra?',
-      a: 'Tidak. Sesuai prinsip PSA, pembuatan akun hanya memberikan akses portal. Relawan harus melengkapi profil dan mendaftar ke program spesifik, sementara organisasi wajib mengajukan verifikasi kemitraan resmi sebelum dapat mengirim proposal kolaborasi.',
+      q: 'Apakah mengirim pendaftaran otomatis membuat saya diterima sebagai relawan atau mitra?',
+      a: 'Tidak. Admin PSA meninjau pendaftaran relawan dan pengajuan organisasi. Akun portal mitra baru dibuat setelah pengajuan disetujui.',
     },
     {
       q: 'Bagaimana alur persetujuan untuk organisasi mitra baru?',
-      a: 'Organisasi mendaftar melalui akun perwakilan, melengkapi profil organisasi dan dokumen pendukung, lalu mengajukan formulir kemitraan. Admin PSA akan meninjau kelengkapan berkas dan dapat menyetujui, meminta revisi dengan catatan perbaikan, atau menolak.',
+      a: 'Organisasi mengisi profil perwakilan dan dokumen pendukung. Admin PSA meninjau kelengkapan berkas dan dapat menyetujui, meminta revisi dengan catatan perbaikan, atau menolak.',
     },
     {
       q: 'Apakah ada biaya untuk menjadi relawan atau mitra di PSA?',
@@ -79,13 +79,13 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
                   onClick={() => onOpenAuth('register_vol')}
                   className="px-5 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 bg-white border border-slate-300 hover:border-slate-400 rounded-lg transition-colors"
                 >
-                  Daftar Jadi Relawan
+                  Daftar Relawan
                 </button>
                 <button
-                  onClick={() => onNavigate('public-become-partner')}
+                  onClick={() => onOpenAuth('register_partner')}
                   className="px-5 py-3 text-sm font-medium text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                 >
-                  Ajukan Kemitraan Mitra
+                  Daftar Mitra
                 </button>
               </div>
 
@@ -248,29 +248,29 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 font-mono">1</span>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Buat &amp; Konfirmasi Akun</h4>
-                    <p className="text-xs text-slate-600 mt-0.5">Daftarkan data diri dan konfirmasikan akun sebelum melengkapi profil.</p>
+                    <h4 className="text-xs font-bold text-slate-900">Kirim Pendaftaran</h4>
+                    <p className="text-xs text-slate-600 mt-0.5">Isi data diri, domisili, dan motivasi untuk ditinjau admin PSA.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 font-mono">2</span>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Lengkapi Profil &amp; Minat</h4>
-                    <p className="text-xs text-slate-600 mt-0.5">Isi data domisili, keahlian, dan preferensi kegiatan kerelawanan.</p>
+                    <h4 className="text-xs font-bold text-slate-900">Ikuti Seleksi</h4>
+                    <p className="text-xs text-slate-600 mt-0.5">Admin menghubungi pendaftar terpilih atau meminta informasi tambahan.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 font-mono">3</span>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Pilih &amp; Lamar Program</h4>
-                    <p className="text-xs text-slate-600 mt-0.5">Ajukan lamaran ke program yang sesuai tanpa perlu mengisi ulang data dasar.</p>
+                    <h4 className="text-xs font-bold text-slate-900">Terima Follow-up</h4>
+                    <p className="text-xs text-slate-600 mt-0.5">Pantau email atau WhatsApp untuk pembaruan dari admin PSA.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 font-mono">4</span>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Pantau Status di Dashboard</h4>
-                    <p className="text-xs text-slate-600 mt-0.5">Lacak status mulai dari Terkirim, Ditinjau, hingga Diterima secara transparan.</p>
+                    <h4 className="text-xs font-bold text-slate-900">Portal Relawan Sementara Ditutup</h4>
+                    <p className="text-xs text-slate-600 mt-0.5">Pendaftaran dan seleksi tetap dibuka melalui halaman publik.</p>
                   </div>
                 </div>
               </div>
@@ -299,22 +299,22 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 font-mono">1</span>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Registrasi Akun Perwakilan</h4>
-                    <p className="text-xs text-slate-600 mt-0.5">Daftarkan nama PIC resmi dan data dasar entitas organisasi.</p>
+                    <h4 className="text-xs font-bold text-slate-900">Ajukan Profil Organisasi</h4>
+                    <p className="text-xs text-slate-600 mt-0.5">Daftarkan nama organisasi, PIC resmi, sektor, dan kontak kerja.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 font-mono">2</span>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Lengkapi Profil &amp; Legalitas</h4>
-                    <p className="text-xs text-slate-600 mt-0.5">Unggah dokumen identitas/legalitas dan tujuan strategis kolaborasi.</p>
+                    <h4 className="text-xs font-bold text-slate-900">Unggah Dokumen Pendukung</h4>
+                    <p className="text-xs text-slate-600 mt-0.5">Sertakan berkas PDF, JPG, atau PNG untuk diperiksa admin.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="w-6 h-6 rounded-full bg-emerald-700 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 font-mono">3</span>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">Peninjauan oleh Admin PSA</h4>
-                    <p className="text-xs text-slate-600 mt-0.5">Verifikasi berkas kemitraan dengan opsi persetujuan atau perbaikan.</p>
+                    <h4 className="text-xs font-bold text-slate-900">Review dan Keputusan Admin</h4>
+                    <p className="text-xs text-slate-600 mt-0.5">Admin dapat menyetujui, meminta revisi, atau menolak pengajuan.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

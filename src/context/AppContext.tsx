@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
   User,
   UserRole,
@@ -24,11 +24,13 @@ import {
   INITIAL_AUDIT_LOGS,
   INITIAL_NOTIFICATIONS,
 } from '../data/initialData';
+import { createClientSupabaseClient } from '../../lib/supabase/client';
 
 interface AppContextType {
   role: UserRole;
   currentUser: User | null;
   setRole: (role: UserRole) => void;
+  setAuthenticatedUser: (user: User, organization?: PartnerOrganization) => void;
   users: User[];
   volunteerProfile: VolunteerProfile;
   partners: PartnerOrganization[];
@@ -37,6 +39,10 @@ interface AppContextType {
   auditLogs: AuditLog[];
   notifications: NotificationItem[];
   unreadNotifsCount: number;
+  adminWorkspaceLoading: boolean;
+  adminWorkspaceReady: boolean;
+  adminWorkspaceError: string;
+  refreshAdminWorkspace: () => Promise<void>;
 
   // Auth actions
   loginAsUser: (userId: string) => void;
@@ -84,6 +90,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [adminWorkspaceLoading, setAdminWorkspaceLoading] = useState(false);
+  const [adminWorkspaceReady, setAdminWorkspaceReady] = useState(false);
+  const [adminWorkspaceError, setAdminWorkspaceError] = useState('');
 
   // Load from localStorage on client mount
   useEffect(() => {
@@ -114,6 +123,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsLoaded(true);
     }
   }, []);
+
+  const refreshAdminWorkspace = useCallback(async () => {
+    setAdminWorkspaceLoading(true);
+    setAdminWorkspaceReady(false);
+    setAdminWorkspaceError('');
+    try {
+      const response = await fetch('/api/admin/workspace', { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Data admin dari Supabase gagal dimuat.');
+      setUsers(data.users || []);
+      setPartners(data.partners || []);
+      setPrograms(data.programs || []);
+      setApplications(data.applications || []);
+      setAuditLogs(data.auditLogs || []);
+      setNotifications(data.notifications || []);
+    } catch (error) {
+      setUsers([]);
+      setPartners([]);
+      setPrograms([]);
+      setApplications([]);
+      setAuditLogs([]);
+      setNotifications([]);
+      setAdminWorkspaceError(error instanceof Error ? error.message : 'Data admin dari Supabase gagal dimuat.');
+    } finally {
+      setAdminWorkspaceLoading(false);
+      setAdminWorkspaceReady(true);
+    }
+  }, []);
+
+  // The admin workspace never treats localStorage or bundled sample arrays as
+  // the source of admin data.
+  useEffect(() => {
+    if (role === 'admin') void refreshAdminWorkspace();
+  }, [role, refreshAdminWorkspace]);
 
   // Save to localStorage only after initial client load is complete
   useEffect(() => {
@@ -170,6 +213,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const setAuthenticatedUser = useCallback((user: User, organization?: PartnerOrganization) => {
+    setUsers(previous => [user, ...previous.filter(existing => existing.id !== user.id)]);
+    if (organization) setPartners(previous => [organization, ...previous.filter(existing => existing.id !== organization.id)]);
+    setCurrentUserId(user.id);
+    setRoleState(user.role);
+  }, []);
+
   const loginAsUser = (userId: string) => {
     const u = users.find(user => user.id === userId);
     if (u) {
@@ -179,6 +229,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logoutToPublic = () => {
+    const supabase = createClientSupabaseClient();
+    if (supabase) void supabase.auth.signOut();
     setCurrentUserId(null);
     setRoleState('public');
   };
@@ -544,77 +596,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const reviewProgramProposal = (programId: string, decision: 'approved' | 'revision_required' | 'rejected', notes?: string) => {
-    setPrograms(prev => prev.map(prog => {
-      if (prog.id === programId) {
-        return {
-          ...prog,
-          proposalStatus: decision,
-          publishedStatus: decision === 'approved' ? 'published' : 'draft',
-          reviewNotes: notes,
-        };
-      }
-      return prog;
-    }));
-
-    addAuditLog(
-      `PROPOSAL_${decision.toUpperCase()}`,
-      'proposal',
-      programId,
-      `Admin menetapkan status proposal ${decision}. Catatan: ${notes || '-'}`
-    );
-
-    const prog = programs.find(p => p.id === programId);
-    if (prog) {
-      const partner = partners.find(o => o.id === prog.partnerId);
-      if (partner) {
-        addNotification(partner.userId, `Review Proposal: ${prog.title}`, `Keputusan PSA: ${decision}. ${notes ? `Catatan: ${notes}` : ''}`, 'proposal');
-      }
-    }
+  const reviewProgramProposal = async (programId: string, decision: 'approved' | 'revision_required' | 'rejected', notes?: string) => {
+    const response = await fetch(`/api/admin/programs/${encodeURIComponent(programId)}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ proposalStatus: decision, notes: notes || '' }),
+    });
+    const result = await response.json();
+    if (!response.ok) { window.alert(result.error || 'Gagal menyimpan keputusan proposal.'); return; }
+    await refreshAdminWorkspace();
   };
 
-  const toggleProgramPublication = (programId: string, status: PublicationStatus) => {
-    setPrograms(prev => prev.map(prog => prog.id === programId ? { ...prog, publishedStatus: status } : prog));
-    addAuditLog('PROGRAM_PUBLICATION_TOGGLE', 'program', programId, `Status publikasi diubah menjadi ${status}`);
+  const toggleProgramPublication = async (programId: string, status: PublicationStatus) => {
+    const response = await fetch(`/api/admin/programs/${encodeURIComponent(programId)}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ publicationStatus: status }),
+    });
+    const result = await response.json();
+    if (!response.ok) { window.alert(result.error || 'Gagal memperbarui publikasi program.'); return; }
+    await refreshAdminWorkspace();
   };
 
-  const reviewVolunteerApplication = (appId: string, decision: ApplicationStatus, notes?: string) => {
-    setApplications(prev => prev.map(app => {
-      if (app.id === appId) {
-        return {
-          ...app,
-          status: decision,
-          reviewNotes: notes,
-          history: [
-            ...app.history,
-            {
-              status: decision,
-              date: new Date().toLocaleString('id-ID'),
-              actor: currentUser ? currentUser.name : 'Penyelenggara',
-              note: notes || `Status diubah menjadi ${decision}`,
-            },
-          ],
-        };
-      }
-      return app;
-    }));
-
-    addAuditLog('APPLICATION_STATUS_UPDATED', 'application', appId, `Status aplikasi diubah menjadi ${decision}`);
-
-    const app = applications.find(a => a.id === appId);
-    if (app) {
-      addNotification(
-        app.volunteerId,
-        `Status Pendaftaran: ${decision.toUpperCase()}`,
-        `Pendaftaran Anda untuk program "${app.programTitle}" telah diperbarui menjadi ${decision}. ${notes ? `Catatan: ${notes}` : ''}`,
-        'application'
-      );
-    }
+  const reviewVolunteerApplication = async (appId: string, decision: ApplicationStatus, notes?: string) => {
+    const response = await fetch(`/api/admin/volunteer-applications/${encodeURIComponent(appId)}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: decision, notes: notes || '' }),
+    });
+    const result = await response.json();
+    if (!response.ok) { window.alert(result.error || 'Gagal menyimpan hasil review relawan.'); return; }
+    await refreshAdminWorkspace();
   };
 
-  const markNotificationsAsRead = () => {
+  const markNotificationsAsRead = async () => {
     if (!currentUser) return;
-    setNotifications(prev => prev.map(n => n.recipientUserId === currentUser.id ? { ...n, read: true } : n));
+    const unread = notifications.filter(notification => notification.recipientUserId === currentUser.id && !notification.read);
+    if (!unread.length) return;
+    const response = await fetch('/api/admin/notifications', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: unread.map(notification => notification.id) }),
+    });
+    if (!response.ok) return;
+    await refreshAdminWorkspace();
   };
 
   const resetAllData = () => {
@@ -646,6 +667,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         role,
         currentUser,
         setRole,
+      setAuthenticatedUser,
         users,
         volunteerProfile,
         partners,
@@ -654,6 +676,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         auditLogs,
         notifications,
         unreadNotifsCount,
+        adminWorkspaceLoading,
+        adminWorkspaceReady,
+        adminWorkspaceError,
+        refreshAdminWorkspace,
 
         loginAsUser,
         logoutToPublic,

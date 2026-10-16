@@ -5,6 +5,10 @@ Dokumen ini memetakan perencanaan pengembangan berfokus **100% pada Alur Penggun
 
 Seluruh spesifikasi teknis backend, database schema, dan integrasi server diabaikan pada dokumen ini untuk memastikan fokus penuh pada pengalaman pengguna (*User Experience*) dan antarmuka (*User Interface*).
 
+> Catatan implementasi terbaru (2026-10): Portal Relawan sementara tertutup tetapi intake/seleksinya tetap berjalan; pengajuan mitra dan akun setelah approval memakai Supabase. Untuk status backend, migrasi wajib, Gmail, dan kebijakan akun terkini, lihat [Adendum deployment](./pland.md#adendum-email-follow-up-dan-status-portal) dan [panduan follow-up](./email-followup.md). Bagian alur lama di bawah tetap menjadi referensi desain, bukan gambaran akses portal aktif.
+
+Status audit dan implementasi terbaru: [implementation-status.md](./implementation-status.md).
+
 ---
 
 ## 1. Struktur 4 Ruang Pengalaman Pengguna (User Spaces)
@@ -44,6 +48,8 @@ Platform dibagi secara tegas menjadi 4 area navigasi dan pengalaman visual:
 | **03** | [`03_ALUR_PARTNER_PORTAL.md`](./03_ALUR_PARTNER_PORTAL.md) | Alur profil lembaga, upload dokumen, alur perbaikan/revisi, pembuatan proposal & peserta |
 | **04** | [`04_ALUR_PSA_ADMIN_DASHBOARD.md`](./04_ALUR_PSA_ADMIN_DASHBOARD.md) | Alur kerja peninjauan admin, keputusan approval/revisi, analitik wilayah/gender & audit log |
 | **05** | [`05_STANDAR_UI_UX_DAN_STATE_VISUAL.md`](./05_STANDAR_UI_UX_DAN_STATE_VISUAL.md) | Standar desain visual, palet warna, tipografi, penanganan Empty/Loading/Error state |
+| **Deploy** | [`pland.md`](./pland.md) | Checklist kesiapan produksi, konfigurasi environment, Supabase, deployment, CI/CD, smoke test, monitoring, backup, dan rollback |
+| **Email Follow-up** | [`email-followup.md`](./email-followup.md) | Setup Gmail API, migrasi log, akses admin, dan aktivasi kembali portal user |
 
 ---
 

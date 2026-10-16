@@ -4,7 +4,6 @@ import { PublicNavbar } from './components/layout/PublicNavbar';
 import { PortalLayout } from './components/layout/PortalLayout';
 import { Footer } from './components/common/Footer';
 import { AuthModal } from './components/public/AuthModal';
-import { RoleSwitcherDock } from './components/common/RoleSwitcherDock';
 
 // Public pages
 import { PublicLanding } from './components/public/PublicLanding';
@@ -12,6 +11,7 @@ import { AboutPage } from './components/public/AboutPage';
 import { ProgramsDirectory } from './components/public/ProgramsDirectory';
 import { PartnersDirectory } from './components/public/PartnersDirectory';
 import { BecomePartnerLanding } from './components/public/BecomePartnerLanding';
+import { PartnerRegistrationPage, VolunteerRegistrationPage } from './components/public/PublicRegistrationPages';
 
 // Volunteer pages
 import { VolunteerDashboard } from './components/volunteer/VolunteerDashboard';
@@ -29,13 +29,13 @@ import { PartnerAnalyticsView } from './components/partner/PartnerAnalyticsView'
 // Admin pages
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminOverview } from './components/admin/AdminOverview';
-import { PartnershipReviewList } from './components/admin/PartnershipReviewList';
+import { AdminIntakeReview } from './components/admin/AdminIntakeReview';
 import { ProgramProposalReviewList } from './components/admin/ProgramProposalReviewList';
 import { VolunteerApplicationsManagement } from './components/admin/VolunteerApplicationsManagement';
 import { GeographicGenderAnalytics } from './components/admin/GeographicGenderAnalytics';
 import { AdminUsersActivity } from './components/admin/AdminUsersActivity';
 
-import { Program, UserRole } from './types';
+import { Program } from './types';
 
 const MainAppContent: React.FC = () => {
   const { role, setRole, currentUser } = useApp();
@@ -86,9 +86,21 @@ const MainAppContent: React.FC = () => {
 
   // Modals
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register_vol' | 'register_partner'>('login');
+  const [authInitialMode, setAuthInitialMode] = useState<'login'>('login');
   const [applyingProgram, setApplyingProgram] = useState<Program | null>(null);
   const [selectedProgramForDetail, setSelectedProgramForDetail] = useState<Program | null>(null);
+
+  useEffect(() => {
+    const openAdminLogin = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'a') {
+        event.preventDefault();
+        setAuthInitialMode('login');
+        setAuthModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', openAdminLogin);
+    return () => window.removeEventListener('keydown', openAdminLogin);
+  }, []);
 
   // Sync portal tab when role changes
   useEffect(() => {
@@ -107,7 +119,17 @@ const MainAppContent: React.FC = () => {
   }, [role]);
 
   const handleOpenAuth = (mode: 'login' | 'register_vol' | 'register_partner' = 'login') => {
-    setAuthInitialMode(mode);
+    if (mode === 'register_vol') {
+      setCurrentPublicTab('public-register-volunteer');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (mode === 'register_partner') {
+      setCurrentPublicTab('public-register-partner');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setAuthInitialMode('login');
     setAuthModalOpen(true);
   };
 
@@ -117,18 +139,6 @@ const MainAppContent: React.FC = () => {
       return;
     }
     setApplyingProgram(prog);
-  };
-
-  const handleRoleChangedFromDock = (newRole: UserRole) => {
-    if (newRole === 'public') {
-      setIsViewingPublicSite(true);
-      setCurrentPublicTab('public-home');
-    } else {
-      setIsViewingPublicSite(false);
-      if (newRole === 'volunteer') navigatePortal('vol-dashboard');
-      else if (newRole === 'partner') navigatePortal('part-dashboard');
-      else if (newRole === 'admin') navigatePortal('admin-overview');
-    }
   };
 
   // 1. PUBLIC WEBSITE EXPERIENCE
@@ -173,6 +183,10 @@ const MainAppContent: React.FC = () => {
           )}
 
           {currentPublicTab === 'public-partners' && <PartnersDirectory />}
+
+          {currentPublicTab === 'public-register-volunteer' && <VolunteerRegistrationPage onBack={() => setCurrentPublicTab('public-home')} />}
+
+          {currentPublicTab === 'public-register-partner' && <PartnerRegistrationPage onBack={() => setCurrentPublicTab('public-home')} />}
 
           {currentPublicTab === 'public-become-partner' && (
             <BecomePartnerLanding
@@ -220,8 +234,6 @@ const MainAppContent: React.FC = () => {
           />
         )}
 
-        {/* Floating Role Switcher Dock for easy evaluation */}
-        <RoleSwitcherDock onRoleChanged={handleRoleChangedFromDock} />
       </div>
     );
   }
@@ -308,7 +320,7 @@ const MainAppContent: React.FC = () => {
             <AdminDashboard onNavigate={navigatePortal} />
           )}
           {currentPortalTab === 'admin-partnerships' && (
-            <PartnershipReviewList />
+            <AdminIntakeReview />
           )}
           {currentPortalTab === 'admin-proposals' && (
             <ProgramProposalReviewList />
@@ -338,8 +350,6 @@ const MainAppContent: React.FC = () => {
         />
       )}
 
-      {/* Floating Role Switcher Dock for easy evaluation */}
-      <RoleSwitcherDock onRoleChanged={handleRoleChangedFromDock} />
     </PortalLayout>
   );
 };

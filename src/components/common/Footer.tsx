@@ -10,6 +10,7 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAuth }) => {
+  const volunteerPortalEnabled = process.env.NEXT_PUBLIC_PORTAL_VOLUNTEER_ENABLED === 'true';
   return (
     <footer className="bg-[#0B2238] text-slate-300 border-t border-slate-800 mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
@@ -59,16 +60,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAuth }) => {
                   Kategori Kegiatan
                 </button>
               </li>
-              <li>
+              {volunteerPortalEnabled && <li>
                 <button onClick={() => onNavigate('vol-dashboard')} className="hover:text-white transition-colors">
                   Panduan Pendaftaran
                 </button>
-              </li>
-              <li>
+              </li>}
+              {volunteerPortalEnabled && <li>
                 <button onClick={() => onNavigate('vol-dashboard')} className="hover:text-white transition-colors">
                   Pelacakan Aplikasi
                 </button>
-              </li>
+              </li>}
               <li>
                 <button onClick={() => onNavigate('public-about')} className="hover:text-white transition-colors">
                   Sertifikat & Pengakuan
@@ -104,8 +105,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenAuth }) => {
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('part-dashboard')} className="hover:text-white transition-colors">
-                  Portal Mitra & Proposal
+                <button onClick={() => onOpenAuth('register_partner')} className="hover:text-white transition-colors">
+                  Daftar Mitra
                 </button>
               </li>
             </ul>

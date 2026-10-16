@@ -90,12 +90,6 @@ export const BecomePartnerLanding: React.FC<BecomePartnerLandingProps> = ({
                   <span>{role === 'partner' ? 'Buka Dashboard Mitra' : 'Ajukan Kemitraan Baru'}</span>
                   <ArrowRight size={16} />
                 </button>
-                <button
-                  onClick={() => onOpenAuth('login')}
-                  className="px-5 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 bg-white border border-slate-300 rounded-lg transition-colors"
-                >
-                  Masuk Portal Mitra
-                </button>
               </div>
             </div>
 

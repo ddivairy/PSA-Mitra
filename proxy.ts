@@ -2,6 +2,12 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
 export async function proxy(request: NextRequest) {
+  // The volunteer portal is temporarily disabled; partner portal stays active.
+  const volunteerPortalPath = /^\/relawan(\/|$)/.test(request.nextUrl.pathname);
+  if (volunteerPortalPath && process.env.PORTAL_VOLUNTEER_ENABLED !== 'true') {
+    return NextResponse.redirect(new URL('/?portal=disabled', request.url));
+  }
+
   let response = NextResponse.next({ request });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;

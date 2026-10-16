@@ -7,7 +7,8 @@ import { StatusBadge } from '../common/StatusBadge';
 const numberFormatter = new Intl.NumberFormat('id-ID');
 
 export const ProgramProposalReviewList: React.FC = () => {
-  const { programs } = useApp();
+  const { programs, reviewProgramProposal } = useApp();
+  const pendingPrograms = programs.filter(program => ['submitted', 'under_review', 'revision_required'].includes(program.proposalStatus));
 
   const pendingCount = programs.filter(program =>
     program.proposalStatus === 'submitted' || program.proposalStatus === 'under_review'
@@ -44,6 +45,18 @@ export const ProgramProposalReviewList: React.FC = () => {
           <p className="text-xs font-medium text-violet-800">Total pendaftaran</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-violet-900">{numberFormatter.format(totalRegistrations)}</p>
         </article>
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5" aria-labelledby="proposal-review-queue">
+        <h2 id="proposal-review-queue" className="text-lg font-bold text-slate-900">Antrean review proposal</h2>
+        <p className="mt-1 text-xs text-slate-500">Keputusan disimpan langsung ke Supabase.</p>
+        <div className="mt-3 divide-y divide-slate-100">
+          {pendingPrograms.map(program => <article key={program.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0"><h3 className="break-words text-sm font-semibold text-slate-900">{program.title}</h3><p className="mt-1 text-xs text-slate-500">{program.partnerName} · {program.city || 'Lokasi belum dicantumkan'} · {program.proposalStatus}</p></div>
+            <div className="flex flex-wrap gap-2"><button onClick={() => void reviewProgramProposal(program.id, 'approved')} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">Setujui &amp; publikasikan</button><button onClick={() => void reviewProgramProposal(program.id, 'revision_required', 'Mohon perbaiki proposal program.')} className="rounded-lg border border-amber-300 px-3 py-2 text-xs font-bold text-amber-800">Minta revisi</button><button onClick={() => void reviewProgramProposal(program.id, 'rejected', 'Proposal belum dapat disetujui.')} className="rounded-lg border border-rose-200 px-3 py-2 text-xs font-bold text-rose-700">Tolak</button></div>
+          </article>)}
+          {!pendingPrograms.length && <p className="py-5 text-center text-sm text-slate-500">Tidak ada proposal menunggu review.</p>}
+        </div>
       </section>
 
       <section className="space-y-3" aria-labelledby="program-progress-heading">

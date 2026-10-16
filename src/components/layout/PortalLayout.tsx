@@ -15,7 +15,9 @@ import {
   Search,
   Bell,
   Plus,
-  ChevronRight
+  ChevronRight,
+  Mail,
+  Settings
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 const psaLogo = '/images/2D PSA LOGO.png';
@@ -50,7 +52,10 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
     markNotificationsAsRead,
     partners,
     applications,
-    programs
+    programs,
+    adminWorkspaceLoading,
+    adminWorkspaceReady,
+    adminWorkspaceError,
   } = useApp();
 
   const [topSearchQuery, setTopSearchQuery] = useState('');
@@ -90,6 +95,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
       { id: 'part-participants', label: 'Data Relawan', icon: Users },
       { id: 'part-analytics', label: 'Analitik Program', icon: BarChart3 },
       { id: 'part-organization', label: 'Profil Organisasi', icon: Building2 },
+      { id: 'part-settings', label: 'Pengaturan Akun', icon: Settings },
     ];
   } else if (role === 'admin') {
     navItems = [
@@ -98,6 +104,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
       { id: 'admin-proposals', label: 'Program', icon: FolderGit2, badge: pendingProposals > 0 ? `${pendingProposals}` : undefined },
       { id: 'admin-applications', label: 'Peserta', icon: Users },
       { id: 'admin-analytics', label: 'Analytics', icon: BarChart3 },
+      { id: 'admin-email-followups', label: 'Email Follow-up', icon: Mail },
     ];
   }
 
@@ -302,12 +309,16 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
         {/* Main Content Area */}
         <main className="dashboard-main pt-2">
-          {currentTab.endsWith('dashboard') && (
+          {currentTab.endsWith('dashboard') && !(role === 'admin' && (adminWorkspaceLoading || !adminWorkspaceReady || adminWorkspaceError)) && (
             <section className="kpi-grid" aria-label="Ringkasan metrik">
               {kpis.map(kpi => <article className="kpi-card" key={kpi.label}><span>{kpi.value}</span><p>{kpi.label}</p></article>)}
             </section>
           )}
-          {children}
+          {role === 'admin' && (adminWorkspaceLoading || !adminWorkspaceReady) ? (
+            <div role="status" className="m-4 rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">Memuat data admin dari Supabase...</div>
+          ) : role === 'admin' && adminWorkspaceError ? (
+            <div role="alert" className="m-4 rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-800">{adminWorkspaceError}</div>
+          ) : children}
         </main>
         </div>
       </div>

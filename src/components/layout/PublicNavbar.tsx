@@ -16,7 +16,7 @@ const psaLogo = '/images/2D PSA LOGO.png';
 interface PublicNavbarProps {
   currentTab: string;
   onNavigate: (tab: string) => void;
-  onOpenAuth: (mode?: 'login' | 'register_vol' | 'register_partner') => void;
+  onOpenAuth: (mode?: 'register_vol' | 'register_partner') => void;
   onEnterPortal: () => void;
 }
 
@@ -126,16 +126,16 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             ) : (
               <div className="flex items-center gap-2.5">
                 <button
-                  onClick={() => onOpenAuth('login')}
-                  className="whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-semibold text-white/90 transition-colors hover:bg-white/10 hover:text-white"
-                >
-                  Masuk Akun
-                </button>
-                <button
                   onClick={() => onOpenAuth('register_vol')}
-                  className="whitespace-nowrap rounded-xl bg-[#3479c5] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#2868ad]"
+                  className="whitespace-nowrap rounded-xl border border-white/25 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-white/10"
                 >
                   Daftar Relawan
+                </button>
+                <button
+                  onClick={() => onOpenAuth('register_partner')}
+                  className="whitespace-nowrap rounded-xl bg-[#3479c5] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#2868ad]"
+                >
+                  Daftar Mitra
                 </button>
               </div>
             )}
@@ -195,21 +195,21 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             <div className="grid grid-cols-2 gap-2 border-t border-white/15 pt-4">
               <button
                 onClick={() => {
-                  onOpenAuth('login');
+                  onOpenAuth('register_vol');
                   setMobileMenuOpen(false);
                 }}
                 className="w-full rounded-xl border border-white/20 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-white/10"
               >
-                Masuk
+                Daftar Relawan
               </button>
               <button
                 onClick={() => {
-                  onOpenAuth('register_vol');
+                  onOpenAuth('register_partner');
                   setMobileMenuOpen(false);
                 }}
                 className="w-full rounded-xl bg-[#3479c5] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#2868ad]"
               >
-                Daftar Relawan
+                Daftar Mitra
               </button>
             </div>
           )}

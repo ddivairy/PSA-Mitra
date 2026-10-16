@@ -6,7 +6,6 @@ import { PublicNavbar } from '@/src/components/layout/PublicNavbar';
 import { PortalLayout } from '@/src/components/layout/PortalLayout';
 import { Footer } from '@/src/components/common/Footer';
 import { AuthModal } from '@/src/components/public/AuthModal';
-import { RoleSwitcherDock } from '@/src/components/common/RoleSwitcherDock';
 
 // Public pages
 import { PublicLanding } from '@/src/components/public/PublicLanding';
@@ -14,6 +13,7 @@ import { AboutPage } from '@/src/components/public/AboutPage';
 import { ProgramsDirectory } from '@/src/components/public/ProgramsDirectory';
 import { PartnersDirectory } from '@/src/components/public/PartnersDirectory';
 import { BecomePartnerLanding } from '@/src/components/public/BecomePartnerLanding';
+import { PartnerRegistrationPage, VolunteerRegistrationPage } from '@/src/components/public/PublicRegistrationPages';
 
 // Volunteer pages
 import { VolunteerDashboard } from '@/src/components/volunteer/VolunteerDashboard';
@@ -31,16 +31,27 @@ import { PartnerAnalyticsView } from '@/src/components/partner/PartnerAnalyticsV
 // Admin pages
 import { AdminDashboard } from '@/src/components/admin/AdminDashboard';
 import { AdminOverview } from '@/src/components/admin/AdminOverview';
-import { PartnershipReviewList } from '@/src/components/admin/PartnershipReviewList';
 import { ProgramProposalReviewList } from '@/src/components/admin/ProgramProposalReviewList';
 import { VolunteerApplicationsManagement } from '@/src/components/admin/VolunteerApplicationsManagement';
 import { GeographicGenderAnalytics } from '@/src/components/admin/GeographicGenderAnalytics';
 import { AdminUsersActivity } from '@/src/components/admin/AdminUsersActivity';
+import { AdminEmailFollowups } from '@/src/components/admin/AdminEmailFollowups';
+import { AdminIntakeReview } from '@/src/components/admin/AdminIntakeReview';
+import { PartnerAccountSettings } from '@/src/components/partner/PartnerAccountSettings';
 
-import { Program, UserRole } from '@/src/types';
+import { Program, User, PartnerOrganization } from '@/src/types';
+
+function mapSessionProfile(profile: any): { user: User; organization?: PartnerOrganization } {
+  const raw = profile.profile;
+  const user: User = { id: raw.id, name: raw.name, email: raw.email, phone: raw.phone || '', role: profile.role, verified: Boolean(raw.verified), orgId: raw.orgId };
+  const org = profile.organization;
+  const organization: PartnerOrganization | undefined = org ? { id:org.id,userId:org.user_id,name:org.name,type:org.type,sector:org.sector,description:org.description||'',website:org.website||undefined,address:org.address||'',province:org.province,city:org.city,picName:org.pic_name,picRole:org.pic_role,picPhone:org.pic_phone,picEmail:org.pic_email,collaborationReason:org.collaboration_reason||'',collaborationFocus:org.collaboration_focus||[],collaborationObjective:org.collaboration_objective||'',targetImpact:org.target_impact||'',offeredContribution:org.offered_contribution||'',collaborationPeriod:org.collaboration_period||'',documents:[],status:org.status,reviewNotes:org.review_notes||undefined,history:[],createdAt:org.created_at } : undefined;
+  return { user, organization };
+}
 
 export default function MainAppContent() {
-  const { role, setRole, currentUser } = useApp();
+  const { role, setRole, setAuthenticatedUser, currentUser } = useApp();
+  const volunteerPortalEnabled = process.env.NEXT_PUBLIC_PORTAL_VOLUNTEER_ENABLED === 'true';
 
   const portalPaths: Record<string, string> = {
     'vol-dashboard': '/relawan/dashboard', 'vol-applications': '/relawan/aplikasi',
@@ -48,10 +59,12 @@ export default function MainAppContent() {
     'part-dashboard': '/mitra/dashboard', 'part-programs': '/mitra/program',
     'part-participants': '/mitra/relawan', 'part-analytics': '/mitra/analitik',
     'part-organization': '/mitra/organisasi', 'admin-overview': '/admin/overview',
+    'part-settings': '/mitra/pengaturan-akun',
     'admin-dashboard': '/admin/dashboard',
     'admin-partnerships': '/admin/verifikasi-mitra', 'admin-proposals': '/admin/program',
     'admin-applications': '/admin/seleksi-relawan', 'admin-analytics': '/admin/analitik',
     'admin-users-activity': '/admin/users-activity',
+    'admin-email-followups': '/admin/email-followups',
   };
   const tabFromPath = (path: string) => path === '/admin/proposal'
     ? 'admin-proposals'
@@ -68,6 +81,12 @@ export default function MainAppContent() {
     return 'vol-dashboard';
   });
   const navigatePortal = (tab: string) => {
+    if (!volunteerPortalEnabled && tab.startsWith('vol-')) {
+      setRole('public');
+      setIsViewingPublicSite(true);
+      window.history.replaceState({}, '', '/?portal=disabled');
+      return;
+    }
     setCurrentPortalTab(tab);
     const path = portalPaths[tab];
     if (path && typeof window !== 'undefined' && window.location.pathname !== path) {
@@ -76,26 +95,58 @@ export default function MainAppContent() {
   };
 
   useEffect(() => {
-    const syncFromHistory = () => {
+    const recovering = new URLSearchParams(window.location.search).get('auth') === 'recovery';
+    if (recovering) {
+      setAuthInitialMode('recovery_password');
+      setAuthModalOpen(true);
+      window.history.replaceState({}, '', '/');
+    }
+    const syncFromHistory = async () => {
       const tab = tabFromPath(window.location.pathname);
-      if (tab) {
-        setCurrentPortalTab(tab);
-        if (tab.startsWith('admin-')) setRole('admin');
-        else if (tab.startsWith('part-')) setRole('partner');
-        else setRole('volunteer');
+      if (tab || window.location.pathname === '/') {
+        if (tab && !volunteerPortalEnabled && tab.startsWith('vol-')) {
+          window.history.replaceState({}, '', '/?portal=disabled');
+          setRole('public');
+          setIsViewingPublicSite(true);
+          return;
+        }
+        const response = await fetch('/api/auth/profile', { cache: 'no-store' });
+        const profile = await response.json();
+        if (!response.ok || (tab && profile.role !== (tab.startsWith('admin-') ? 'admin' : tab.startsWith('part-') ? 'partner' : 'volunteer'))) {
+          if (!tab) return;
+          window.history.replaceState({}, '', '/');
+          setRole('public');
+          setIsViewingPublicSite(true);
+          setAuthInitialMode('login');
+          setAuthModalOpen(true);
+          return;
+        }
+        if (profile.mustChangePassword) {
+          setRole('public');
+          setIsViewingPublicSite(true);
+          setAuthInitialMode('force_password');
+          setAuthModalOpen(true);
+          return;
+        }
+        const sessionProfile = mapSessionProfile(profile);
+        setAuthenticatedUser(sessionProfile.user, sessionProfile.organization);
+        if (tab) {
+          setCurrentPortalTab(tab);
+          setIsViewingPublicSite(false);
+        }
       }
     };
-    syncFromHistory();
+    if (!recovering) syncFromHistory();
     window.addEventListener('popstate', syncFromHistory);
     return () => window.removeEventListener('popstate', syncFromHistory);
-  }, []);
+  }, [volunteerPortalEnabled, setAuthenticatedUser]);
   
   // Flag to know whether an authenticated user is currently viewing the public website or inside their portal
   const [isViewingPublicSite, setIsViewingPublicSite] = useState<boolean>(role === 'public');
 
   // Modals
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register_vol' | 'register_partner'>('login');
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'recovery_password' | 'force_password'>('login');
   const [applyingProgram, setApplyingProgram] = useState<Program | null>(null);
   const [selectedProgramForDetail, setSelectedProgramForDetail] = useState<Program | null>(null);
 
@@ -115,8 +166,30 @@ export default function MainAppContent() {
     }
   }, [role]);
 
+  useEffect(() => {
+    const openAdminLogin = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'a') {
+        event.preventDefault();
+        setAuthInitialMode('login');
+        setAuthModalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', openAdminLogin);
+    return () => window.removeEventListener('keydown', openAdminLogin);
+  }, []);
+
   const handleOpenAuth = (mode: 'login' | 'register_vol' | 'register_partner' = 'login') => {
-    setAuthInitialMode(mode);
+    if (mode === 'register_vol') {
+      setCurrentPublicTab('public-register-volunteer');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (mode === 'register_partner') {
+      setCurrentPublicTab('public-register-partner');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    setAuthInitialMode('login');
     setAuthModalOpen(true);
   };
 
@@ -126,18 +199,6 @@ export default function MainAppContent() {
       return;
     }
     setApplyingProgram(prog);
-  };
-
-  const handleRoleChangedFromDock = (newRole: UserRole) => {
-    if (newRole === 'public') {
-      setIsViewingPublicSite(true);
-      setCurrentPublicTab('public-home');
-    } else {
-      setIsViewingPublicSite(false);
-      if (newRole === 'volunteer') navigatePortal('vol-dashboard');
-      else if (newRole === 'partner') navigatePortal('part-dashboard');
-      else if (newRole === 'admin') navigatePortal('admin-overview');
-    }
   };
 
   // 1. PUBLIC WEBSITE EXPERIENCE
@@ -152,7 +213,13 @@ export default function MainAppContent() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onOpenAuth={handleOpenAuth}
-          onEnterPortal={() => setIsViewingPublicSite(false)}
+          onEnterPortal={() => {
+            if (!volunteerPortalEnabled && role === 'volunteer') {
+              window.alert('Portal Relawan sedang dinonaktifkan sementara.');
+              return;
+            }
+            setIsViewingPublicSite(false);
+          }}
         />
 
         {/* Public Main Content */}
@@ -183,6 +250,14 @@ export default function MainAppContent() {
 
           {currentPublicTab === 'public-partners' && <PartnersDirectory />}
 
+          {currentPublicTab === 'public-register-volunteer' && (
+            <VolunteerRegistrationPage onBack={() => setCurrentPublicTab('public-home')} />
+          )}
+
+          {currentPublicTab === 'public-register-partner' && (
+            <PartnerRegistrationPage onBack={() => setCurrentPublicTab('public-home')} />
+          )}
+
           {currentPublicTab === 'public-become-partner' && (
             <BecomePartnerLanding
               onOpenAuth={handleOpenAuth}
@@ -209,6 +284,13 @@ export default function MainAppContent() {
           onClose={() => setAuthModalOpen(false)}
           initialMode={authInitialMode}
           onSuccess={(newUserRole) => {
+            if (!volunteerPortalEnabled && newUserRole === 'volunteer') {
+              setRole('public');
+              setIsViewingPublicSite(true);
+              setCurrentPublicTab('public-home');
+              window.history.replaceState({}, '', '/?portal=disabled');
+              return;
+            }
             setIsViewingPublicSite(false);
             if (newUserRole === 'volunteer') navigatePortal('vol-dashboard');
             else if (newUserRole === 'partner') navigatePortal('part-dashboard');
@@ -229,8 +311,6 @@ export default function MainAppContent() {
           />
         )}
 
-        {/* Floating Role Switcher Dock for easy evaluation */}
-        <RoleSwitcherDock onRoleChanged={handleRoleChangedFromDock} />
       </div>
     );
   }
@@ -304,6 +384,7 @@ export default function MainAppContent() {
               <PartnerOrganizationForm onComplete={() => navigatePortal('part-dashboard')} />
             </div>
           )}
+          {currentPortalTab === 'part-settings' && <PartnerAccountSettings />}
         </>
       )}
 
@@ -317,7 +398,7 @@ export default function MainAppContent() {
             <AdminDashboard onNavigate={navigatePortal} />
           )}
           {currentPortalTab === 'admin-partnerships' && (
-            <PartnershipReviewList />
+            <AdminIntakeReview />
           )}
           {currentPortalTab === 'admin-proposals' && (
             <ProgramProposalReviewList />
@@ -331,6 +412,7 @@ export default function MainAppContent() {
           {currentPortalTab === 'admin-users-activity' && (
             <AdminUsersActivity />
           )}
+          {currentPortalTab === 'admin-email-followups' && <AdminEmailFollowups />}
         </>
       )}
 
@@ -348,7 +430,6 @@ export default function MainAppContent() {
       )}
 
       {/* Floating Role Switcher Dock for easy evaluation */}
-      <RoleSwitcherDock onRoleChanged={handleRoleChangedFromDock} />
     </PortalLayout>
   );
 }

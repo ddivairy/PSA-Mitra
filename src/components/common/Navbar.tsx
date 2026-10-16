@@ -19,7 +19,7 @@ const psaLogo = '/images/2D PSA LOGO.png';
 interface NavbarProps {
   currentTab: string;
   onNavigate: (tab: string) => void;
-  onOpenAuth: (initialMode?: 'login' | 'register_vol' | 'register_partner') => void;
+  onOpenAuth: (initialMode?: 'register_vol' | 'register_partner') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAuth }) => {
@@ -266,12 +266,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
             ) : (
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => onOpenAuth('login')}
-                  className="px-3.5 py-2 text-xs font-medium text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors whitespace-nowrap"
-                >
-                  Masuk
-                </button>
-                <button
                   onClick={() => onOpenAuth('register_vol')}
                   className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition-colors whitespace-nowrap"
                 >
@@ -310,16 +304,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
             </button>
           ))}
           {!currentUser && (
-            <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2">
-              <button
-                onClick={() => {
-                  onOpenAuth('login');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full py-2 text-center text-xs font-medium text-slate-700 border border-slate-300 rounded-lg"
-              >
-                Masuk
-              </button>
+            <div className="pt-3 border-t border-slate-100">
               <button
                 onClick={() => {
                   onOpenAuth('register_vol');
