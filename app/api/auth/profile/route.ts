@@ -31,7 +31,7 @@ export async function GET() {
     let organization = null;
     if (existing.role === 'partner') {
       const { data, error: orgError } = await admin.from('partner_organizations').select('*').eq('user_id', user.id).maybeSingle();
-      if (orgError || !data || data.status !== 'approved') return Response.json({ error: 'Profil organisasi mitra belum aktif atau tidak tertaut.' }, { status: 403 });
+      if (orgError || !data || !['approved','revision_required','submitted','under_review'].includes(data.status) || data.user_id !== user.id) return Response.json({ error: 'Profil organisasi mitra belum aktif atau tidak tertaut.' }, { status: 403 });
       organization = data;
     }
     return Response.json({ role: existing.role, profile: { id: user.id, name: existing.name, email: existing.email, phone: existing.phone || '', role: existing.role, verified: existing.verified, orgId: existing.org_id || undefined }, organization, mustChangePassword: user.app_metadata?.must_change_password === true });

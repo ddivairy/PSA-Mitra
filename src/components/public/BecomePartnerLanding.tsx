@@ -29,17 +29,17 @@ export const BecomePartnerLanding: React.FC<BecomePartnerLandingProps> = ({
   const benefits = [
     {
       title: 'Akses ke Jejaring Relawan Muda Berdaya',
-      desc: 'Lebih dari 3.400 pemuda, mahasiswa, dan profesional dengan latar belakang lintas keahlian siap mendukung inisiatif sosial Anda.',
+      desc: 'Publikasikan program yang telah ditinjau PSA agar dapat ditemukan calon relawan yang sesuai.',
       icon: Users,
     },
     {
       title: 'Verifikasi & Standar Keamanan Baku',
-      desc: 'Setiap program dipastikan memenuhi standar etika, keselamatan peserta, dan tata kelola perlindungan data yang jelas.',
+      desc: 'Pengajuan organisasi dan proposal program ditinjau admin sebelum disetujui atau dipublikasikan.',
       icon: ShieldCheck,
     },
     {
       title: 'Platform Manajemen & Laporan Terpadu',
-      desc: 'Dashboard mandiri untuk menyeleksi pelamar, mencatat absensi, memantau sebaran demografi, dan mengekspor data peserta.',
+      desc: 'Kelola proposal dan beri rekomendasi awal terhadap pendaftar program Anda dari dashboard mitra.',
       icon: FileCheck2,
     },
     {
@@ -73,7 +73,7 @@ export const BecomePartnerLanding: React.FC<BecomePartnerLandingProps> = ({
               </h1>
 
               <p className="text-base text-slate-600 leading-relaxed max-w-2xl">
-                Bermitra dengan PSA membuka sinergi antara misi mulia organisasi Anda dan energi ribuan relawan terampil di seluruh Indonesia melalui mekanisme program yang transparan dan akuntabel.
+                Ajukan program sosial organisasi Anda untuk ditinjau PSA dan dibuka kepada calon relawan melalui direktori program.
               </p>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -82,7 +82,7 @@ export const BecomePartnerLanding: React.FC<BecomePartnerLandingProps> = ({
                     if (role === 'partner') {
                       onNavigate('part-dashboard');
                     } else {
-                      onOpenAuth('register_partner');
+                      onNavigate('public-register-partner');
                     }
                   }}
                   className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors flex items-center gap-2"
@@ -207,7 +207,7 @@ export const BecomePartnerLanding: React.FC<BecomePartnerLandingProps> = ({
           </p>
           <div className="pt-2">
             <button
-              onClick={() => onOpenAuth('register_partner')}
+              onClick={() => onNavigate('public-register-partner')}
               className="px-6 py-3 text-xs font-semibold text-slate-900 bg-white hover:bg-slate-100 rounded-xl shadow-sm transition-colors"
             >
               Mulai Pendaftaran Kemitraan Organisasi

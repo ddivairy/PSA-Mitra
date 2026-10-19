@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Users, 
   Search, 
@@ -26,6 +26,9 @@ export const VolunteerApplicationsManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [reviewingApp, setReviewingApp] = useState<VolunteerApplication | null>(null);
   const [decisionNotes, setDecisionNotes] = useState('');
+  const [savingDecision, setSavingDecision] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20;
 
   const filteredApps = useMemo(() => {
     return applications.filter(a => {
@@ -51,7 +54,12 @@ export const VolunteerApplicationsManagement: React.FC = () => {
     : activeApplicationGroup === 'rejected'
       ? rejectedApps
       : notAcceptedApps;
-  const uniqueApplicants = new Set(applications.map(application => application.volunteerId)).size;
+  const sortedVisibleApps = [...visibleApps].sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+  const pageCount = Math.max(1, Math.ceil(sortedVisibleApps.length / pageSize));
+  const pageApplications = sortedVisibleApps.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  useEffect(() => { setCurrentPage(1); }, [selectedProgramId, selectedStatus, activeApplicationGroup, searchQuery]);
+  useEffect(() => { if (currentPage > pageCount) setCurrentPage(pageCount); }, [currentPage, pageCount]);
+  const uniqueApplicants = new Set(applications.map(application => application.volunteerEmail.trim().toLowerCase())).size;
 
   const handleExportCSV = () => {
     const headers = [
@@ -66,7 +74,7 @@ export const VolunteerApplicationsManagement: React.FC = () => {
       'Status',
       'Tanggal Daftar',
     ];
-    const rows = filteredApps.map(application => [
+    const rows = visibleApps.map(application => [
       application.id,
       application.volunteerName,
       application.volunteerEmail,
@@ -95,11 +103,16 @@ export const VolunteerApplicationsManagement: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleDecision = (decision: ApplicationStatus) => {
+  const handleDecision = async (decision: ApplicationStatus) => {
     if (!reviewingApp) return;
-    reviewVolunteerApplication(reviewingApp.id, decision, decisionNotes);
-    setReviewingApp(null);
-    setDecisionNotes('');
+    setSavingDecision(true);
+    try {
+      const saved = await reviewVolunteerApplication(reviewingApp.id, decision, decisionNotes);
+      if (saved) {
+        setReviewingApp(null);
+        setDecisionNotes('');
+      }
+    } finally { setSavingDecision(false); }
   };
 
   return (
@@ -220,7 +233,7 @@ export const VolunteerApplicationsManagement: React.FC = () => {
               Tidak ada pendaftar di kelompok ini yang cocok dengan filter.
             </div>
           ) : (
-            visibleApps.map((app) => (
+            pageApplications.map((app) => (
               <article key={app.id} className="space-y-3 p-4">
                 <div className="min-w-0">
                   <h3 className="break-words text-sm font-bold text-slate-900">{app.volunteerName}</h3>
@@ -285,7 +298,7 @@ export const VolunteerApplicationsManagement: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                visibleApps.map((app) => (
+                pageApplications.map((app) => (
                   <tr key={app.id} className="hover:bg-slate-50 transition-colors">
                     <td className="break-words px-3 py-3.5">
                       <div className="font-bold text-slate-900">{app.volunteerName}</div>
@@ -326,6 +339,11 @@ export const VolunteerApplicationsManagement: React.FC = () => {
         </div>
       </div>
 
+      {sortedVisibleApps.length > pageSize && <nav className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3" aria-label="Halaman pendaftaran relawan">
+        <p className="text-xs text-slate-600">Menampilkan {numberFormatter.format((currentPage - 1) * pageSize + 1)}–{numberFormatter.format(Math.min(currentPage * pageSize, sortedVisibleApps.length))} dari {numberFormatter.format(sortedVisibleApps.length)} pendaftaran</p>
+        <div className="flex items-center gap-2"><button type="button" disabled={currentPage <= 1} onClick={() => setCurrentPage(page => Math.max(1, page - 1))} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40">Sebelumnya</button><span className="text-xs tabular-nums text-slate-600">Halaman {currentPage} dari {pageCount}</span><button type="button" disabled={currentPage >= pageCount} onClick={() => setCurrentPage(page => Math.min(pageCount, page + 1))} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-40">Berikutnya</button></div>
+      </nav>}
+
       {reviewingApp && (
         <Modal
           isOpen={!!reviewingApp}
@@ -353,6 +371,21 @@ export const VolunteerApplicationsManagement: React.FC = () => {
               </p>
             </div>
 
+            {Object.keys(reviewingApp.answers || {}).length > 0 && <section className="space-y-2 rounded-lg border border-slate-200 p-3">
+              <h3 className="font-bold text-slate-800">Jawaban tambahan</h3>
+              {Object.entries(reviewingApp.answers).map(([question, answer]) => <p key={question} className="text-slate-700"><strong>{question}:</strong> {answer}</p>)}
+            </section>}
+
+            {reviewingApp.partnerRecommendation && <section className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+              <h3 className="font-bold text-blue-900">Rekomendasi mitra: {reviewingApp.partnerRecommendation}</h3>
+              {reviewingApp.partnerReviewNotes && <p className="mt-1 whitespace-pre-line text-slate-700">{reviewingApp.partnerReviewNotes}</p>}
+            </section>}
+
+            {reviewingApp.history.length > 0 && <section className="space-y-2 border-t border-slate-100 pt-3">
+              <h3 className="font-bold text-slate-800">Riwayat status</h3>
+              <ol className="space-y-2">{reviewingApp.history.map((item, index) => <li key={`${item.date}-${index}`} className="border-l-2 border-slate-200 pl-3 text-slate-600"><strong>{item.status}</strong> · {new Date(item.date).toLocaleString('id-ID')}<p>{item.note || ''}</p></li>)}</ol>
+            </section>}
+
             <div className="space-y-1.5 pt-2 border-t border-slate-100">
               <label className="block font-bold text-slate-800">
                 Catatan Seleksi:
@@ -374,26 +407,30 @@ export const VolunteerApplicationsManagement: React.FC = () => {
               >
                 Tutup
               </button>
+              {!['submitted', 'under_review', 'waitlisted'].includes(reviewingApp.status) && <p className="text-slate-500">Status ini sudah final dan tidak dapat diubah dari dialog review.</p>}
               <button
                 type="button"
-                onClick={() => handleDecision('rejected')}
-                className="px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg"
+                disabled={savingDecision || !['submitted', 'under_review', 'waitlisted'].includes(reviewingApp.status)}
+                onClick={() => void handleDecision('rejected')}
+                className="px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg disabled:opacity-50"
               >
                 Tolak
               </button>
               <button
                 type="button"
-                onClick={() => handleDecision('waitlisted')}
-                className="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded-lg"
+                disabled={savingDecision || !['submitted', 'under_review', 'waitlisted'].includes(reviewingApp.status)}
+                onClick={() => void handleDecision('waitlisted')}
+                className="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded-lg disabled:opacity-50"
               >
                 Daftar Tunggu
               </button>
               <button
                 type="button"
-                onClick={() => handleDecision('accepted')}
-                className="px-4 py-1.5 text-xs font-semibold text-white bg-emerald-700 rounded-lg"
+                disabled={savingDecision || !['submitted', 'under_review', 'waitlisted'].includes(reviewingApp.status)}
+                onClick={() => void handleDecision('accepted')}
+                className="px-4 py-1.5 text-xs font-semibold text-white bg-emerald-700 rounded-lg disabled:opacity-50"
               >
-                Terima Relawan
+                {savingDecision ? 'Menyimpan…' : 'Terima Relawan'}
               </button>
             </div>
           </div>

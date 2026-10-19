@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { 
   Search, 
   Filter, 
@@ -31,7 +32,8 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
   selectedProgramForDetail,
   onClearSelectedProgram,
 }) => {
-  const { programs, applications, currentUser, role } = useApp();
+  const { programs, applications, currentUser, role, publicDirectoryLoading, publicDirectoryError } = useApp();
+  const canApplyToProgram = role === 'public' || role === 'volunteer';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -67,7 +69,7 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
   const filteredPrograms = useMemo(() => {
     return programs.filter(prog => {
       // Must be published for public/volunteer browsing
-      if (prog.publishedStatus !== 'published') return false;
+      if (!['published', 'closed'].includes(prog.publishedStatus)) return false;
 
       // Search match
       const q = searchQuery.toLowerCase().trim();
@@ -248,11 +250,11 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
           <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
             <Info size={24} />
           </div>
-          <h3 className="text-base font-bold text-slate-900">Tidak ada program yang sesuai</h3>
+          <h3 className="text-base font-bold text-slate-900">{publicDirectoryLoading?'Memuat program…':publicDirectoryError?'Program belum dapat dimuat':'Tidak ada program yang sesuai'}</h3>
           <p className="text-xs text-slate-500">
-            Coba ubah kata kunci pencarian atau bersihkan filter provinsi dan kategori.
+            {publicDirectoryError|| (publicDirectoryLoading?'Mengambil program yang telah disetujui dari PSA.':programs.length?'Coba ubah kata kunci pencarian atau bersihkan filter provinsi dan kategori.':'Belum ada program yang dipublikasikan.')}
           </p>
-          <button
+          {!publicDirectoryLoading&&programs.length>0&&<button
             onClick={() => {
               setSearchQuery('');
               setSelectedCategory('all');
@@ -261,13 +263,15 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
             className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg"
           >
             Bersihkan Filter
-          </button>
+          </button>}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPrograms.map((prog) => {
             const isApplied = hasUserApplied(prog.id);
-            const isFull = prog.enrolledCount >= prog.targetQuota;
+            const isFull = prog.targetQuota > 0 && prog.enrolledCount >= prog.targetQuota;
+            const isExecutionClosed = prog.publishedStatus !== 'published' || ['registration_closed', 'selection', 'participants_announced', 'preparing', 'ongoing', 'pending_completion', 'completed', 'canceled'].includes(prog.executionStatus || '');
+            const isDeadlinePassed = prog.deadline < new Date().toISOString().slice(0, 10);
 
             return (
               <div
@@ -296,11 +300,8 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
                       <span className="truncate">{prog.partnerName}</span>
                     </div>
 
-                    <h3 
-                      onClick={() => setActiveModalProgram(prog)}
-                      className="text-base font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 cursor-pointer"
-                    >
-                      {prog.title}
+                    <h3 className="text-base font-bold text-slate-900 transition-colors line-clamp-2 hover:text-blue-600">
+                      <Link href={`/program/${encodeURIComponent(prog.id)}`}>{prog.title}</Link>
                     </h3>
 
                     <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
@@ -326,7 +327,7 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
 
                 <div className="px-5 pb-5 pt-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
                   <div className="text-xs text-slate-600 font-mono tabular-nums">
-                    Pendaftar: <span className="font-semibold text-slate-900">{prog.enrolledCount}</span> / {prog.targetQuota}
+                    Pendaftar: <span className="font-semibold text-slate-900">{prog.enrolledCount}</span> / {prog.targetQuota > 0 ? prog.targetQuota : 'Tidak dibatasi'}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -337,14 +338,16 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
                       Detail
                     </button>
 
-                    {isApplied ? (
+                    {!canApplyToProgram ? (
+                      <Link href={`/program/${encodeURIComponent(prog.id)}`} className="px-3.5 py-1.5 text-xs font-semibold text-blue-800 bg-blue-50 rounded-lg">Lihat</Link>
+                    ) : isApplied ? (
                       <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200 font-semibold">
                         <CheckCircle2 size={13} />
                         Sudah Mendaftar
                       </span>
-                    ) : isFull ? (
+                    ) : isFull || isExecutionClosed || isDeadlinePassed ? (
                       <span className="text-xs text-slate-400 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 font-medium">
-                        Kuota Penuh
+                        {isExecutionClosed ? 'Pendaftaran ditutup' : isDeadlinePassed ? 'Pendaftaran berakhir' : 'Kuota Penuh'}
                       </span>
                     ) : (
                       <button
@@ -406,7 +409,7 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
               <div>
                 <span className="text-slate-400 block text-[11px]">Target Kuota</span>
                 <span className="font-semibold text-slate-900 font-mono tabular-nums">
-                  {activeModalProgram.enrolledCount} / {activeModalProgram.targetQuota} Relawan
+                  {activeModalProgram.enrolledCount} / {activeModalProgram.targetQuota > 0 ? activeModalProgram.targetQuota : 'Tidak dibatasi'} Relawan
                 </span>
               </div>
               <div>
@@ -416,6 +419,20 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
                 </span>
               </div>
             </div>
+
+            <section className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 space-y-3" aria-label="Status pelaksanaan program">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-blue-700">Status pelaksanaan</p>
+                <p className="text-sm font-bold text-slate-900">{activeModalProgram.publishedStatus === 'closed' ? 'Pendaftaran ditutup oleh admin' : ({planned:'Segera dibuka',registration_open:'Pendaftaran dibuka',registration_closed:'Pendaftaran ditutup',selection:'Seleksi peserta',participants_announced:'Pengumuman peserta',preparing:'Persiapan kegiatan',ongoing:'Sedang berlangsung',pending_completion:'Menunggu verifikasi selesai',completed:'Selesai',canceled:'Dibatalkan'}[activeModalProgram.executionStatus || 'planned'])}</p>
+                {activeModalProgram.publicAnnouncement && <p className="mt-1 text-xs text-slate-700">{activeModalProgram.publicAnnouncement}</p>}
+              </div>
+              {activeModalProgram.publicTimeline?.length ? <ol className="space-y-2 border-l border-blue-200 pl-3">
+                {activeModalProgram.publicTimeline.map((event, index) => <li key={`${event.createdAt}-${index}`} className="text-xs text-slate-700">
+                  <time className="mr-2 font-medium text-slate-500" dateTime={event.createdAt}>{new Date(event.createdAt).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</time>
+                  {event.announcement || ({planned:'Segera dibuka',registration_open:'Pendaftaran dibuka',registration_closed:'Pendaftaran ditutup',selection:'Seleksi peserta',participants_announced:'Pengumuman peserta',preparing:'Persiapan kegiatan',ongoing:'Sedang berlangsung',pending_completion:'Menunggu verifikasi selesai',completed:'Selesai',canceled:'Dibatalkan'}[event.status] || event.status)}
+                </li>)}
+              </ol> : null}
+            </section>
 
             {/* Description & Objectives */}
             <div className="space-y-3">
@@ -500,14 +517,24 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
                 Tutup
               </button>
 
-              {hasUserApplied(activeModalProgram.id) ? (
+              {!canApplyToProgram ? (
+                <span className="text-xs text-slate-600">Pendaftaran publik dapat dilakukan tanpa akun.</span>
+              ) : hasUserApplied(activeModalProgram.id) ? (
                 <div className="px-4 py-2 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-1.5">
                   <CheckCircle2 size={14} />
                   <span>Anda Sudah Terdaftar di Program Ini</span>
                 </div>
-              ) : activeModalProgram.enrolledCount >= activeModalProgram.targetQuota ? (
+              ) : activeModalProgram.targetQuota > 0 && activeModalProgram.enrolledCount >= activeModalProgram.targetQuota ? (
                 <div className="px-4 py-2 text-xs font-medium text-slate-500 bg-slate-100 rounded-lg border border-slate-200">
                   Pendaftaran Ditutup (Kuota Penuh)
+                </div>
+              ) : activeModalProgram.publishedStatus !== 'published' || ['registration_closed', 'selection', 'participants_announced', 'preparing', 'ongoing', 'pending_completion', 'completed', 'canceled'].includes(activeModalProgram.executionStatus || '') ? (
+                <div className="px-4 py-2 text-xs font-medium text-slate-500 bg-slate-100 rounded-lg border border-slate-200">
+                  Pendaftaran telah ditutup pada tahap pelaksanaan saat ini.
+                </div>
+              ) : activeModalProgram.deadline < new Date().toISOString().slice(0, 10) ? (
+                <div className="px-4 py-2 text-xs font-medium text-slate-500 bg-slate-100 rounded-lg border border-slate-200">
+                  Pendaftaran telah berakhir
                 </div>
               ) : (
                 <button

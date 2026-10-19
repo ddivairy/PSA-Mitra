@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Program, ProgramCategory, ProgramFormat } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
@@ -11,16 +11,18 @@ interface CreateProposalModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  existingProgram?: Program;
 }
 
 export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
+  existingProgram,
 }) => {
   const { createProgramProposal, currentUser, partners } = useApp();
 
-  const partnerOrg = partners.find(p => p.id === currentUser?.orgId) || partners[0];
+  const partnerOrg = partners.find(p => p.id === currentUser?.orgId);
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [errorMsg, setErrorMsg] = useState('');
@@ -49,8 +51,51 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
   const [picName, setPicName] = useState(partnerOrg ? partnerOrg.picName : '');
   const [picContact, setPicContact] = useState(partnerOrg ? `${partnerOrg.picPhone} / ${partnerOrg.picEmail}` : '');
   const [selectedImage, setSelectedImage] = useState('/images/program_youth_mentoring_1791874040738.jpg');
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!existingProgram) {
+      setStep(1); setErrorMsg(''); setTitle(''); setCategory('Pendidikan'); setSummary(''); setDescription(''); setObjectivesText('');
+      setFormat('offline'); setProvince('DKI Jakarta'); setCity('Jakarta Selatan'); setAddress(''); setStartDate(''); setEndDate(''); setSchedule('');
+      setTargetQuota(25); setDeadline(''); setRequirementsText(''); setAccessibilityInfo('');
+      setPicName(partnerOrg?.picName || currentUser?.name || ''); setPicContact(partnerOrg ? `${partnerOrg.picPhone} / ${partnerOrg.picEmail}` : currentUser?.email || '');
+      setSelectedImage('/images/program_youth_mentoring_1791874040738.jpg');
+      return;
+    }
+    setTitle(existingProgram.title); setCategory(existingProgram.category); setSummary(existingProgram.summary);
+    setDescription(existingProgram.description); setObjectivesText(existingProgram.objectives.join('\n'));
+    setFormat(existingProgram.format); setProvince(existingProgram.province || 'DKI Jakarta');
+    setCity(existingProgram.city || 'Jakarta Selatan'); setAddress(existingProgram.address || '');
+    setStartDate(existingProgram.startDate); setEndDate(existingProgram.endDate); setSchedule(existingProgram.schedule);
+    setTargetQuota(existingProgram.targetQuota); setDeadline(existingProgram.deadline);
+    setRequirementsText(existingProgram.requirements.join('\n')); setAccessibilityInfo(existingProgram.accessibilityInfo || '');
+    setPicName(existingProgram.picName); setPicContact(existingProgram.picContact); setSelectedImage(existingProgram.image);
+  }, [existingProgram, isOpen, partnerOrg, currentUser]);
 
   const availableCities = INDONESIA_REGIONS.find(r => r.province === province)?.cities || [];
+
+  const uploadCoverImage = async (file?: File) => {
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+      setErrorMsg('Gunakan gambar JPEG, PNG, atau WebP maksimal 5 MB.');
+      return;
+    }
+    setUploadingImage(true);
+    setErrorMsg('');
+    try {
+      const form = new FormData();
+      form.set('file', file);
+      const response = await fetch('/api/partner/program-media', { method: 'POST', body: form });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Unggah gambar gagal.');
+      setSelectedImage(result.imageUrl);
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : 'Unggah gambar gagal.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleNext = () => {
     setErrorMsg('');
@@ -78,12 +123,16 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
     setStep((step - 1) as any);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const persistProposal = async (saveAs: 'draft' | 'submitted') => {
+    setErrorMsg('');
+    if (!partnerOrg || partnerOrg.status !== 'approved') {
+      setErrorMsg('Organisasi mitra belum aktif atau belum tertaut ke akun ini.');
+      return;
+    }
     const objectives = objectivesText.split('\n').map(s => s.trim()).filter(Boolean);
     const requirements = requirementsText.split('\n').map(s => s.trim()).filter(Boolean);
 
-    const res = createProgramProposal({
+    const res = await createProgramProposal({
       partnerId: partnerOrg.id,
       partnerName: partnerOrg.name,
       title,
@@ -105,19 +154,21 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
       picName,
       picContact,
       image: selectedImage,
-    });
+    }, { id:existingProgram?.id, saveAs });
 
     if (res.success) {
       onSuccess();
       onClose();
-    }
+    } else setErrorMsg(res.message || 'Proposal gagal disimpan.');
   };
+
+  const handleSubmit = async (e: React.FormEvent) => { e.preventDefault(); await persistProposal('submitted'); };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Pengajuan Proposal Program Kolaborasi Baru"
+      title={existingProgram ? 'Edit Proposal Program Kolaborasi' : 'Pengajuan Proposal Program Kolaborasi Baru'}
       subtitle="Proposal akan ditinjau oleh Admin PSA sebelum dibuka untuk pendaftaran relawan"
       maxWidth="3xl"
     >
@@ -419,6 +470,14 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
                 <label className="block text-xs font-semibold text-slate-700 mb-2">
                   Pilih Visual Sampul Program:
                 </label>
+                <div className="mb-3 flex flex-wrap items-center gap-3">
+                  <label className="cursor-pointer rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-800 hover:bg-blue-100">
+                    {uploadingImage ? 'Mengunggah gambar…' : 'Unggah gambar sendiri'}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploadingImage} onChange={event => { void uploadCoverImage(event.target.files?.[0]); event.currentTarget.value = ''; }} className="sr-only" />
+                  </label>
+                  <span className="text-[11px] text-slate-500">JPEG, PNG, WebP · maksimal 5 MB · file tersimpan di bucket media publik.</span>
+                </div>
+                {selectedImage.startsWith('http') && <img src={selectedImage} alt="Pratinjau sampul program" className="mb-3 h-36 w-full rounded-lg border object-cover" />}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div 
                     onClick={() => setSelectedImage('/images/program_youth_mentoring_1791874040738.jpg')}
@@ -527,13 +586,13 @@ export const CreateProposalModal: React.FC<CreateProposalModalProps> = ({
                   <ArrowRight size={14} />
                 </button>
               ) : (
-                <button
-                  type="submit"
-                  className="px-6 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs flex items-center gap-1.5"
-                >
-                  <CheckCircle2 size={14} />
-                  <span>Kirim Proposal ke PSA</span>
-                </button>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => void persistProposal('draft')} className="px-4 py-2 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg">Simpan Draf</button>
+                  <button type="submit" className="px-6 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs flex items-center gap-1.5">
+                    <CheckCircle2 size={14} />
+                    <span>{existingProgram?.proposalStatus === 'revision_required' ? 'Kirim Ulang Proposal' : 'Kirim Proposal ke PSA'}</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>

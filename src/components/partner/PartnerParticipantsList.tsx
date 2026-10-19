@@ -20,9 +20,9 @@ import { Modal } from '../common/Modal';
 import { VolunteerApplication, ApplicationStatus } from '../../types';
 
 export const PartnerParticipantsList: React.FC = () => {
-  const { applications, programs, partners, currentUser, reviewVolunteerApplication } = useApp();
+  const { applications, programs, partners, currentUser, recommendVolunteerApplication } = useApp();
 
-  const currentOrg = partners.find(p => p.id === currentUser?.orgId) || partners[0];
+  const currentOrg = partners.find(p => p.id === currentUser?.orgId);
   const orgPrograms = programs.filter(p => p.partnerId === currentOrg?.id);
   const orgProgramIds = orgPrograms.map(p => p.id);
 
@@ -79,9 +79,9 @@ export const PartnerParticipantsList: React.FC = () => {
     { id: 'withdrawn', label: 'Mengundurkan diri', count: withdrawnApps.length },
   ];
 
-  const handleDecision = (decision: ApplicationStatus) => {
+  const handleDecision = async (decision: Extract<ApplicationStatus, 'accepted' | 'waitlisted' | 'rejected'>) => {
     if (!reviewingApp) return;
-    reviewVolunteerApplication(reviewingApp.id, decision, decisionNotes);
+    await recommendVolunteerApplication(reviewingApp.id, decision, decisionNotes);
     setReviewingApp(null);
     setDecisionNotes('');
   };
@@ -324,6 +324,11 @@ export const PartnerParticipantsList: React.FC = () => {
               </div>
             </div>
 
+            <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-blue-900">
+              <strong>Rekomendasi mitra bukan keputusan final.</strong> Admin PSA menetapkan hasil seleksi akhir dan mengirim pemberitahuan kepada pendaftar.
+              {reviewingApp.partnerRecommendation && <p className="mt-1">Rekomendasi tersimpan: {reviewingApp.partnerRecommendation}{reviewingApp.partnerReviewNotes ? ` · ${reviewingApp.partnerReviewNotes}` : ''}</p>}
+            </div>
+
             {/* Motivation statement */}
             <div className="space-y-1">
               <span className="font-bold text-slate-800">Motivasi &amp; Pernyataan Pendaftar:</span>
@@ -350,13 +355,13 @@ export const PartnerParticipantsList: React.FC = () => {
             {/* Decision note input */}
             <div className="space-y-1 pt-2 border-t border-slate-100">
               <label className="block font-bold text-slate-800">
-                Catatan Keputusan untuk Peserta (Opsional):
+                Catatan rekomendasi untuk Admin (Opsional):
               </label>
               <textarea
                 rows={2}
                 value={decisionNotes}
                 onChange={(e) => setDecisionNotes(e.target.value)}
-                placeholder="Contoh: Selamat bergabung di tim lapangan / Jadwal briefing akan dikirimkan via WA grup..."
+                placeholder="Catatan review awal untuk pertimbangan Admin..."
                 className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
               />
             </div>
@@ -377,7 +382,7 @@ export const PartnerParticipantsList: React.FC = () => {
                 className="px-3.5 py-2 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1.5"
               >
                 <XCircle size={14} />
-                <span>Tolak</span>
+                <span>Rekomendasikan ditolak</span>
               </button>
 
               <button
@@ -386,7 +391,7 @@ export const PartnerParticipantsList: React.FC = () => {
                 className="px-3.5 py-2 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg flex items-center gap-1.5"
               >
                 <Clock size={14} />
-                <span>Daftar Tunggu</span>
+                <span>Rekomendasikan daftar tunggu</span>
               </button>
 
               <button
@@ -395,7 +400,7 @@ export const PartnerParticipantsList: React.FC = () => {
                 className="px-4 py-2 text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg shadow-xs flex items-center gap-1.5"
               >
                 <CheckCircle2 size={14} />
-                <span>Terima Relawan</span>
+                <span>Rekomendasikan diterima</span>
               </button>
             </div>
           </div>

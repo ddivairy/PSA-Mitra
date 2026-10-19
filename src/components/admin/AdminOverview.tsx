@@ -24,7 +24,7 @@ export const AdminOverview: React.FC = () => {
   const approvedPartners = partners.filter(partner => partner.status === 'approved').length;
   const publishedPrograms = programs.filter(program => program.publishedStatus === 'published').length;
   const activeApplications = applications.filter(application => application.status !== 'withdrawn');
-  const participantCount = new Set(activeApplications.map(application => application.volunteerId)).size;
+  const participantCount = new Set(activeApplications.map(application => application.volunteerEmail.toLowerCase())).size;
   const pendingApplications = applications.filter(application =>
     application.status === 'submitted' || application.status === 'under_review'
   ).length;

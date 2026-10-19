@@ -4,15 +4,16 @@ export const runtime = 'nodejs';
 export async function GET() {
   const auth = await requirePsaAdmin();
   if ('error' in auth) return Response.json({ error: auth.error }, { status: auth.status });
-  const [apps, docs, partners] = await Promise.all([
+  const [apps, docs, partnerDocs, partners] = await Promise.all([
     auth.db.from('partnership_applications').select('*').order('created_at', { ascending: false }),
     auth.db.from('partnership_application_documents').select('*').order('created_at', { ascending: false }),
+    auth.db.from('partner_documents').select('id,organization_id,name,type,size,uploaded_at,verification_status,storage_path').order('uploaded_at',{ascending:false}),
     auth.db.from('partner_organizations').select('id,user_id,name,pic_name,pic_email,pic_phone,status,created_at').eq('status', 'approved').order('created_at', { ascending: false }),
   ]);
-  if (apps.error || docs.error || partners.error) return Response.json({ error: 'Gagal memuat pengajuan dan mitra.' }, { status: 500 });
-  const documents = await Promise.all((docs.data || []).map(async doc => {
-    const signed = await auth.db.storage.from('partner-documents').createSignedUrl(doc.storage_path, 300);
-    return { ...doc, url: signed.data?.signedUrl || null };
+  if (apps.error || docs.error || partnerDocs.error || partners.error) return Response.json({ error: 'Gagal memuat pengajuan dan mitra.' }, { status: 500 });
+  const documents = await Promise.all([...(docs.data || []).map(doc=>({...doc,organization_id:null as string|null})),...(partnerDocs.data||[]).map(doc=>({...doc,application_id:null as string|null,file_name:doc.name}))].map(async doc => {
+    const signed = doc.storage_path ? await auth.db.storage.from('partner-documents').createSignedUrl(doc.storage_path, 300) : null;
+    return { ...doc, url: signed?.data?.signedUrl || null };
   }));
   return Response.json({ applications: apps.data, documents, approvedPartners: partners.data });
 }

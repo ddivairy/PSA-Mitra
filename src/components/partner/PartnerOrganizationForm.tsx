@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   Building2, 
   MapPin, 
@@ -24,12 +24,10 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
   const { 
     partners, 
     updatePartnerOrg, 
-    submitPartnershipApplication, 
-    resubmitPartnershipApplication, 
     currentUser 
   } = useApp();
 
-  const partnerOrg = partners.find(p => p.id === currentUser?.orgId) || partners[0];
+  const partnerOrg = partners.find(p => p.id === currentUser?.orgId);
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [saveToast, setSaveToast] = useState(false);
@@ -58,35 +56,24 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
   const [offeredContribution, setOfferedContribution] = useState(partnerOrg?.offeredContribution || '');
   const [collaborationPeriod, setCollaborationPeriod] = useState(partnerOrg?.collaborationPeriod || '12 Bulan');
   const [documents, setDocuments] = useState<OrgDocument[]>(partnerOrg?.documents || []);
+  const [documentBusy,setDocumentBusy]=useState(false);
+  const documentInputRef=useRef<HTMLInputElement>(null);
+
+  useEffect(()=>{void fetch('/api/partner/organization/documents',{cache:'no-store'}).then(async response=>{const data=await response.json();if(response.ok)setDocuments((data.documents||[]).map((doc:any)=>({id:doc.id,name:doc.name,type:doc.type,size:doc.size,uploadedAt:doc.uploadedAt,verificationStatus:doc.verificationStatus,url:doc.url})))})},[]);
 
   const availableCities = INDONESIA_REGIONS.find(r => r.province === province)?.cities || [];
 
-  const handleAddMockDocument = () => {
-    const docNames = [
-      'SK_Kemenkumham_Legalitas_2026.pdf',
-      'Akta_Pendirian_Perusahaan.pdf',
-      'Surat_Komitmen_Kemitraan_PSA.pdf',
-      'Company_Profile_Lembaga.pdf',
-    ];
-    const unusedName = docNames.find(n => !documents.some(d => d.name === n)) || `Dokumen_Pendukung_${Date.now()}.pdf`;
-
-    const newDoc: OrgDocument = {
-      id: `doc-${Date.now()}`,
-      name: unusedName,
-      type: 'PDF',
-      size: '1.8 MB',
-      uploadedAt: new Date().toISOString().split('T')[0],
-    };
-    setDocuments([...documents, newDoc]);
+  const handleUploadDocument = async (file:File|null) => {
+    if(!file)return;setErrorMsg('');setDocumentBusy(true);try{const form=new FormData();form.set('document',file);const response=await fetch('/api/partner/organization/documents',{method:'POST',body:form});const data=await response.json();if(!response.ok)throw new Error(data.error||'Dokumen gagal diunggah.');setDocuments(previous=>[data.document,...previous])}catch(error){setErrorMsg(error instanceof Error?error.message:'Dokumen gagal diunggah.')}finally{setDocumentBusy(false)}
   };
 
-  const handleRemoveDocument = (docId: string) => {
-    setDocuments(documents.filter(d => d.id !== docId));
+  const handleRemoveDocument = async (docId: string) => {
+    const response=await fetch('/api/partner/organization/documents',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:docId})});const data=await response.json();if(!response.ok){setErrorMsg(data.error||'Dokumen gagal dihapus.');return}setDocuments(previous=>previous.filter(document=>document.id!==docId));
   };
 
-  const handleSaveDraft = () => {
-    if (!partnerOrg) return;
-    updatePartnerOrg(partnerOrg.id, {
+  const handleSaveDraft = async () => {
+    if (!partnerOrg) return false;
+    const result=await updatePartnerOrg(partnerOrg.id, {
       name,
       type,
       sector,
@@ -106,11 +93,13 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
       collaborationPeriod,
       documents,
     });
+    if(!result.success){setErrorMsg(result.message||'Profil gagal disimpan.');return false}
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 3000);
+    return true;
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     setErrorMsg('');
     if (step === 1) {
       if (!name.trim() || !sector.trim() || !description.trim()) {
@@ -128,7 +117,8 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
         return;
       }
     }
-    handleSaveDraft();
+    const saved=await handleSaveDraft();
+    if(!saved)return;
     setStep((step + 1) as any);
   };
 
@@ -137,7 +127,7 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
     setStep((step - 1) as any);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!partnerOrg) return;
 
@@ -162,13 +152,8 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
       documents,
     };
 
-    if (partnerOrg.status === 'revision_required') {
-      resubmitPartnershipApplication(partnerOrg.id, payload);
-    } else {
-      updatePartnerOrg(partnerOrg.id, payload);
-      submitPartnershipApplication(partnerOrg.id);
-    }
-
+    const result=await updatePartnerOrg(partnerOrg.id,payload,partnerOrg.status==='revision_required');
+    if(!result.success){setErrorMsg(result.message||'Profil gagal disimpan.');return}
     if (onComplete) onComplete();
   };
 
@@ -496,28 +481,30 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
                       Dokumen Pendukung / Legalitas Lembaga
                     </h4>
                     <p className="text-[11px] text-slate-500">
-                      Akta Pendirian, SK Kemenkumham, NIB, atau Surat Pengantar Kerja Sama (Format PDF, Maks. 5 MB)
+                      Akta Pendirian, SK Kemenkumham, NIB, atau Surat Pengantar Kerja Sama (PDF/JPG/PNG, maks. 10 MB)
                     </p>
                   </div>
                   <button
                     type="button"
-                    onClick={handleAddMockDocument}
+                    onClick={() => documentInputRef.current?.click()}
                     className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-1.5"
                   >
                     <Upload size={14} />
-                    <span>Unggah Berkas</span>
+                    <span>{documentBusy?'Mengunggah…':'Unggah Berkas'}</span>
                   </button>
                 </div>
+
+                <input ref={documentInputRef} type="file" accept="application/pdf,image/jpeg,image/png" className="hidden" onChange={event=>{void handleUploadDocument(event.target.files?.[0]||null);event.currentTarget.value=''}} />
 
                 <div className="space-y-2">
                   {documents.length === 0 ? (
                     <div 
-                      onClick={handleAddMockDocument}
+                      onClick={() => documentInputRef.current?.click()}
                       className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/40 transition-colors"
                     >
                       <Upload size={24} className="mx-auto text-slate-400 mb-1.5" />
                       <p className="text-xs font-medium text-slate-700">Klik untuk menambahkan berkas legalitas</p>
-                      <p className="text-[11px] text-slate-400">Berkas contoh akan ditampilkan di sini.</p>
+                      <p className="text-[11px] text-slate-400">Berkas disimpan di bucket privat organisasi Anda.</p>
                     </div>
                   ) : (
                     documents.map((doc) => (
@@ -528,7 +515,7 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
                         <div className="flex items-center gap-2.5">
                           <FileText size={16} className="text-blue-600 shrink-0" />
                           <div>
-                            <span className="font-semibold text-slate-900 block truncate max-w-xs">{doc.name}</span>
+                            <span className="font-semibold text-slate-900 block truncate max-w-xs">{doc.url?<a href={doc.url} target="_blank" rel="noreferrer" className="underline">{doc.name}</a>:doc.name}</span>
                             <span className="text-[10px] text-slate-400">{doc.type} · {doc.size} · Diunggah {doc.uploadedAt}</span>
                           </div>
                         </div>
@@ -631,7 +618,7 @@ export const PartnerOrganizationForm: React.FC<{ onComplete?: () => void }> = ({
                 >
                   <CheckCircle2 size={14} />
                   <span>
-                    {partnerOrg?.status === 'revision_required' ? 'Kirim Ulang Hasil Perbaikan' : 'Kirim Pengajuan Kemitraan'}
+                    {partnerOrg?.status === 'revision_required' ? 'Kirim Revisi ke Admin' : 'Simpan Profil Organisasi'}
                   </span>
                 </button>
               )}

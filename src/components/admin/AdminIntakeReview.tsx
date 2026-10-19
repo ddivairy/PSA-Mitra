@@ -6,6 +6,7 @@ import { useApp } from '../../context/AppContext';
 
 type Application = {
   id: string;
+  partner_id?: string | null;
   organization_name: string;
   organization_type: string;
   sector: string;
@@ -25,7 +26,7 @@ type Application = {
   created_at: string;
 };
 
-type Document = { id: string; application_id: string; file_name: string; url: string | null };
+type Document = { id: string; application_id: string | null; organization_id?:string|null; file_name: string; url: string | null };
 type Volunteer = {
   id: string;
   full_name: string;
@@ -432,9 +433,9 @@ export function AdminIntakeReview() {
                   Alamat: {application.address || '—'} · Website: {application.website || '—'} · Akun: {application.account_status}
                 </p>
 
-                {docs.filter(document => document.application_id === application.id).length > 0 && (
+                {docs.filter(document => document.application_id === application.id || (application.partner_id && document.organization_id === application.partner_id)).length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {docs.filter(document => document.application_id === application.id).map(document => (
+                    {docs.filter(document => document.application_id === application.id || (application.partner_id && document.organization_id === application.partner_id)).map(document => (
                       document.url ? (
                         <a
                           key={document.id}

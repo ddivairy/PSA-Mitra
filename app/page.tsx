@@ -194,10 +194,6 @@ export default function MainAppContent() {
   };
 
   const handleOpenApply = (prog: Program) => {
-    if (!currentUser) {
-      handleOpenAuth('register_vol');
-      return;
-    }
     setApplyingProgram(prog);
   };
 
@@ -303,10 +299,12 @@ export default function MainAppContent() {
             program={applyingProgram}
             isOpen={!!applyingProgram}
             onClose={() => setApplyingProgram(null)}
-            onSuccess={() => {
-              alert('Aplikasi pendaftaran berhasil dikirim!');
-              setIsViewingPublicSite(false);
-              navigatePortal('vol-applications');
+            onSuccess={(emailStatus) => {
+              alert(emailStatus === 'sent'
+                ? 'Pendaftaran tersimpan dan Gmail menerima email konfirmasi.'
+                : emailStatus === 'unknown'
+                  ? 'Pendaftaran tersimpan, tetapi status email belum dapat dipastikan. Admin dapat memeriksa riwayat follow-up sebelum mengirim ulang.'
+                  : 'Pendaftaran tersimpan, tetapi email konfirmasi gagal dikirim. Admin dapat menindaklanjuti melalui Follow-up Email.');
             }}
           />
         )}
@@ -422,9 +420,15 @@ export default function MainAppContent() {
           program={applyingProgram}
           isOpen={!!applyingProgram}
           onClose={() => setApplyingProgram(null)}
-          onSuccess={() => {
-            alert('Aplikasi pendaftaran berhasil dikirim!');
-            navigatePortal('vol-applications');
+          onSuccess={(emailStatus) => {
+            alert(emailStatus === 'sent'
+              ? 'Pendaftaran tersimpan dan Gmail menerima email konfirmasi.'
+              : emailStatus === 'unknown'
+                ? 'Pendaftaran tersimpan, tetapi status email belum dapat dipastikan. Admin dapat memeriksa riwayat follow-up sebelum mengirim ulang.'
+                : 'Pendaftaran tersimpan, tetapi email konfirmasi gagal dikirim. Admin dapat menindaklanjuti melalui Follow-up Email.');
+            setApplyingProgram(null);
+            setCurrentPublicTab('public-programs');
+            setIsViewingPublicSite(true);
           }}
         />
       )}

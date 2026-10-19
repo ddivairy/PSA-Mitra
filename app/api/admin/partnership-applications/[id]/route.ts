@@ -15,9 +15,12 @@ export async function PATCH(request: Request, { params }: Context) {
   const notes = typeof input.notes === 'string' ? input.notes.trim().slice(0, 4000) : '';
   if (status !== 'approved' && !validStatuses.includes(status)) return Response.json({ error: 'Status keputusan tidak valid.' }, { status: 400 });
   if (['revision_required', 'rejected'].includes(status) && !notes) return Response.json({ error: 'Catatan wajib diisi untuk revisi atau penolakan.' }, { status: 400 });
+  if (status === 'approved' && ['rejected', 'withdrawn'].includes(application.status)) return Response.json({ error: 'Pengajuan yang ditolak atau ditarik tidak dapat disetujui. Minta calon mitra mengajukan kembali.' }, { status: 409 });
+  if (status !== 'approved' && application.status === 'approved' && application.account_status === 'created') return Response.json({ error: 'Pengajuan yang sudah menghasilkan akun mitra tidak dapat diubah dari antrean review.' }, { status: 409 });
   if (status !== 'approved') {
-    const updated = await auth.db.from('partnership_applications').update({ status, review_notes: notes || null, reviewed_by: auth.user.id, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', id).select('*').single();
+    const updated = await auth.db.from('partnership_applications').update({ status, review_notes: notes || null, reviewed_by: auth.user.id, reviewed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', id).eq('status', application.status).select('*').maybeSingle();
     if (updated.error) return Response.json({ error: 'Gagal menyimpan keputusan.' }, { status: 500 });
+    if (!updated.data) return Response.json({ error: 'Status pengajuan berubah oleh admin lain. Muat ulang sebelum mengambil keputusan.' }, { status: 409 });
     await auth.db.from('audit_logs').insert({ id: crypto.randomUUID(), actor_name: auth.user.user_metadata?.name || auth.user.email || 'Admin PSA', actor_role: 'admin', action: `PARTNERSHIP_APPLICATION_${status.toUpperCase()}`, entity_type: 'partnership', entity_id: id, details: `Status pengajuan mitra diubah menjadi ${status}. Catatan: ${notes || '-'}` });
     return Response.json({ application: updated.data });
   }

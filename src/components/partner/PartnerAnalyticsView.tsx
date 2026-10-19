@@ -8,7 +8,7 @@ import { INDONESIA_REGIONS } from '../../data/indonesiaRegions';
 export const PartnerAnalyticsView: React.FC = () => {
   const { applications, programs, partners, currentUser } = useApp();
 
-  const currentOrg = partners.find(p => p.id === currentUser?.orgId) || partners[0];
+  const currentOrg = partners.find(p => p.id === currentUser?.orgId);
   const orgPrograms = programs.filter(p => p.partnerId === currentOrg?.id);
   const orgProgramIds = orgPrograms.map(p => p.id);
   const orgApps = applications.filter(a => orgProgramIds.includes(a.programId));

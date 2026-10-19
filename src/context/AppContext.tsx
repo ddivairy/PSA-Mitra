@@ -15,15 +15,6 @@ import {
   ProposalStatus,
   PublicationStatus,
 } from '../types';
-import {
-  INITIAL_USERS,
-  INITIAL_VOLUNTEER_PROFILE,
-  INITIAL_PARTNERS,
-  INITIAL_PROGRAMS,
-  INITIAL_APPLICATIONS,
-  INITIAL_AUDIT_LOGS,
-  INITIAL_NOTIFICATIONS,
-} from '../data/initialData';
 import { createClientSupabaseClient } from '../../lib/supabase/client';
 
 interface AppContextType {
@@ -43,6 +34,11 @@ interface AppContextType {
   adminWorkspaceReady: boolean;
   adminWorkspaceError: string;
   refreshAdminWorkspace: () => Promise<void>;
+  partnerWorkspaceLoading: boolean;
+  partnerWorkspaceError: string;
+  refreshPartnerWorkspace: () => Promise<void>;
+  publicDirectoryLoading: boolean;
+  publicDirectoryError: string;
 
   // Auth actions
   loginAsUser: (userId: string) => void;
@@ -57,24 +53,22 @@ interface AppContextType {
   withdrawApplication: (applicationId: string) => void;
 
   // Partner actions
-  updatePartnerOrg: (orgId: string, data: Partial<PartnerOrganization>) => void;
+  updatePartnerOrg: (orgId: string, data: Partial<PartnerOrganization>, resubmit?: boolean) => Promise<{ success:boolean; message?:string }>;
   updatePartnerDocumentVerification: (orgId: string, documentId: string, status: NonNullable<PartnerOrganization['documents'][number]['verificationStatus']>) => boolean;
   submitPartnershipApplication: (orgId: string) => void;
   resubmitPartnershipApplication: (orgId: string, updatedFields?: Partial<PartnerOrganization>) => void;
-  createProgramProposal: (proposalData: Omit<Program, 'id' | 'createdAt' | 'proposalStatus' | 'publishedStatus' | 'enrolledCount'>) => { success: boolean; programId: string };
+  createProgramProposal: (proposalData: Omit<Program, 'id' | 'createdAt' | 'proposalStatus' | 'publishedStatus' | 'enrolledCount'>, options?: { id?: string; saveAs?: 'draft' | 'submitted' }) => Promise<{ success: boolean; programId?: string; message?: string }>;
   
   // Admin actions
   reviewPartnership: (orgId: string, decision: 'approved' | 'revision_required' | 'rejected', notes?: string) => void;
   reviewProgramProposal: (programId: string, decision: 'approved' | 'revision_required' | 'rejected', notes?: string) => void;
   toggleProgramPublication: (programId: string, status: PublicationStatus) => void;
-  reviewVolunteerApplication: (appId: string, decision: ApplicationStatus, notes?: string) => void;
+  reviewVolunteerApplication: (appId: string, decision: ApplicationStatus, notes?: string) => Promise<boolean>;
+  recommendVolunteerApplication: (appId: string, decision: 'accepted' | 'waitlisted' | 'rejected', notes?: string) => Promise<void>;
 
   // Notifications & Utilities
   markNotificationsAsRead: () => void;
-  resetAllData: () => void;
 }
-
-const STORAGE_KEY = 'psa_platform_data_v1';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -82,47 +76,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [role, setRoleState] = useState<UserRole>('public');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
-  const [volunteerProfile, setVolunteerProfile] = useState<VolunteerProfile>(INITIAL_VOLUNTEER_PROFILE);
-  const [partners, setPartners] = useState<PartnerOrganization[]>(INITIAL_PARTNERS);
-  const [programs, setPrograms] = useState<Program[]>(INITIAL_PROGRAMS);
-  const [applications, setApplications] = useState<VolunteerApplication[]>(INITIAL_APPLICATIONS);
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [volunteerProfile, setVolunteerProfile] = useState<VolunteerProfile>({ id:'', userId:'', fullName:'', province:'', city:'', interests:[], skills:[] });
+  const [partners, setPartners] = useState<PartnerOrganization[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [applications, setApplications] = useState<VolunteerApplication[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [adminWorkspaceLoading, setAdminWorkspaceLoading] = useState(false);
   const [adminWorkspaceReady, setAdminWorkspaceReady] = useState(false);
   const [adminWorkspaceError, setAdminWorkspaceError] = useState('');
-
-  // Load from localStorage on client mount
-  useEffect(() => {
-    try {
-      const savedUsers = localStorage.getItem(`${STORAGE_KEY}_users`);
-      if (savedUsers) setUsers(JSON.parse(savedUsers));
-
-      const savedVol = localStorage.getItem(`${STORAGE_KEY}_volProfile`);
-      if (savedVol) setVolunteerProfile(JSON.parse(savedVol));
-
-      const savedPartners = localStorage.getItem(`${STORAGE_KEY}_partners`);
-      if (savedPartners) setPartners(JSON.parse(savedPartners));
-
-      const savedPrograms = localStorage.getItem(`${STORAGE_KEY}_programs`);
-      if (savedPrograms) setPrograms(JSON.parse(savedPrograms));
-
-      const savedApps = localStorage.getItem(`${STORAGE_KEY}_apps`);
-      if (savedApps) setApplications(JSON.parse(savedApps));
-
-      const savedLogs = localStorage.getItem(`${STORAGE_KEY}_logs`);
-      if (savedLogs) setAuditLogs(JSON.parse(savedLogs));
-
-      const savedNotifs = localStorage.getItem(`${STORAGE_KEY}_notifs`);
-      if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
-    } catch (e) {
-      console.error('Failed to load saved state from localStorage:', e);
-    } finally {
-      setIsLoaded(true);
-    }
-  }, []);
+  const [partnerWorkspaceLoading, setPartnerWorkspaceLoading] = useState(false);
+  const [partnerWorkspaceError, setPartnerWorkspaceError] = useState('');
+  const [publicDirectoryLoading, setPublicDirectoryLoading] = useState(false);
+  const [publicDirectoryError, setPublicDirectoryError] = useState('');
 
   const refreshAdminWorkspace = useCallback(async () => {
     setAdminWorkspaceLoading(true);
@@ -152,47 +119,76 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  // The admin workspace never treats localStorage or bundled sample arrays as
-  // the source of admin data.
+  const refreshPartnerWorkspace = useCallback(async () => {
+    setPartnerWorkspaceLoading(true);
+    setPartnerWorkspaceError('');
+    try {
+      const response = await fetch('/api/partner/programs', { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Data mitra gagal dimuat.');
+      setPrograms((data.programs || []).map((p: any) => ({
+        id:p.id, partnerId:p.partner_id, partnerName:p.partner_name, title:p.title, category:p.category,
+        summary:p.summary, description:p.description, objectives:p.objectives||[], format:p.format,
+        province:p.province||undefined, city:p.city||undefined, address:p.address||undefined,
+        startDate:p.start_date, endDate:p.end_date, schedule:p.schedule, targetQuota:p.target_quota,
+        enrolledCount:p.enrolled_count, requirements:p.requirements||[], accessibilityInfo:p.accessibility_info||undefined,
+        deadline:p.deadline, picName:p.pic_name, picContact:p.pic_contact, proposalStatus:p.proposal_status,
+        publishedStatus:p.published_status, executionStatus:p.execution_status||'planned', publicAnnouncement:p.public_announcement||undefined,
+        image:p.image, createdAt:p.created_at, reviewNotes:p.review_notes||undefined,
+      })));
+      setApplications((data.applications || []).map((a: any) => ({
+        id:a.id, programId:a.program_id, programTitle:a.program_title, partnerName:a.partner_name,
+        volunteerId:a.volunteer_id||'', volunteerName:a.volunteer_name, volunteerEmail:a.volunteer_email,
+        volunteerPhone:a.volunteer_phone, volunteerGender:a.volunteer_gender||undefined,
+        volunteerCity:a.volunteer_city, volunteerProvince:a.volunteer_province||undefined,
+        motivation:a.motivation, answers:a.answers||{}, status:a.status, submittedAt:a.submitted_at,
+        reviewNotes:a.review_notes||undefined, history:a.history||[],
+        partnerRecommendation:a.partner_recommendation||undefined, partnerReviewNotes:a.partner_review_notes||undefined,
+      })));
+    } catch (error) {
+      setPrograms([]);
+      setApplications([]);
+      setPartnerWorkspaceError(error instanceof Error ? error.message : 'Data mitra gagal dimuat.');
+    } finally { setPartnerWorkspaceLoading(false); }
+  }, []);
+
+  // Admin and partner workspaces are populated by role-checked server APIs.
   useEffect(() => {
     if (role === 'admin') void refreshAdminWorkspace();
   }, [role, refreshAdminWorkspace]);
 
-  // Save to localStorage only after initial client load is complete
   useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(users));
-  }, [users, isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem(`${STORAGE_KEY}_volProfile`, JSON.stringify(volunteerProfile));
-  }, [volunteerProfile, isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem(`${STORAGE_KEY}_partners`, JSON.stringify(partners));
-  }, [partners, isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem(`${STORAGE_KEY}_programs`, JSON.stringify(programs));
-  }, [programs, isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem(`${STORAGE_KEY}_apps`, JSON.stringify(applications));
-  }, [applications, isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem(`${STORAGE_KEY}_logs`, JSON.stringify(auditLogs));
-  }, [auditLogs, isLoaded]);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-    localStorage.setItem(`${STORAGE_KEY}_notifs`, JSON.stringify(notifications));
-  }, [notifications, isLoaded]);
+    if (role === 'partner') void refreshPartnerWorkspace();
+    else if (role === 'public') {
+      setUsers([]); setAuditLogs([]); setNotifications([]); setPublicDirectoryError('');
+      setPrograms([]); setApplications([]); setPartners([]); setPublicDirectoryLoading(true);
+      void fetch('/api/public/directory', { cache: 'no-store' }).then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Katalog publik gagal dimuat.');
+        setPrograms((data.programs || []).map((p: any) => ({
+          id:p.id, partnerId:p.partner_id, partnerName:p.partner_name, title:p.title, category:p.category,
+          summary:p.summary, description:p.description, objectives:p.objectives||[], format:p.format,
+          province:p.province||undefined, city:p.city||undefined, address:p.address||undefined,
+          startDate:p.start_date, endDate:p.end_date, schedule:p.schedule, targetQuota:p.target_quota,
+          enrolledCount:p.enrolled_count, requirements:p.requirements||[], accessibilityInfo:p.accessibility_info||undefined,
+          deadline:p.deadline, picName:'', picContact:'', proposalStatus:p.proposal_status,
+          publishedStatus:p.published_status, executionStatus:p.execution_status||'planned', publicAnnouncement:p.public_announcement||undefined,
+          publicTimeline:(data.timeline||[]).filter((item:any)=>item.program_id===p.id).map((item:any)=>({status:item.status,announcement:item.announcement||undefined,createdAt:item.created_at})),
+          image:p.image, createdAt:p.created_at,
+        })));
+        setPartners((data.partners || []).map((p: any) => ({
+          id:p.id, userId:'', name:p.name, type:p.type, sector:p.sector, description:p.description||'',
+          website:p.website||undefined, address:'', province:p.province, city:p.city, picName:'', picRole:'',
+          picPhone:'', picEmail:'', collaborationReason:'', collaborationFocus:[], collaborationObjective:'',
+          targetImpact:'', offeredContribution:'', collaborationPeriod:'', documents:[], status:'approved', history:[], createdAt:'',
+        })));
+      }).catch(error => {
+        setPrograms([]); setPartners([]);
+        setPublicDirectoryError(error instanceof Error ? error.message : 'Katalog publik gagal dimuat.');
+        console.error('Public PSA directory load failed:', error);
+      }).finally(() => setPublicDirectoryLoading(false));
+    }
+  }, [role, refreshPartnerWorkspace]);
 
   // Derived current user
   const currentUser = users.find(u => u.id === currentUserId) || null;
@@ -214,8 +210,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const setAuthenticatedUser = useCallback((user: User, organization?: PartnerOrganization) => {
-    setUsers(previous => [user, ...previous.filter(existing => existing.id !== user.id)]);
-    if (organization) setPartners(previous => [organization, ...previous.filter(existing => existing.id !== organization.id)]);
+    setUsers(previous => user.role === 'partner' ? [user] : [user, ...previous.filter(existing => existing.id !== user.id)]);
+    if (user.role === 'partner') setPartners(organization ? [organization] : []);
+    else if (organization) setPartners(previous => [organization, ...previous.filter(existing => existing.id !== organization.id)]);
     setCurrentUserId(user.id);
     setRoleState(user.role);
   }, []);
@@ -455,8 +452,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addAuditLog('APPLICATION_WITHDRAWN', 'application', applicationId, `Pendaftaran ${applicationId} ditarik oleh peserta`);
   };
 
-  const updatePartnerOrg = (orgId: string, data: Partial<PartnerOrganization>) => {
-    setPartners(prev => prev.map(org => org.id === orgId ? { ...org, ...data } : org));
+  const updatePartnerOrg = async (orgId: string, data: Partial<PartnerOrganization>, resubmit = false) => {
+    const payload = {
+      name:data.name, type:data.type, sector:data.sector, description:data.description, website:data.website,
+      address:data.address, province:data.province, city:data.city, picName:data.picName, picRole:data.picRole,
+      picPhone:data.picPhone, picEmail:data.picEmail, collaborationReason:data.collaborationReason,
+      collaborationObjective:data.collaborationObjective, targetImpact:data.targetImpact,
+      offeredContribution:data.offeredContribution, collaborationPeriod:data.collaborationPeriod, resubmit,
+    };
+    const response = await fetch('/api/partner/organization',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const result = await response.json();
+    if (!response.ok) return {success:false,message:result.error||'Profil organisasi gagal disimpan.'};
+    setPartners(prev=>prev.map(org=>org.id===orgId?{...org,...data,...(resubmit?{status:'submitted' as const,reviewNotes:undefined}: {})}:org));
+    return {success:true};
   };
 
   const updatePartnerDocumentVerification = (
@@ -536,26 +544,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addAuditLog('PARTNERSHIP_RESUBMITTED', 'partnership', orgId, `Mitra mengirimkan kembali perbaikan dokumen kemitraan`);
   };
 
-  const createProgramProposal = (proposalData: Omit<Program, 'id' | 'createdAt' | 'proposalStatus' | 'publishedStatus' | 'enrolledCount'>) => {
-    const newProgId = `prog-${Date.now().toString().slice(-4)}`;
-    const newProg: Program = {
-      ...proposalData,
-      id: newProgId,
-      enrolledCount: 0,
-      proposalStatus: 'submitted',
-      publishedStatus: 'draft',
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-
-    setPrograms(prev => [newProg, ...prev]);
-    addAuditLog('PROGRAM_PROPOSAL_CREATED', 'proposal', newProgId, `Proposal program "${newProg.title}" diajukan oleh ${proposalData.partnerName}`);
-    
-    const adminUser = users.find(u => u.role === 'admin');
-    if (adminUser) {
-      addNotification(adminUser.id, 'Proposal Program Baru', `Proposal "${newProg.title}" diajukan oleh ${proposalData.partnerName}.`, 'proposal');
-    }
-
-    return { success: true, programId: newProgId };
+  const createProgramProposal = async (proposalData: Omit<Program, 'id' | 'createdAt' | 'proposalStatus' | 'publishedStatus' | 'enrolledCount'>, options: { id?: string; saveAs?: 'draft' | 'submitted' } = {}) => {
+    const response = await fetch('/api/partner/programs', {
+      method: options.id ? 'PATCH' : 'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ id:options.id, saveAs:options.saveAs || 'submitted', title:proposalData.title, category:proposalData.category, summary:proposalData.summary,
+        description:proposalData.description, objectives:proposalData.objectives, format:proposalData.format,
+        province:proposalData.province, city:proposalData.city, address:proposalData.address,
+        startDate:proposalData.startDate, endDate:proposalData.endDate, schedule:proposalData.schedule,
+        targetQuota:proposalData.targetQuota, requirements:proposalData.requirements,
+        accessibilityInfo:proposalData.accessibilityInfo, deadline:proposalData.deadline,
+        picName:proposalData.picName, picContact:proposalData.picContact, image:proposalData.image }),
+    });
+    const result = await response.json();
+    if (!response.ok) return { success:false, message:result.error || 'Proposal gagal disimpan.' };
+    await refreshPartnerWorkspace();
+    return { success:true, programId:result.program.id };
   };
 
   const reviewPartnership = (orgId: string, decision: 'approved' | 'revision_required' | 'rejected', notes?: string) => {
@@ -616,14 +619,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await refreshAdminWorkspace();
   };
 
-  const reviewVolunteerApplication = async (appId: string, decision: ApplicationStatus, notes?: string) => {
-    const response = await fetch(`/api/admin/volunteer-applications/${encodeURIComponent(appId)}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: decision, notes: notes || '' }),
+  const reviewVolunteerApplication = async (appId: string, decision: ApplicationStatus, notes?: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/admin/volunteer-applications/${encodeURIComponent(appId)}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: decision, notes: notes || '' }),
+      });
+      const result = await response.json();
+      if (!response.ok) { window.alert(result.error || 'Gagal menyimpan hasil review relawan.'); return false; }
+      await refreshAdminWorkspace();
+      if (result.emailDelivery?.status === 'failed') {
+        window.alert(`Keputusan tersimpan, tetapi email hasil seleksi gagal dikirim. Status kegagalan sudah dicatat; admin dapat mengirim ulang melalui menu Follow-up Email. Detail: ${result.emailDelivery.error || 'lihat riwayat follow-up.'}`);
+      } else if (result.emailDelivery?.status === 'sent') {
+        window.alert('Keputusan dan email hasil seleksi berhasil diproses.');
+      } else if (result.emailDelivery?.status === 'unknown') {
+        window.alert(`Keputusan tersimpan, tetapi status pengiriman email belum dapat dipastikan. Periksa riwayat follow-up sebelum mencoba kembali. ${result.emailDelivery.error || ''}`);
+      }
+      return true;
+    } catch (error) {
+      window.alert(error instanceof Error ? `Keputusan tidak dapat diverifikasi: ${error.message}` : 'Keputusan tidak dapat diverifikasi. Periksa status pendaftaran sebelum mencoba kembali.');
+      return false;
+    }
+  };
+
+  const recommendVolunteerApplication = async (appId: string, decision: 'accepted' | 'waitlisted' | 'rejected', notes?: string) => {
+    const response = await fetch(`/api/partner/applications/${encodeURIComponent(appId)}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ recommendation:decision, notes:notes||'' }),
     });
     const result = await response.json();
-    if (!response.ok) { window.alert(result.error || 'Gagal menyimpan hasil review relawan.'); return; }
-    await refreshAdminWorkspace();
+    if (!response.ok) { window.alert(result.error || 'Rekomendasi gagal disimpan.'); return; }
+    await refreshPartnerWorkspace();
   };
 
   const markNotificationsAsRead = async () => {
@@ -636,25 +662,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
     if (!response.ok) return;
     await refreshAdminWorkspace();
-  };
-
-  const resetAllData = () => {
-    localStorage.removeItem(`${STORAGE_KEY}_users`);
-    localStorage.removeItem(`${STORAGE_KEY}_volProfile`);
-    localStorage.removeItem(`${STORAGE_KEY}_partners`);
-    localStorage.removeItem(`${STORAGE_KEY}_programs`);
-    localStorage.removeItem(`${STORAGE_KEY}_apps`);
-    localStorage.removeItem(`${STORAGE_KEY}_logs`);
-    localStorage.removeItem(`${STORAGE_KEY}_notifs`);
-
-    setUsers(INITIAL_USERS);
-    setVolunteerProfile(INITIAL_VOLUNTEER_PROFILE);
-    setPartners(INITIAL_PARTNERS);
-    setPrograms(INITIAL_PROGRAMS);
-    setApplications(INITIAL_APPLICATIONS);
-    setAuditLogs(INITIAL_AUDIT_LOGS);
-    setNotifications(INITIAL_NOTIFICATIONS);
-    setRole('public');
   };
 
   const unreadNotifsCount = currentUser
@@ -680,6 +687,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         adminWorkspaceReady,
         adminWorkspaceError,
         refreshAdminWorkspace,
+        partnerWorkspaceLoading,
+        partnerWorkspaceError,
+        refreshPartnerWorkspace,
+        publicDirectoryLoading,
+        publicDirectoryError,
 
         loginAsUser,
         logoutToPublic,
@@ -701,9 +713,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         reviewProgramProposal,
         toggleProgramPublication,
         reviewVolunteerApplication,
+        recommendVolunteerApplication,
 
         markNotificationsAsRead,
-        resetAllData,
       }}
     >
       {children}

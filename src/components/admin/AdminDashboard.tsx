@@ -6,7 +6,6 @@ import { StatusBadge } from '../common/StatusBadge';
 import { AssignmentsTrackerWidget, AssignmentProgressItem } from '../dashboard/AssignmentsTrackerWidget';
 import { AnalyticsOverviewWidget, AnalyticsGaugeItem } from '../dashboard/AnalyticsOverviewWidget';
 import { NotificationsPanelWidget, NoticeItem } from '../dashboard/NotificationsPanelWidget';
-import { InteractiveCalendarWidget } from '../dashboard/InteractiveCalendarWidget';
 import { HighlightActionCard } from '../dashboard/HighlightActionCard';
 import { TodayTasksWidget, TodayTaskItem } from '../dashboard/TodayTasksWidget';
 import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
@@ -22,7 +21,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
     applications,
     notifications,
     currentUser,
-    reviewProgramProposal,
   } = useApp();
 
   const pendingPartnerships = partners.filter(partner =>
@@ -39,6 +37,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const resolvedApplications = applications.filter(application =>
     ['accepted', 'rejected', 'withdrawn'].includes(application.status)
   ).length;
+  const upcomingPrograms = programs
+    .filter(program => program.proposalStatus === 'approved' && program.publishedStatus === 'published' && program.startDate >= new Date().toISOString().slice(0, 10))
+    .sort((a, b) => a.startDate.localeCompare(b.startDate))
+    .slice(0, 5);
 
   const adminTasks: TodayTaskItem[] = [
     {
@@ -71,18 +73,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
   const progressItems: AssignmentProgressItem[] = [
     {
       id: 'partner-review',
-      title: 'Target Verifikasi Mitra Q4',
+      title: 'Mitra disetujui',
       progress: partners.length ? Math.round((approvedPartners / partners.length) * 100) : 0,
     },
     {
       id: 'proposal-review',
-      title: 'Penyelesaian Seleksi Relawan',
+      title: 'Aplikasi dengan keputusan final',
       progress: applications.length ? Math.round((resolvedApplications / applications.length) * 100) : 0,
       isCoral: true,
     },
     {
       id: 'application-review',
-      title: 'Audit Kepatuhan Berkas MoA',
+      title: 'Proposal program disetujui',
       progress: programs.length ? Math.round((approvedProposals / programs.length) * 100) : 0,
     },
   ];
@@ -133,8 +135,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         <div className="stack">
           <AssignmentsTrackerWidget
             title="Indikator Kinerja & Verifikasi"
-            subtitle="Capaian target SLA persetujuan berkas dan pemrosesan seleksi"
-            timeframeBadge="Oktober 2026"
+            subtitle="Ringkasan status dari data organisasi, aplikasi, dan proposal di Supabase"
+            timeframeBadge="Data saat ini"
             items={progressItems}
           />
 
@@ -221,19 +223,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                         </p>
                       </div>
                       <div className="flex shrink-0 flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => void reviewProgramProposal(program.id, 'approved', 'Proposal disetujui untuk dipublikasikan ke relawan')}
-                          className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-emerald-700"
-                        >
-                          Setujui Proposal
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void reviewProgramProposal(program.id, 'revision_required', 'Mohon sesuaikan rincian anggaran dan kuota relawan')}
-                          className="rounded-xl border border-[#5C80B6]/20 bg-[#5C80B6]/5 px-3 py-1.5 text-xs font-bold text-[#42699e] transition-colors hover:bg-[#5C80B6]/10"
-                        >
-                          Catatan Revisi
+                        <button type="button" onClick={() => onNavigate('admin-proposals')} className="rounded-xl bg-emerald-700 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-emerald-800">
+                          Buka review proposal
                         </button>
                       </div>
                     </div>
@@ -255,7 +246,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               else onNavigate('admin-partnerships');
             }}
           />
-          <InteractiveCalendarWidget />
+          <section className="card panel" aria-labelledby="upcoming-programs-heading">
+            <div className="panel-head">
+              <h2 id="upcoming-programs-heading" className="text-base font-extrabold text-[#0F172A]">Jadwal program terbit</h2>
+            </div>
+            {upcomingPrograms.length === 0 ? <p className="py-6 text-center text-xs text-[#64748B]">Belum ada jadwal program terbit yang akan datang.</p> : (
+              <ul className="space-y-3">
+                {upcomingPrograms.map(program => <li key={program.id} className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3 last:border-0">
+                  <div><p className="text-sm font-semibold text-slate-900">{program.title}</p><p className="text-xs text-slate-500">{program.partnerName} · {program.city || program.province || 'Lokasi belum dicantumkan'}</p></div>
+                  <time className="shrink-0 text-xs font-medium text-slate-600" dateTime={program.startDate}>{new Date(`${program.startDate}T00:00:00`).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</time>
+                </li>)}
+              </ul>
+            )}
+          </section>
           <AnalyticsOverviewWidget
             title="Efektivitas Seleksi & Tata Kelola"
             items={analyticsItems}

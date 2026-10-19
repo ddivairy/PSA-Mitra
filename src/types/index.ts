@@ -47,6 +47,7 @@ export interface OrgDocument {
   size: string;
   uploadedAt: string;
   verificationStatus?: 'pending' | 'verified' | 'revision_required';
+  url?: string | null;
 }
 
 export interface StatusHistoryItem {
@@ -102,6 +103,7 @@ export type ProposalStatus =
   | 'rejected';
 
 export type PublicationStatus = 'draft' | 'published' | 'closed' | 'archived';
+export type ProgramExecutionStatus = 'planned' | 'registration_open' | 'registration_closed' | 'selection' | 'participants_announced' | 'preparing' | 'ongoing' | 'pending_completion' | 'completed' | 'canceled';
 
 export interface Program {
   id: string;
@@ -131,6 +133,9 @@ export interface Program {
   image: string;
   createdAt: string;
   reviewNotes?: string;
+  executionStatus?: ProgramExecutionStatus;
+  publicAnnouncement?: string;
+  publicTimeline?: { status: ProgramExecutionStatus; announcement?: string; createdAt: string }[];
 }
 
 export type ApplicationStatus = 
@@ -158,6 +163,8 @@ export interface VolunteerApplication {
   status: ApplicationStatus;
   submittedAt: string;
   reviewNotes?: string;
+  partnerRecommendation?: 'accepted' | 'waitlisted' | 'rejected';
+  partnerReviewNotes?: string;
   history: StatusHistoryItem[];
 }
 

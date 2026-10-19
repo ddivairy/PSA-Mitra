@@ -15,7 +15,6 @@ import {
 import { useApp } from '../../context/AppContext';
 import { StatusBadge } from '../common/StatusBadge';
 import { CreateProposalModal } from './CreateProposalModal';
-import { InteractiveCalendarWidget } from '../dashboard/InteractiveCalendarWidget';
 import { AnalyticsOverviewWidget, AnalyticsGaugeItem } from '../dashboard/AnalyticsOverviewWidget';
 import { NotificationsPanelWidget, NoticeItem } from '../dashboard/NotificationsPanelWidget';
 import { AssignmentsTrackerWidget, AssignmentProgressItem } from '../dashboard/AssignmentsTrackerWidget';
@@ -28,96 +27,41 @@ interface PartnerDashboardProps {
 }
 
 export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }) => {
-  const { partners, programs, applications, currentUser } = useApp();
+  const { partners, programs, applications, currentUser, partnerWorkspaceLoading, partnerWorkspaceError } = useApp();
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 
-  const currentOrg = partners.find(p => p.id === currentUser?.orgId) || partners[0];
+  const currentOrg = partners.find(p => p.id === currentUser?.orgId);
   const orgPrograms = programs.filter(p => p.partnerId === currentOrg?.id);
   const orgProgramIds = orgPrograms.map(p => p.id);
   const orgParticipants = applications.filter(a => orgProgramIds.includes(a.programId));
 
   const isApprovedPartner = currentOrg?.status === 'approved';
 
-  const partnerTasks: TodayTaskItem[] = [
-    {
-      id: 'pt-1',
-      title: 'Verifikasi 8 Pendaftar Program Muara Gembong',
-      meta: 'Batas: 15:00 WIB · Data Relawan',
-      assigneeInitial: 'B',
-      isUrgent: true,
-      isCompleted: false,
-    },
-    {
-      id: 'pt-2',
-      title: 'Kirim Modul Briefing Lapangan ke Relawan',
-      meta: 'Batas: 17:00 WIB · Koordinasi Program',
-      assigneeInitial: 'S',
-      isUrgent: false,
-      isCompleted: true,
-    },
-    {
-      id: 'pt-3',
-      title: 'Finalisasi Berita Acara Pelaksanaan Kegiatan',
-      meta: 'Batas: Besok 11:00 WIB · Laporan Kemitraan',
-      assigneeInitial: 'H',
-      isUrgent: false,
-      isCompleted: false,
-    },
-  ];
-
-  const partnerProgress: AssignmentProgressItem[] = [
-    {
-      id: 'pp-1',
-      title: 'Target Kuota Relawan Restorasi Mangrove',
-      progress: 75,
-      isCoral: false,
-    },
-    {
-      id: 'pp-2',
-      title: 'Pelaksanaan Program Kakak Asuh Literasi',
-      progress: 45,
-      isCoral: true,
-    },
-    {
-      id: 'pp-3',
-      title: 'Penyusunan Laporan Dampak Sosial',
-      progress: 82,
-      isCoral: false,
-    },
-  ];
-
+  const waitingApplicants = orgParticipants.filter(app => ['submitted', 'under_review'].includes(app.status));
+  const partnerTasks: TodayTaskItem[] = waitingApplicants.slice(0, 5).map(app => ({
+    id: app.id, title: `Tinjau pendaftaran ${app.volunteerName}`, meta: `${app.programTitle} · ${app.volunteerEmail}`,
+    assigneeInitial: app.volunteerName.slice(0, 1).toUpperCase(), isUrgent: false, isCompleted: false,
+  }));
+  const partnerProgress: AssignmentProgressItem[] = orgPrograms.map(program => ({
+    id: program.id, title: `Kuota relawan · ${program.title}`,
+    progress: program.targetQuota > 0 ? Math.min(100, Math.round(program.enrolledCount / program.targetQuota * 100)) : 0,
+    isCoral: false,
+  }));
+  const totalQuota = orgPrograms.reduce((total, program) => total + program.targetQuota, 0);
+  const acceptedCount = orgParticipants.filter(app => app.status === 'accepted').length;
   const partnerGauges: AnalyticsGaugeItem[] = [
-    {
-      id: 'pg-1',
-      label: 'Target Kuota',
-      percentage: 82,
-      isCoral: false,
-    },
-    {
-      id: 'pg-2',
-      label: 'Seleksi Terpenuhi',
-      percentage: 68,
-      isCoral: true,
-    },
+    { id: 'quota', label: 'Kuota terisi', percentage: totalQuota ? Math.min(100, Math.round(orgParticipants.length / totalQuota * 100)) : 0, isCoral: false },
+    { id: 'accepted', label: 'Pendaftar diterima', percentage: orgParticipants.length ? Math.round(acceptedCount / orgParticipants.length * 100) : 0, isCoral: true },
   ];
-
   const partnerNotices: NoticeItem[] = [
-    {
-      id: 'pn-1',
-      title: 'Status Kemitraan: Aktif & Terverifikasi',
-      description: 'Organisasi Anda berhak mengajukan hingga 5 proposal program kolaborasi aktif.',
-      timeBadge: 'Hari ini',
-    },
-    {
-      id: 'pn-2',
-      title: '12 Relawan baru mendaftar hari ini',
-      description: 'Pelamar baru menunggu peninjauan pada dashboard data relawan.',
-      timeBadge: '2 jam',
-    },
+    ...(currentOrg ? [{ id: `org-${currentOrg.id}`, title: `Status kemitraan: ${currentOrg.status}`, description: currentOrg.reviewNotes || 'Status organisasi dari Supabase.', timeBadge: 'Status' }] : []),
+    ...(waitingApplicants.length ? [{ id: 'pending-applicants', title: `${waitingApplicants.length} pendaftaran menunggu tinjauan`, description: 'Pendaftar untuk program organisasi Anda.', timeBadge: 'Perlu ditinjau' }] : []),
   ];
 
   return (
     <div className="space-y-6">
+      {partnerWorkspaceLoading&&<div role="status" className="rounded-lg bg-slate-100 p-3 text-sm text-slate-600">Memuat data organisasi dan program…</div>}
+      {partnerWorkspaceError&&<div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">{partnerWorkspaceError}</div>}
       {/* Workspace Intro Header */}
       <WorkspaceIntroHeader
         eyebrow="PORTAL MITRA"
@@ -154,7 +98,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
                 <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
                 <div>
                   <p className="text-xs font-bold text-emerald-900">Kemitraan Organisasi Terverifikasi PSA</p>
-                  <p className="text-xs text-emerald-700">Organisasi Anda telah disetujui penuh untuk mempublikasikan inisiatif sosial dan menerima aplikasi relawan.</p>
+                  <p className="text-xs text-emerald-700">Organisasi Anda telah disetujui untuk mengajukan program dan menerima pendaftaran relawan setelah program dipublikasikan Admin PSA.</p>
                 </div>
               </div>
               <StatusBadge status="approved" size="sm" />
@@ -184,7 +128,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
           <AssignmentsTrackerWidget
             title="Linimasa & Progres Program"
             subtitle="Pemenuhan kuota relawan dan capaian implementasi lapangan"
-            timeframeBadge="Q4 2026"
+            timeframeBadge="Data saat ini"
             items={partnerProgress}
           />
 
@@ -192,7 +136,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
           <TodayTasksWidget
             title="Agenda Koordinasi & Tugas Hari Ini"
             initialTasks={partnerTasks}
-            timeframeBadge="Hari Ini"
+            timeframeBadge="Tinjauan pendaftar"
           />
 
           {/* Program Kolaborasi Aktif Milik Mitra */}
@@ -240,7 +184,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
 
                       <div className="flex items-center gap-3 shrink-0">
                         <span className="text-xs font-mono font-bold text-[#0F172A] bg-white px-2.5 py-1 rounded-lg border border-slate-200">
-                          {applicantsCount} / {prg.targetQuota} Relawan
+                          {applicantsCount} / {prg.targetQuota > 0 ? prg.targetQuota : 'Tidak dibatasi'} Relawan
                         </span>
                         <button
                           type="button"
@@ -265,11 +209,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
             initialNotices={partnerNotices}
             onNoticeClick={() => onNavigate('part-participants')}
           />
-
-          {/* Monthly Interactive Calendar */}
-          <InteractiveCalendarWidget />
-
-          {/* Circular Analytics Overview */}
+{/* Circular Analytics Overview */}
           <AnalyticsOverviewWidget
             title="Efektivitas Perekrutan Relawan"
             items={partnerGauges}
@@ -279,7 +219,7 @@ export const PartnerDashboard: React.FC<PartnerDashboardProps> = ({ onNavigate }
           <HighlightActionCard
             eyebrow="LEBIH BANYAK DAMPAK"
             title="Kolaborasi Berkelanjutan PSA"
-            description="Dapatkan akses prioritas ke ribuan relawan terverifikasi di 34 provinsi dengan proposal terstandarisasi."
+            description="Pantau proposal dan pendaftaran pada program yang terhubung ke organisasi Anda."
             buttonText="Pelajari Panduan Mitra"
             onButtonClick={() => onNavigate('part-organization')}
           />

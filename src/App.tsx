@@ -71,19 +71,26 @@ const MainAppContent: React.FC = () => {
   };
 
   useEffect(() => {
-    const syncFromHistory = () => {
+    const syncFromHistory = async () => {
       const tab = tabFromPath(window.location.pathname);
       if (tab) {
         setCurrentPortalTab(tab);
-        if (tab.startsWith('admin-')) setRole('admin');
-        else if (tab.startsWith('part-')) setRole('partner');
-        else setRole('volunteer');
+        const response = await fetch('/api/auth/profile', { cache: 'no-store' });
+        const profile = await response.json();
+        const requiredRole = tab.startsWith('admin-') ? 'admin' : tab.startsWith('part-') ? 'partner' : 'volunteer';
+        if (!response.ok || profile.role !== requiredRole || (requiredRole === 'volunteer' && process.env.NEXT_PUBLIC_PORTAL_VOLUNTEER_ENABLED !== 'true')) {
+          window.history.replaceState({}, '', '/');
+          setRole('public');
+          setIsViewingPublicSite(true);
+          return;
+        }
+        setRole(profile.role);
       }
     };
     syncFromHistory();
     window.addEventListener('popstate', syncFromHistory);
     return () => window.removeEventListener('popstate', syncFromHistory);
-  }, []);
+  }, [setRole]);
   
   // Flag to know whether an authenticated user is currently viewing the public website or inside their portal
   const [isViewingPublicSite, setIsViewingPublicSite] = useState<boolean>(role === 'public');

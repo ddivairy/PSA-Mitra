@@ -76,13 +76,13 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
                   <ArrowRight size={16} />
                 </button>
                 <button
-                  onClick={() => onOpenAuth('register_vol')}
+                  onClick={() => onNavigate('public-register-volunteer')}
                   className="px-5 py-3 text-sm font-medium text-slate-700 hover:text-slate-900 bg-white border border-slate-300 hover:border-slate-400 rounded-lg transition-colors"
                 >
                   Daftar Relawan
                 </button>
                 <button
-                  onClick={() => onOpenAuth('register_partner')}
+                  onClick={() => onNavigate('public-register-partner')}
                   className="px-5 py-3 text-sm font-medium text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
                 >
                   Daftar Mitra
@@ -92,16 +92,16 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
               {/* Trust markers */}
               <div className="pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
                 <div>
-                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">48+</span>
-                  <span className="text-xs text-slate-500">Program Terlaksana</span>
+                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">{publishedPrograms.length}</span>
+                  <span className="text-xs text-slate-500">Program terbuka</span>
                 </div>
                 <div>
-                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">3.400+</span>
-                  <span className="text-xs text-slate-500">Relawan Terlibat</span>
+                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">{partners.filter(partner => partner.status === 'approved').length}</span>
+                  <span className="text-xs text-slate-500">Mitra terverifikasi</span>
                 </div>
                 <div>
-                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">82+</span>
-                  <span className="text-xs text-slate-500">Mitra Terverifikasi</span>
+                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">Tanpa akun</span>
+                  <span className="text-xs text-slate-500">Pendaftaran relawan</span>
                 </div>
                 <div>
                   <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">12</span>
@@ -202,7 +202,7 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
                   </div>
                   <div className="flex items-center justify-between text-xs pt-1">
                     <span className="text-slate-500 font-mono tabular-nums">
-                      Kuota: <strong>{prog.enrolledCount}</strong> / {prog.targetQuota}
+                      Kuota: <strong>{prog.enrolledCount}</strong> / {prog.targetQuota > 0 ? prog.targetQuota : 'Tidak dibatasi'}
                     </span>
                     <span className="font-semibold text-blue-600 group-hover:underline flex items-center gap-1">
                       Detail Program
@@ -276,7 +276,7 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
               </div>
 
               <button
-                onClick={() => onOpenAuth('register_vol')}
+                onClick={() => onNavigate('public-register-volunteer')}
                 className="w-full py-2.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-center"
               >
                 Mulai Daftar Relawan
@@ -425,11 +425,11 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
             Siap Berkontribusi Nyata untuk Perubahan Sosial Positif?
           </h2>
           <p className="public-cta-description text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-            Bergabunglah bersama ribuan relawan di seluruh pelosok Indonesia atau ajukan program kemitraan organisasi Anda hari ini.
+            Daftarkan diri sebagai relawan atau ajukan kerja sama organisasi Anda melalui formulir PSA.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
-              onClick={() => onOpenAuth('register_vol')}
+              onClick={() => onNavigate('public-register-volunteer')}
               className="px-6 py-2.5 text-xs font-semibold text-slate-900 bg-white hover:bg-slate-100 rounded-xl shadow-sm transition-colors"
             >
               Daftar Sebagai Relawan

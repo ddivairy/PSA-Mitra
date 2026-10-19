@@ -9,11 +9,9 @@ import {
   Bell, 
   Menu, 
   X,
-  ChevronDown,
-  RotateCcw
+  ChevronDown
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { UserRole } from '../../types';
 const psaLogo = '/images/2D PSA LOGO.png';
 
 interface NavbarProps {
@@ -25,27 +23,16 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAuth }) => {
   const { 
     role, 
-    setRole, 
     currentUser, 
     logoutToPublic, 
     unreadNotifsCount, 
     notifications, 
     markNotificationsAsRead,
-    resetAllData 
   } = useApp();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
-
-  const getRoleLabel = (r: UserRole) => {
-    switch (r) {
-      case 'volunteer': return 'Relawan Aktif';
-      case 'partner': return 'Mitra PSA';
-      case 'admin': return 'Admin PSA';
-      default: return 'Pengunjung Publik';
-    }
-  };
 
   const navLinks = role === 'public' ? [
     { id: 'public-home', label: 'Beranda' },
@@ -75,66 +62,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-200">
-      {/* Simulation / Role Switching Quick Bar */}
-      <div className="bg-[#0B2238] text-white px-4 py-1.5 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-[#5C80B6]/30">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-300">Mode Simulasi Peran:</span>
-          <div className="inline-flex rounded-md p-0.5 bg-slate-900/60 border border-slate-700">
-            <button
-              onClick={() => { setRole('public'); onNavigate('public-home'); }}
-              className={`px-2.5 py-0.5 rounded text-xs transition-colors whitespace-nowrap ${
-                role === 'public' ? 'bg-[#5C80B6] text-white font-medium shadow-xs' : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              Publik
-            </button>
-            <button
-              onClick={() => { setRole('volunteer'); onNavigate('vol-dashboard'); }}
-              className={`px-2.5 py-0.5 rounded text-xs transition-colors whitespace-nowrap ${
-                role === 'volunteer' ? 'bg-[#5C80B6] text-white font-medium shadow-xs' : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              Relawan
-            </button>
-            <button
-              onClick={() => { setRole('partner'); onNavigate('part-dashboard'); }}
-              className={`px-2.5 py-0.5 rounded text-xs transition-colors whitespace-nowrap ${
-                role === 'partner' ? 'bg-[#5C80B6] text-white font-medium shadow-xs' : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              Mitra
-            </button>
-            <button
-              onClick={() => { setRole('admin'); onNavigate('admin-dashboard'); }}
-              className={`px-2.5 py-0.5 rounded text-xs transition-colors whitespace-nowrap ${
-                role === 'admin' ? 'bg-[#E85D75] text-white font-medium shadow-xs' : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              Admin PSA
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4 text-slate-300">
-          <span className="hidden sm:inline">
-            Status: <span className="text-white font-medium">{getRoleLabel(role)}</span>
-          </span>
-          <button
-            onClick={() => {
-              if (confirm('Reset seluruh data ke kondisi awal simulasi?')) {
-                resetAllData();
-                onNavigate('public-home');
-              }
-            }}
-            className="flex items-center gap-1 hover:text-white text-slate-400 text-xs transition-colors"
-            title="Reset Database Lokal"
-          >
-            <RotateCcw size={12} />
-            <span className="hidden md:inline">Reset Data</span>
-          </button>
-        </div>
-      </div>
-
       {/* Main Top Navigation conforming to Top Bar Contract */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-8 h-16">
@@ -236,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
                       {currentUser.name}
                     </span>
                     <span className="text-[10px] text-slate-500 block">
-                      {getRoleLabel(role)}
+                      {role === 'admin' ? 'Admin PSA' : role === 'partner' ? 'Mitra PSA' : role === 'volunteer' ? 'Relawan' : 'Publik'}
                     </span>
                   </div>
                   <ChevronDown size={14} className="text-slate-400" />
@@ -266,7 +193,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenAu
             ) : (
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => onOpenAuth('register_vol')}
+                  onClick={() => onNavigate('public-register-volunteer')}
                   className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition-colors whitespace-nowrap"
                 >
                   Daftar Relawan

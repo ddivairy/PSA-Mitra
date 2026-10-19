@@ -2,15 +2,14 @@
 
 import React, { useState } from 'react';
 import { Program } from '../../types';
-import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
-import { CheckCircle2, AlertCircle, ArrowRight, UserCheck } from 'lucide-react';
+import { AlertCircle, ArrowRight, UserCheck } from 'lucide-react';
 
 interface VolunteerApplyModalProps {
   program: Program | null;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (emailStatus: 'sent' | 'failed' | 'unknown') => void;
 }
 
 export const VolunteerApplyModal: React.FC<VolunteerApplyModalProps> = ({
@@ -19,8 +18,11 @@ export const VolunteerApplyModal: React.FC<VolunteerApplyModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { applyToProgram, volunteerProfile, currentUser, role } = useApp();
-
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [province, setProvince] = useState('');
+  const [city, setCity] = useState('');
   const [motivation, setMotivation] = useState('');
   const [q1, setQ1] = useState('');
   const [q2, setQ2] = useState('');
@@ -30,11 +32,15 @@ export const VolunteerApplyModal: React.FC<VolunteerApplyModalProps> = ({
 
   if (!program) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!motivation.trim()) {
+    if (!fullName.trim() || !email.trim() || !phone.trim() || !city.trim() || !province.trim()) {
+      setErrorMsg('Lengkapi identitas dan domisili Anda.');
+      return;
+    }
+    if (motivation.trim().length < 10) {
       setErrorMsg('Mohon jelaskan motivasi Anda mendaftar program ini.');
       return;
     }
@@ -44,21 +50,21 @@ export const VolunteerApplyModal: React.FC<VolunteerApplyModalProps> = ({
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const answers: Record<string, string> = {};
-      if (q1.trim()) answers['Pertanyaan Khusus 1'] = q1.trim();
-      if (q2.trim()) answers['Ketersediaan Waktu Khusus'] = q2.trim();
-
-      const res = applyToProgram(program.id, motivation, answers);
-      setIsSubmitting(false);
-
-      if (res.success) {
-        onSuccess();
-        onClose();
-      } else {
-        setErrorMsg(res.message);
-      }
-    }, 400);
+    const answers: Record<string, string> = {};
+    if (q1.trim()) answers['Pengalaman terkait'] = q1.trim();
+    if (q2.trim()) answers['Ketersediaan waktu'] = q2.trim();
+    try {
+      const response = await fetch(`/api/public/programs/${encodeURIComponent(program.id)}/applications`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ fullName, email, phone, province, city, motivation, answers }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Pendaftaran gagal dikirim.');
+      onSuccess(result.emailStatus === 'sent' ? 'sent' : result.emailStatus === 'unknown' ? 'unknown' : 'failed');
+      onClose();
+    } catch (error) {
+      setErrorMsg(error instanceof Error ? error.message : 'Pendaftaran gagal dikirim.');
+    } finally { setIsSubmitting(false); }
   };
 
   return (
@@ -70,25 +76,18 @@ export const VolunteerApplyModal: React.FC<VolunteerApplyModalProps> = ({
       maxWidth="2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Profile Confirmation Strip */}
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+        {/* Public applicant details */}
+        <div className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-2">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
             <UserCheck size={16} className="text-blue-600" />
-            <span>Data Pendaftar (Sesuai Profil Relawan Anda):</span>
+            <span>Data pendaftar (akun tidak diperlukan)</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-600">
-            <div>
-              <span className="text-slate-400 block text-[11px]">Nama Lengkap</span>
-              <span className="font-semibold text-slate-900">{volunteerProfile.fullName || currentUser?.name || 'Relawan PSA'}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block text-[11px]">Email</span>
-              <span className="font-semibold text-slate-900">{currentUser?.email || 'relawan@gmail.com'}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block text-[11px]">Domisili</span>
-              <span className="font-semibold text-slate-900">{volunteerProfile.city}, {volunteerProfile.province}</span>
-            </div>
+          <div className="grid gap-3 sm:col-span-2 sm:grid-cols-2">
+            <input aria-label="Nama lengkap" autoComplete="name" value={fullName} onChange={e=>setFullName(e.target.value)} placeholder="Nama lengkap" required maxLength={160} className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs" />
+            <input aria-label="Email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email aktif" required maxLength={254} className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs" />
+            <input aria-label="Nomor WhatsApp" type="tel" autoComplete="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Nomor telepon / WhatsApp" required maxLength={40} className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs" />
+            <input aria-label="Provinsi" value={province} onChange={e=>setProvince(e.target.value)} placeholder="Provinsi" required maxLength={120} className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs" />
+            <input aria-label="Kota atau kabupaten" value={city} onChange={e=>setCity(e.target.value)} placeholder="Kota / kabupaten" required maxLength={120} className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs sm:col-span-2" />
           </div>
         </div>
 

@@ -126,13 +126,13 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             ) : (
               <div className="flex items-center gap-2.5">
                 <button
-                  onClick={() => onOpenAuth('register_vol')}
+                  onClick={() => onNavigate('public-register-volunteer')}
                   className="whitespace-nowrap rounded-xl border border-white/25 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-white/10"
                 >
                   Daftar Relawan
                 </button>
                 <button
-                  onClick={() => onOpenAuth('register_partner')}
+                  onClick={() => onNavigate('public-register-partner')}
                   className="whitespace-nowrap rounded-xl bg-[#3479c5] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#2868ad]"
                 >
                   Daftar Mitra
@@ -194,8 +194,8 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           ) : (
             <div className="grid grid-cols-2 gap-2 border-t border-white/15 pt-4">
               <button
-                onClick={() => {
-                  onOpenAuth('register_vol');
+                  onClick={() => {
+                    onNavigate('public-register-volunteer');
                   setMobileMenuOpen(false);
                 }}
                 className="w-full rounded-xl border border-white/20 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-white/10"
@@ -203,8 +203,8 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 Daftar Relawan
               </button>
               <button
-                onClick={() => {
-                  onOpenAuth('register_partner');
+                  onClick={() => {
+                    onNavigate('public-register-partner');
                   setMobileMenuOpen(false);
                 }}
                 className="w-full rounded-xl bg-[#3479c5] py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-[#2868ad]"
