@@ -1,16 +1,9 @@
 'use client';
 
 import React from 'react';
-import { 
-  Users, 
-  MapPin, 
-  CheckCircle2, 
-  PieChart, 
-  BarChart3, 
-  Calendar,
-  ShieldCheck 
-} from 'lucide-react';
+import { MapPin, Users } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { INDONESIA_REGIONS } from '../../data/indonesiaRegions';
 
 export const PartnerAnalyticsView: React.FC = () => {
   const { applications, programs, partners, currentUser } = useApp();
@@ -25,15 +18,37 @@ export const PartnerAnalyticsView: React.FC = () => {
   const femaleCount = orgApps.filter(a => a.volunteerGender === 'female').length;
   const undisclosedCount = orgApps.filter(a => !a.volunteerGender || a.volunteerGender === 'prefer_not_to_say').length;
   const totalWithGender = orgApps.length || 1;
+  const malePercentage = (maleCount / totalWithGender) * 100;
+  const femalePercentage = (femaleCount / totalWithGender) * 100;
+  const undisclosedPercentage = (undisclosedCount / totalWithGender) * 100;
+  const genderChartBackground = orgApps.length > 0
+    ? `conic-gradient(from -90deg, #2563eb 0% ${malePercentage}%, #f43f5e ${malePercentage}% ${malePercentage + femalePercentage}%, #94a3b8 ${malePercentage + femalePercentage}% 100%)`
+    : '#e2e8f0';
 
-  // City distribution
-  const cityCounts: Record<string, number> = {};
+  const provinceByCity = new Map(
+    INDONESIA_REGIONS.flatMap(region =>
+      region.cities.map(city => [city.trim().toLocaleLowerCase('id-ID'), region.province] as const)
+    )
+  );
+  const geographyMap: Record<string, { count: number; cities: Record<string, number> }> = {};
   orgApps.forEach(a => {
-    const c = a.volunteerCity || 'Lainnya';
-    cityCounts[c] = (cityCounts[c] || 0) + 1;
+    const city = a.volunteerCity.trim() || 'Kota tidak disebutkan';
+    const province = a.volunteerProvince?.trim()
+      || provinceByCity.get(city.toLocaleLowerCase('id-ID'))
+      || 'Provinsi tidak diketahui';
+    const region = geographyMap[province] ?? { count: 0, cities: {} };
+    region.count += 1;
+    region.cities[city] = (region.cities[city] || 0) + 1;
+    geographyMap[province] = region;
   });
 
-  const sortedCities = Object.entries(cityCounts).sort((a, b) => b[1] - a[1]);
+  const geographyByProvince = Object.entries(geographyMap)
+    .map(([province, region]) => ({
+      province,
+      count: region.count,
+      cities: Object.entries(region.cities).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'id')),
+    }))
+    .sort((a, b) => b.count - a.count || a.province.localeCompare(b.province, 'id'));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -82,36 +97,35 @@ export const PartnerAnalyticsView: React.FC = () => {
             <span className="text-[11px] text-slate-400">Privasi Terjaga</span>
           </div>
 
-          <div className="space-y-3 pt-2">
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-medium text-slate-700">Laki-laki</span>
-                <span className="font-mono tabular-nums text-slate-500">{maleCount} ({Math.round((maleCount / totalWithGender) * 100)}%)</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-blue-600 rounded-full" style={{ width: `${(maleCount / totalWithGender) * 100}%` }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-medium text-slate-700">Perempuan</span>
-                <span className="font-mono tabular-nums text-slate-500">{femaleCount} ({Math.round((femaleCount / totalWithGender) * 100)}%)</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-rose-500 rounded-full" style={{ width: `${(femaleCount / totalWithGender) * 100}%` }} />
+          <div className="flex min-w-0 flex-col items-center gap-6 pt-2">
+            <div
+              className="relative h-48 w-48 max-w-full shrink-0 rounded-full"
+              style={{ background: genderChartBackground }}
+              role="img"
+              aria-label={`Distribusi gender dari ${orgApps.length} pendaftar: ${maleCount} laki-laki, ${femaleCount} perempuan, ${undisclosedCount} memilih tidak menjawab.`}
+            >
+              <div className="absolute inset-6 flex flex-col items-center justify-center rounded-full bg-white">
+                <span className="text-2xl font-bold tabular-nums text-slate-900">{orgApps.length}</span>
+                <span className="text-xs text-slate-500">Total peserta</span>
               </div>
             </div>
-
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="font-medium text-slate-700">Tidak Menjawab / Netral</span>
-                <span className="font-mono tabular-nums text-slate-500">{undisclosedCount} ({Math.round((undisclosedCount / totalWithGender) * 100)}%)</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-slate-400 rounded-full" style={{ width: `${(undisclosedCount / totalWithGender) * 100}%` }} />
-              </div>
-            </div>
+            <ul className="w-full min-w-0 space-y-3 text-xs">
+              {[
+                { label: 'Laki-laki', count: maleCount, percentage: malePercentage, color: 'bg-blue-600' },
+                { label: 'Perempuan', count: femaleCount, percentage: femalePercentage, color: 'bg-rose-500' },
+                { label: 'Memilih Tidak Menjawab', count: undisclosedCount, percentage: undisclosedPercentage, color: 'bg-slate-400' },
+              ].map(item => (
+                <li key={item.label} className="flex min-w-0 items-start justify-between gap-4">
+                  <span className="flex min-w-0 items-center gap-2 font-semibold text-slate-800">
+                    <span className={`mt-0.5 h-3 w-3 shrink-0 rounded-sm ${item.color}`} aria-hidden="true" />
+                    <span>{item.label}</span>
+                  </span>
+                  <span className="shrink-0 text-right font-mono tabular-nums text-slate-600">
+                    {item.count} ({Math.round(item.percentage)}%)
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <p className="text-[11px] text-slate-400 pt-2 border-t border-slate-100">
@@ -129,22 +143,42 @@ export const PartnerAnalyticsView: React.FC = () => {
             <span className="text-[11px] text-slate-400">Kota / Kabupaten</span>
           </div>
 
-          <div className="space-y-2.5 pt-2">
-            {sortedCities.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-6">Belum ada data pendaftar.</p>
+          <div className="space-y-3 pt-2">
+            {geographyByProvince.length === 0 ? (
+              <p className="py-6 text-center text-xs text-slate-500">Belum ada data domisili pendaftar.</p>
             ) : (
-              sortedCities.slice(0, 5).map(([city, count]) => {
-                const pct = Math.round((count / totalWithGender) * 100);
+              geographyByProvince.map(({ province, count, cities }) => {
+                const provincePercentage = Math.round((count / totalWithGender) * 100);
                 return (
-                  <div key={city}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="font-medium text-slate-700">{city}</span>
-                      <span className="font-mono tabular-nums text-slate-500">{count} Relawan ({pct}%)</span>
+                  <section key={province} className="space-y-2 rounded-lg bg-slate-50 p-3">
+                    <div className="flex justify-between gap-4 text-xs">
+                      <span className="font-semibold text-slate-900">{province}</span>
+                      <span className="shrink-0 font-mono tabular-nums text-slate-600">
+                        {count} Pendaftar ({provincePercentage}%)
+                      </span>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${pct}%` }} />
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-white">
+                      <div className="h-full rounded-full bg-emerald-600" style={{ width: `${provincePercentage}%` }} />
                     </div>
-                  </div>
+                    <div className="ml-3 space-y-2 border-l-2 border-blue-100 pl-3 pt-1">
+                      {cities.map(([city, cityCount]) => {
+                        const cityPercentage = Math.round((cityCount / count) * 100);
+                        return (
+                          <div key={city} className="space-y-1 text-xs">
+                            <div className="flex justify-between gap-4">
+                              <span className="text-slate-700">{city}</span>
+                              <span className="shrink-0 font-mono tabular-nums text-slate-500">
+                                {cityCount} ({cityPercentage}%)
+                              </span>
+                            </div>
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white">
+                              <div className="h-full rounded-full bg-blue-500" style={{ width: `${cityPercentage}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </section>
                 );
               })
             )}

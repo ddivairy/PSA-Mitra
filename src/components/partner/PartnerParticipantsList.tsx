@@ -28,6 +28,7 @@ export const PartnerParticipantsList: React.FC = () => {
 
   const [selectedProgramId, setSelectedProgramId] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [activeApplicationGroup, setActiveApplicationGroup] = useState<'pending' | 'accepted' | 'rejected' | 'withdrawn'>('pending');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Selected app for review modal
@@ -58,6 +59,25 @@ export const PartnerParticipantsList: React.FC = () => {
       return true;
     });
   }, [applications, orgProgramIds, selectedProgramId, selectedStatus, searchQuery]);
+
+  const pendingApps = filteredApps.filter(app =>
+    app.status === 'submitted' || app.status === 'under_review' || app.status === 'waitlisted'
+  );
+  const acceptedApps = filteredApps.filter(app => app.status === 'accepted');
+  const rejectedApps = filteredApps.filter(app => app.status === 'rejected');
+  const withdrawnApps = filteredApps.filter(app => app.status === 'withdrawn');
+  const visibleApps = {
+    pending: pendingApps,
+    accepted: acceptedApps,
+    rejected: rejectedApps,
+    withdrawn: withdrawnApps,
+  }[activeApplicationGroup];
+  const applicationGroups: { id: typeof activeApplicationGroup; label: string; count: number }[] = [
+    { id: 'pending', label: 'Belum diterima', count: pendingApps.length },
+    { id: 'accepted', label: 'Diterima', count: acceptedApps.length },
+    { id: 'rejected', label: 'Ditolak', count: rejectedApps.length },
+    { id: 'withdrawn', label: 'Mengundurkan diri', count: withdrawnApps.length },
+  ];
 
   const handleDecision = (decision: ApplicationStatus) => {
     if (!reviewingApp) return;
@@ -140,7 +160,15 @@ export const PartnerParticipantsList: React.FC = () => {
 
         <select
           value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
+          onChange={(e) => {
+            const nextStatus = e.target.value;
+            setSelectedStatus(nextStatus);
+            if (nextStatus === 'all') setActiveApplicationGroup('pending');
+            else if (nextStatus === 'accepted') setActiveApplicationGroup('accepted');
+            else if (nextStatus === 'rejected') setActiveApplicationGroup('rejected');
+            else if (nextStatus === 'withdrawn') setActiveApplicationGroup('withdrawn');
+            else setActiveApplicationGroup('pending');
+          }}
           className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">Semua Status</option>
@@ -149,7 +177,30 @@ export const PartnerParticipantsList: React.FC = () => {
           <option value="accepted">Diterima</option>
           <option value="waitlisted">Daftar Tunggu</option>
           <option value="rejected">Ditolak</option>
+          <option value="withdrawn">Mengundurkan diri</option>
         </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-100 p-1 sm:grid-cols-4" role="tablist" aria-label="Kelompok status peserta">
+        {applicationGroups.map(group => (
+          <button
+            key={group.id}
+            type="button"
+            role="tab"
+            aria-selected={activeApplicationGroup === group.id}
+            onClick={() => {
+              setActiveApplicationGroup(group.id);
+              setSelectedStatus('all');
+            }}
+            className={`rounded-lg px-2 py-2.5 text-xs font-semibold transition-colors ${
+              activeApplicationGroup === group.id
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            {group.label} <span className="ml-1 tabular-nums">({group.count})</span>
+          </button>
+        ))}
       </div>
 
       {/* Table */}
@@ -167,14 +218,14 @@ export const PartnerParticipantsList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredApps.length === 0 ? (
+              {visibleApps.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
-                    Tidak ada pendaftar yang cocok dengan filter.
+                    Tidak ada pendaftar pada kelompok status ini.
                   </td>
                 </tr>
               ) : (
-                filteredApps.map((app) => (
+                visibleApps.map((app) => (
                   <tr key={app.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-5 py-3.5">
                       <div className="font-bold text-slate-900">{app.volunteerName}</div>
