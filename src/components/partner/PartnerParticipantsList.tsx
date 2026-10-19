@@ -115,27 +115,9 @@ export const PartnerParticipantsList: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Title & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Manajemen Peserta &amp; Relawan</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Tinjau berkas pendaftaran calon relawan untuk program yang diselenggarakan oleh <strong>{currentOrg?.name}</strong>.
-          </p>
-        </div>
-
-        <button
-          onClick={handleExportCSV}
-          className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2 self-start sm:self-auto shadow-xs"
-        >
-          <Download size={14} />
-          <span>Ekspor Data (CSV)</span>
-        </button>
-      </div>
-
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-0 pb-8 space-y-6">
       {/* Filter and search bar */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row gap-3">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col md:flex-row md:items-center gap-3">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -179,6 +161,15 @@ export const PartnerParticipantsList: React.FC = () => {
           <option value="rejected">Ditolak</option>
           <option value="withdrawn">Mengundurkan diri</option>
         </select>
+
+        <button
+          type="button"
+          onClick={handleExportCSV}
+          className="flex shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50"
+        >
+          <Download size={14} />
+          <span>Ekspor Data (CSV)</span>
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-100 p-1 sm:grid-cols-4" role="tablist" aria-label="Kelompok status peserta">
@@ -205,7 +196,52 @@ export const PartnerParticipantsList: React.FC = () => {
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
+        <div className="divide-y divide-slate-100 lg:hidden">
+          {visibleApps.length === 0 ? (
+            <div className="px-5 py-10 text-center text-xs text-slate-500">
+              Tidak ada pendaftar pada kelompok status ini.
+            </div>
+          ) : (
+            visibleApps.map(app => (
+              <article key={app.id} className="space-y-3 p-4">
+                <div className="min-w-0">
+                  <h3 className="break-words text-sm font-bold text-slate-900">{app.volunteerName}</h3>
+                  <p className="break-all text-[11px] text-slate-500">{app.volunteerEmail}</p>
+                  <p className="text-[11px] text-slate-400">{app.volunteerPhone}</p>
+                </div>
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                  <div className="col-span-2 min-w-0">
+                    <dt className="text-slate-500">Program Dilamar</dt>
+                    <dd className="mt-0.5 break-words font-medium text-slate-800">{app.programTitle}</dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-slate-500">Domisili</dt>
+                    <dd className="mt-0.5 break-words text-slate-700">{app.volunteerCity || 'Tidak disebutkan'}</dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt className="text-slate-500">Tanggal Lamar</dt>
+                    <dd className="mt-0.5 break-words font-mono text-[11px] text-slate-600">{app.submittedAt}</dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="text-slate-500">Status</dt>
+                    <dd className="mt-1"><StatusBadge status={app.status} size="sm" /></dd>
+                  </div>
+                </dl>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReviewingApp(app);
+                    setDecisionNotes(app.reviewNotes || '');
+                  }}
+                  className="w-full rounded-md bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-800"
+                >
+                  Tinjau &amp; Keputusan
+                </button>
+              </article>
+            ))
+          )}
+        </div>
+        <div className="hidden overflow-x-auto lg:block">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-[11px] tracking-wider">
               <tr>

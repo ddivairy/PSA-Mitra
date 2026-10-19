@@ -125,51 +125,41 @@ export const GeographicGenderAnalytics: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1">
-            Laporan Tingkat Platform
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900">Analytics PSA</h1>
-          <p className="text-xs text-slate-500 mt-1 max-w-2xl">
-            Statistik mitra dan program, serta distribusi gender dan wilayah asal pendaftar.
-          </p>
+      {/* Tabs */}
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 text-xs font-medium text-slate-600 shadow-xs sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:p-4">
+        <div className="flex min-w-0 flex-wrap gap-x-4 sm:flex-1 sm:gap-x-6">
+          <button
+            onClick={() => setActiveTab('geography')}
+            className={`border-b-2 pb-2.5 transition-colors ${
+              activeTab === 'geography' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent hover:text-slate-900'
+            }`}
+          >
+            Sebaran Wilayah &amp; Kota
+          </button>
+          <button
+            onClick={() => setActiveTab('gender')}
+            className={`border-b-2 pb-2.5 transition-colors ${
+              activeTab === 'gender' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent hover:text-slate-900'
+            }`}
+          >
+            Distribusi Gender &amp; Demografi
+          </button>
+          <button
+            onClick={() => setActiveTab('partners')}
+            className={`border-b-2 pb-2.5 transition-colors ${
+              activeTab === 'partners' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent hover:text-slate-900'
+            }`}
+          >
+            Performa Mitra &amp; Program
+          </button>
         </div>
         <button
           type="button"
           onClick={handleExportReport}
-          className="inline-flex items-center justify-center gap-2 self-start rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50 sm:self-auto"
+          className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50 sm:w-auto"
         >
           <Download size={15} aria-hidden="true" />
           Export laporan CSV
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 gap-6 text-xs font-medium text-slate-600">
-        <button
-          onClick={() => setActiveTab('geography')}
-          className={`pb-2.5 transition-colors border-b-2 ${
-            activeTab === 'geography' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent hover:text-slate-900'
-          }`}
-        >
-          Sebaran Wilayah &amp; Kota
-        </button>
-        <button
-          onClick={() => setActiveTab('gender')}
-          className={`pb-2.5 transition-colors border-b-2 ${
-            activeTab === 'gender' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent hover:text-slate-900'
-          }`}
-        >
-          Distribusi Gender &amp; Demografi
-        </button>
-        <button
-          onClick={() => setActiveTab('partners')}
-          className={`pb-2.5 transition-colors border-b-2 ${
-            activeTab === 'partners' ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent hover:text-slate-900'
-          }`}
-        >
-          Performa Mitra &amp; Program
         </button>
       </div>
 

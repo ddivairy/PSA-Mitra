@@ -22,7 +22,7 @@ export const VolunteerApplicationsManagement: React.FC = () => {
 
   const [selectedProgramId, setSelectedProgramId] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [activeApplicationGroup, setActiveApplicationGroup] = useState<'not-accepted' | 'accepted'>('not-accepted');
+  const [activeApplicationGroup, setActiveApplicationGroup] = useState<'not-accepted' | 'accepted' | 'rejected'>('not-accepted');
   const [searchQuery, setSearchQuery] = useState('');
   const [reviewingApp, setReviewingApp] = useState<VolunteerApplication | null>(null);
   const [decisionNotes, setDecisionNotes] = useState('');
@@ -43,10 +43,57 @@ export const VolunteerApplicationsManagement: React.FC = () => {
     });
   }, [applications, selectedProgramId, selectedStatus, searchQuery]);
 
-  const notAcceptedApps = filteredApps.filter(application => application.status !== 'accepted');
+  const notAcceptedApps = filteredApps.filter(application => application.status !== 'accepted' && application.status !== 'rejected');
   const acceptedApps = filteredApps.filter(application => application.status === 'accepted');
-  const visibleApps = activeApplicationGroup === 'accepted' ? acceptedApps : notAcceptedApps;
+  const rejectedApps = filteredApps.filter(application => application.status === 'rejected');
+  const visibleApps = activeApplicationGroup === 'accepted'
+    ? acceptedApps
+    : activeApplicationGroup === 'rejected'
+      ? rejectedApps
+      : notAcceptedApps;
   const uniqueApplicants = new Set(applications.map(application => application.volunteerId)).size;
+
+  const handleExportCSV = () => {
+    const headers = [
+      'ID Aplikasi',
+      'Nama Relawan',
+      'Email',
+      'Telepon',
+      'Kota',
+      'Gender',
+      'Program',
+      'Mitra',
+      'Status',
+      'Tanggal Daftar',
+    ];
+    const rows = filteredApps.map(application => [
+      application.id,
+      application.volunteerName,
+      application.volunteerEmail,
+      application.volunteerPhone,
+      application.volunteerCity,
+      application.volunteerGender === 'male'
+        ? 'Laki-laki'
+        : application.volunteerGender === 'female'
+          ? 'Perempuan'
+          : 'Tidak disebutkan',
+      application.programTitle,
+      application.partnerName,
+      application.status,
+      application.submittedAt,
+    ]);
+    const csv = `\uFEFF${[headers, ...rows]
+      .map(row => row.map(value => `"${value.replace(/"/g, '""')}"`).join(','))
+      .join('\r\n')}`;
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `data-peserta-relawan-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   const handleDecision = (decision: ApplicationStatus) => {
     if (!reviewingApp) return;
@@ -57,15 +104,6 @@ export const VolunteerApplicationsManagement: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard Peserta</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Data pendaftar relawan lintas program dan status seleksinya.
-          </p>
-        </div>
-      </div>
-
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Ringkasan peserta">
         <article className="rounded-xl border border-blue-200 bg-blue-50 p-4">
           <p className="text-xs font-medium text-blue-800">Total pendaftaran</p>
@@ -78,22 +116,22 @@ export const VolunteerApplicationsManagement: React.FC = () => {
       </section>
 
       {/* Filter and Search */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+      <div className="grid min-w-0 grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-xs sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,auto)_minmax(0,auto)_auto]">
+        <div className="relative min-w-0">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari nama relawan, email, kota..."
-            className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            className="w-full min-w-0 rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-xs focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <select
           value={selectedProgramId}
           onChange={(e) => setSelectedProgramId(e.target.value)}
-          className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
+          className="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">Semua Program ({programs.length})</option>
           {programs.map(p => (
@@ -107,9 +145,10 @@ export const VolunteerApplicationsManagement: React.FC = () => {
             const nextStatus = e.target.value;
             setSelectedStatus(nextStatus);
             if (nextStatus === 'accepted') setActiveApplicationGroup('accepted');
+            else if (nextStatus === 'rejected') setActiveApplicationGroup('rejected');
             else if (nextStatus !== 'all') setActiveApplicationGroup('not-accepted');
           }}
-          className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
+          className="w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">Semua Status</option>
           <option value="submitted">Terkirim</option>
@@ -118,14 +157,25 @@ export const VolunteerApplicationsManagement: React.FC = () => {
           <option value="waitlisted">Daftar Tunggu</option>
           <option value="rejected">Ditolak</option>
         </select>
+        <button
+          type="button"
+          onClick={handleExportCSV}
+          className="inline-flex w-full min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50 lg:w-auto"
+        >
+          <Download size={14} aria-hidden="true" />
+          Ekspor Data (CSV)
+        </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-100 p-1" role="tablist" aria-label="Kelompok status pendaftar">
+      <div className="grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-100 p-1 sm:grid-cols-3" role="tablist" aria-label="Kelompok status pendaftar">
         <button
           type="button"
           role="tab"
           aria-selected={activeApplicationGroup === 'not-accepted'}
-          onClick={() => setActiveApplicationGroup('not-accepted')}
+          onClick={() => {
+            setActiveApplicationGroup('not-accepted');
+            setSelectedStatus('all');
+          }}
           className={`rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
             activeApplicationGroup === 'not-accepted' ? 'bg-white text-amber-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
@@ -136,12 +186,29 @@ export const VolunteerApplicationsManagement: React.FC = () => {
           type="button"
           role="tab"
           aria-selected={activeApplicationGroup === 'accepted'}
-          onClick={() => setActiveApplicationGroup('accepted')}
+          onClick={() => {
+            setActiveApplicationGroup('accepted');
+            setSelectedStatus('all');
+          }}
           className={`rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
             activeApplicationGroup === 'accepted' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           Sudah diterima <span className="ml-1 tabular-nums">({acceptedApps.length})</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeApplicationGroup === 'rejected'}
+          onClick={() => {
+            setActiveApplicationGroup('rejected');
+            setSelectedStatus('all');
+          }}
+          className={`rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
+            activeApplicationGroup === 'rejected' ? 'bg-white text-rose-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Ditolak <span className="ml-1 tabular-nums">({rejectedApps.length})</span>
         </button>
       </div>
 

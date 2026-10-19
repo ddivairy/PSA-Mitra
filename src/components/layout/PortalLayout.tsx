@@ -15,7 +15,6 @@ import {
   Search,
   Bell,
   Plus,
-  ChevronRight,
   Mail,
   Settings
 } from 'lucide-react';
@@ -49,6 +48,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
     currentUser, 
     logoutToPublic, 
     unreadNotifsCount,
+    notifications,
     markNotificationsAsRead,
     partners,
     applications,
@@ -60,6 +60,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
 
   const [topSearchQuery, setTopSearchQuery] = useState('');
   const [railExpanded, setRailExpanded] = useState(false);
+  const [showNotifPopover, setShowNotifPopover] = useState(false);
   const railRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -75,9 +76,10 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
   }, [railExpanded]);
 
   useEffect(() => setRailExpanded(false), [currentTab]);
+  useEffect(() => setShowNotifPopover(false), [currentTab]);
 
-  const pendingPartnerships = partners.filter(p => p.status === 'submitted' || p.status === 'under_review').length;
-  const pendingProposals = programs.filter(p => p.proposalStatus === 'submitted' || p.proposalStatus === 'under_review').length;
+  const pendingPartnerships = partners.filter(p => ['submitted', 'under_review', 'revision_required'].includes(p.status)).length;
+  const pendingProposals = programs.filter(p => ['submitted', 'under_review', 'revision_required'].includes(p.proposalStatus)).length;
   const volunteerPending = applications.filter(a => (a.volunteerId === currentUser?.id) && (a.status === 'under_review' || a.status === 'submitted')).length;
 
   let navItems: PortalNavItem[] = [];
@@ -157,7 +159,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
   };
 
   return (
-    <div className="app-wrapper">
+    <div className={`app-wrapper ${role === 'admin' ? 'admin-portal' : ''}`}>
       {/* 
         ========================================================================
         AUTHENTIC SIDE RAIL NAVIGATION (from style.html)
@@ -185,9 +187,8 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
           }}
         >
           <img src={psaLogo} alt="Logo PSA" className="h-[34px] w-[34px] shrink-0 object-contain" />
-          <div className="flex items-center justify-between flex-1 pr-3 overflow-hidden">
-            <span className="brand-name font-black tracking-wider text-sm">WORKSPACE</span>
-            <ChevronRight size={15} className={`brand-name text-slate-400 transition-transform duration-200 ${railExpanded ? 'rotate-180' : ''}`} />
+          <div className="flex flex-1 overflow-hidden">
+            <span className="brand-name font-black tracking-wider text-sm">PORTAL PSA</span>
           </div>
         </div>
 
@@ -215,7 +216,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
                 <span className="rail-label truncate flex-1 items-center justify-between">
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E85D75] text-white">
+                    <span className="ml-2 mr-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#E85D75] text-white">
                       {item.badge}
                     </span>
                   )}
@@ -225,7 +226,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
           })}
 
           {/* Quick links to Public Web & Logout */}
-          <div className="pt-4 mt-2 border-t border-white/10 space-y-1">
+          <div className="rail-footer pt-4 mt-2 border-t border-white/10 space-y-1">
             <button
               type="button"
               onClick={(e) => {
@@ -272,10 +273,10 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
       */}
       <div className="workspace">
         <div className="dashboard-canvas">
-        <header className="topbar">
+        <header className={`topbar ${role === 'partner' ? 'partner-topbar' : ''}`}>
           <div className="page-heading">
             <h1>{pageTitle}</h1>
-            <div className="breadcrumbs"><span>Workspace</span><span>/</span><span>{roleLabel}</span><span>/</span><span>{pageTitle}</span></div>
+            <div className="breadcrumbs"><span>Portal PSA</span><span>/</span><span>{roleLabel}</span><span>/</span><span>{pageTitle}</span></div>
           </div>
 
           <div className="top-actions">
@@ -292,23 +293,64 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({
               />
             </label>
 
-            <div className="topbar-actions">
-              <button type="button" className="round-action" aria-label="Notifikasi" title="Notifikasi" onClick={markNotificationsAsRead}>
-                <Bell size={17} />
-                {unreadNotifsCount > 0 && <span className="dot" aria-hidden="true" />}
-              </button>
+            <div className={`topbar-actions ${role === 'partner' && currentTab === 'part-programs' ? 'partner-program-actions' : ''}`}>
+              {role === 'partner' && currentTab === 'part-programs' && (
+                <button type="button" onClick={handleActionClick} className="navy-button flex min-w-0 items-center gap-1.5">
+                  <Plus size={16} aria-hidden="true" />
+                  <span className="min-w-0 whitespace-normal text-center leading-tight">Buat Proposal Program Baru</span>
+                </button>
+              )}
+              <div className="relative">
+                <button
+                  type="button"
+                  className="round-action"
+                  aria-label="Notifikasi"
+                  title="Notifikasi"
+                  aria-expanded={showNotifPopover}
+                  onClick={() => {
+                    setShowNotifPopover(open => !open);
+                    markNotificationsAsRead();
+                  }}
+                >
+                  <Bell size={17} />
+                  {unreadNotifsCount > 0 && <span className="dot" aria-hidden="true" />}
+                </button>
+                {showNotifPopover && (
+                  <div className="absolute right-0 z-50 mt-2 w-80 max-w-[calc(100vw-32px)] rounded-2xl border border-slate-100 bg-white py-2 shadow-xl">
+                    <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2">
+                      <span className="text-xs font-bold text-[#0F172A]">Notifikasi</span>
+                      <span className="text-[10px] text-[#64748B]">{notifications.length} pembaruan</span>
+                    </div>
+                    <div className="max-h-72 divide-y divide-slate-50 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-center text-xs text-[#64748B]">Tidak ada notifikasi baru</div>
+                      ) : (
+                        notifications.slice(0, 5).map(notification => (
+                          <article key={notification.id} className="p-3 transition-colors hover:bg-slate-50">
+                            <p className="text-xs font-bold text-[#0F172A]">{notification.title}</p>
+                            <p className="mt-0.5 line-clamp-2 text-xs text-[#64748B]">{notification.message}</p>
+                            <span className="mt-1 block text-[10px] text-[#5C80B6]">{notification.timestamp}</span>
+                          </article>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="avatar" role="img" aria-label={`${userName} avatar`}>
                 {userInitial}
               </div>
-              <button type="button" onClick={handleActionClick} className="round-action round-action-primary" aria-label={getActionLabel().replace(/^\+\s*/, '')} title={getActionLabel().replace(/^\+\s*/, '')}>
-                <Plus size={18} />
-              </button>
+              {role === 'volunteer' && (
+                <button type="button" onClick={handleActionClick} className="round-action round-action-primary" aria-label={getActionLabel().replace(/^\+\s*/, '')} title={getActionLabel().replace(/^\+\s*/, '')}>
+                  <Plus size={18} />
+                </button>
+              )}
             </div>
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="dashboard-main pt-2">
+        <main className={`dashboard-main ${role === 'partner' ? 'partner-dashboard-main' : 'pt-2'} ${role === 'admin' ? 'admin-dashboard-main' : ''}`}>
           {currentTab.endsWith('dashboard') && !(role === 'admin' && (adminWorkspaceLoading || !adminWorkspaceReady || adminWorkspaceError)) && (
             <section className="kpi-grid" aria-label="Ringkasan metrik">
               {kpis.map(kpi => <article className="kpi-card" key={kpi.label}><span>{kpi.value}</span><p>{kpi.label}</p></article>)}

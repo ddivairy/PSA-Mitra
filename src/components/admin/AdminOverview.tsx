@@ -65,39 +65,33 @@ export const AdminOverview: React.FC = () => {
       value: partners.length,
       detail: `${numberFormatter.format(approvedPartners)} mitra terverifikasi`,
       icon: Building2,
-      accent: 'bg-blue-50 text-blue-700',
+      accent: 'bg-blue-100 text-blue-700',
     },
     {
       label: 'Total Program',
       value: programs.length,
       detail: `${numberFormatter.format(publishedPrograms)} program dipublikasikan`,
       icon: FolderGit2,
-      accent: 'bg-violet-50 text-violet-700',
+      accent: 'bg-violet-100 text-violet-700',
     },
     {
       label: 'Peserta',
       value: participantCount,
       detail: `${numberFormatter.format(applications.filter(application => application.status === 'accepted').length)} peserta diterima`,
       icon: Users,
-      accent: 'bg-emerald-50 text-emerald-700',
+      accent: 'bg-emerald-100 text-emerald-700',
     },
     {
       label: 'Pendaftaran',
       value: applications.length,
       detail: `${numberFormatter.format(pendingApplications)} menunggu keputusan`,
       icon: UserRoundCheck,
-      accent: 'bg-rose-50 text-rose-700',
+      accent: 'bg-rose-100 text-rose-700',
     },
   ];
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#5C80B6]">Ringkasan platform</p>
-        <h2 className="mt-1 text-2xl font-extrabold text-[#0B2238]">Overview</h2>
-        <p className="mt-1 text-sm text-slate-500">Pantau perkembangan mitra, program, dan partisipasi relawan.</p>
-      </header>
-
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Statistik platform">
         {metrics.map(({ label, value, detail, icon: Icon, accent }) => (
           <article key={label} className="card p-5">

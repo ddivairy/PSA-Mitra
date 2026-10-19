@@ -25,6 +25,8 @@ import { PartnerOrganizationForm } from './components/partner/PartnerOrganizatio
 import { PartnerProgramsList } from './components/partner/PartnerProgramsList';
 import { PartnerParticipantsList } from './components/partner/PartnerParticipantsList';
 import { PartnerAnalyticsView } from './components/partner/PartnerAnalyticsView';
+import { PartnerAccountSettings } from './components/partner/PartnerAccountSettings';
+import { CreateProposalModal } from './components/partner/CreateProposalModal';
 
 // Admin pages
 import { AdminDashboard } from './components/admin/AdminDashboard';
@@ -34,6 +36,7 @@ import { ProgramProposalReviewList } from './components/admin/ProgramProposalRev
 import { VolunteerApplicationsManagement } from './components/admin/VolunteerApplicationsManagement';
 import { GeographicGenderAnalytics } from './components/admin/GeographicGenderAnalytics';
 import { AdminUsersActivity } from './components/admin/AdminUsersActivity';
+import { AdminEmailFollowups } from './components/admin/AdminEmailFollowups';
 
 import { Program } from './types';
 
@@ -50,6 +53,7 @@ const MainAppContent: React.FC = () => {
     'admin-partnerships': '/admin/verifikasi-mitra', 'admin-proposals': '/admin/program',
     'admin-applications': '/admin/seleksi-relawan', 'admin-analytics': '/admin/analitik',
     'admin-users-activity': '/admin/users-activity',
+    'admin-email-followups': '/admin/email-followups',
   };
   const tabFromPath = (path: string) => path === '/admin/proposal'
     ? 'admin-proposals'
@@ -88,6 +92,7 @@ const MainAppContent: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login'>('login');
   const [applyingProgram, setApplyingProgram] = useState<Program | null>(null);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
   const [selectedProgramForDetail, setSelectedProgramForDetail] = useState<Program | null>(null);
 
   useEffect(() => {
@@ -251,6 +256,7 @@ const MainAppContent: React.FC = () => {
         setIsViewingPublicSite(true);
         setCurrentPublicTab('public-home');
       }}
+      onOpenQuickAction={role === 'partner' ? () => setIsProposalModalOpen(true) : undefined}
     >
       {/* VOLUNTEER PORTAL VIEWS */}
       {role === 'volunteer' && (
@@ -307,6 +313,11 @@ const MainAppContent: React.FC = () => {
               <PartnerOrganizationForm onComplete={() => navigatePortal('part-dashboard')} />
             </div>
           )}
+          {currentPortalTab === 'part-settings' && (
+            <div className="py-8 px-4 sm:px-6 lg:px-8">
+              <PartnerAccountSettings />
+            </div>
+          )}
         </>
       )}
 
@@ -334,6 +345,9 @@ const MainAppContent: React.FC = () => {
           {currentPortalTab === 'admin-users-activity' && (
             <AdminUsersActivity />
           )}
+          {currentPortalTab === 'admin-email-followups' && (
+            <AdminEmailFollowups />
+          )}
         </>
       )}
 
@@ -347,6 +361,13 @@ const MainAppContent: React.FC = () => {
             alert('Aplikasi pendaftaran berhasil dikirim!');
             navigatePortal('vol-applications');
           }}
+        />
+      )}
+      {role === 'partner' && (
+        <CreateProposalModal
+          isOpen={isProposalModalOpen}
+          onClose={() => setIsProposalModalOpen(false)}
+          onSuccess={() => setIsProposalModalOpen(false)}
         />
       )}
 

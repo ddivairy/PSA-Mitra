@@ -56,15 +56,6 @@ export const ProgramProposalReviewList: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Manajemen Program</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Pantau progres pendaftaran, keterisian kuota, dan status seluruh program.
-          </p>
-        </div>
-      </div>
-
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Ringkasan program">
         <article className="rounded-xl border border-amber-200 bg-amber-50 p-4">
           <p className="text-xs font-medium text-amber-800">Menunggu review</p>

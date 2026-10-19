@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { 
-  Plus, 
   MapPin, 
   Calendar, 
   FileText
@@ -11,7 +10,6 @@ import { useApp } from '../../context/AppContext';
 import { StatusBadge } from '../common/StatusBadge';
 import { CreateProposalModal } from './CreateProposalModal';
 import { PublicationStatus } from '../../types';
-import { WorkspaceIntroHeader } from '../dashboard/WorkspaceIntroHeader';
 
 export const PartnerProgramsList: React.FC = () => {
   const { programs, partners, currentUser, toggleProgramPublication } = useApp();
@@ -24,24 +22,6 @@ export const PartnerProgramsList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <WorkspaceIntroHeader
-        eyebrow="PROGRAM DIRECTORY · ORGANISASI MITRA"
-        title="Program & Kolaborasi Organisasi"
-        description={`Daftar inisiatif sosial dan proyek kemitraan yang diajukan oleh ${currentOrg?.name}.`}
-        actions={
-          isApprovedPartner ? (
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="navy-button flex items-center gap-1.5"
-            >
-              <Plus size={16} />
-              <span>+ Buat Proposal Program Baru</span>
-            </button>
-          ) : undefined
-        }
-      />
-
       {orgPrograms.length === 0 ? (
         <div className="card panel text-center py-12 space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">

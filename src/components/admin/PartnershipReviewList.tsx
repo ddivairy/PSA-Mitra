@@ -18,7 +18,7 @@ export const PartnershipReviewList: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [activePartnerGroup, setActivePartnerGroup] = useState<'pending' | 'approved'>('pending');
+  const [activePartnerGroup, setActivePartnerGroup] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [selectedOrg, setSelectedOrg] = useState<PartnerOrganization | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
 
@@ -33,9 +33,14 @@ export const PartnershipReviewList: React.FC = () => {
     const matchStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchSearch && matchStatus;
   });
-  const pendingPartners = filteredPartners.filter(partner => partner.status !== 'approved');
+  const pendingPartners = filteredPartners.filter(partner => partner.status !== 'approved' && partner.status !== 'rejected');
   const approvedPartners = filteredPartners.filter(partner => partner.status === 'approved');
-  const visiblePartners = activePartnerGroup === 'approved' ? approvedPartners : pendingPartners;
+  const rejectedPartners = filteredPartners.filter(partner => partner.status === 'rejected');
+  const visiblePartners = activePartnerGroup === 'approved'
+    ? approvedPartners
+    : activePartnerGroup === 'rejected'
+      ? rejectedPartners
+      : pendingPartners;
 
   const handleDecision = (decision: 'approved' | 'revision_required' | 'rejected') => {
     if (!selectedOrg) return;
@@ -84,9 +89,6 @@ export const PartnershipReviewList: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Manajemen Mitra</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Verifikasi dokumen, tinjau status kemitraan, dan tetapkan keputusan untuk setiap organisasi.
-          </p>
         </div>
       </div>
 
@@ -124,6 +126,7 @@ export const PartnershipReviewList: React.FC = () => {
             const nextStatus = e.target.value;
             setStatusFilter(nextStatus);
             if (nextStatus === 'approved') setActivePartnerGroup('approved');
+            else if (nextStatus === 'rejected') setActivePartnerGroup('rejected');
             else if (nextStatus !== 'all') setActivePartnerGroup('pending');
           }}
           className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500"
@@ -139,12 +142,15 @@ export const PartnershipReviewList: React.FC = () => {
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-100 p-1" role="tablist" aria-label="Kelompok status mitra">
+      <div className="grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-100 p-1 sm:grid-cols-3" role="tablist" aria-label="Kelompok status mitra">
         <button
           type="button"
           role="tab"
           aria-selected={activePartnerGroup === 'pending'}
-          onClick={() => setActivePartnerGroup('pending')}
+          onClick={() => {
+            setActivePartnerGroup('pending');
+            setStatusFilter('all');
+          }}
           className={`rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
             activePartnerGroup === 'pending' ? 'bg-white text-amber-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
@@ -155,12 +161,29 @@ export const PartnershipReviewList: React.FC = () => {
           type="button"
           role="tab"
           aria-selected={activePartnerGroup === 'approved'}
-          onClick={() => setActivePartnerGroup('approved')}
+          onClick={() => {
+            setActivePartnerGroup('approved');
+            setStatusFilter('all');
+          }}
           className={`rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
             activePartnerGroup === 'approved' ? 'bg-white text-emerald-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           Sudah disetujui <span className="ml-1 tabular-nums">({approvedPartners.length})</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activePartnerGroup === 'rejected'}
+          onClick={() => {
+            setActivePartnerGroup('rejected');
+            setStatusFilter('all');
+          }}
+          className={`rounded-lg px-3 py-2.5 text-xs font-semibold transition-colors ${
+            activePartnerGroup === 'rejected' ? 'bg-white text-rose-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Ditolak <span className="ml-1 tabular-nums">({rejectedPartners.length})</span>
         </button>
       </div>
 
