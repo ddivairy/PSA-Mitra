@@ -1,11 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, Users } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StatusBadge } from '../common/StatusBadge';
+import { VolunteerApplication } from '../../types';
 
 const numberFormatter = new Intl.NumberFormat('id-ID');
 
+const ProgramParticipants: React.FC<{ applications: VolunteerApplication[] }> = ({ applications }) => (
+  <div className="border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-5">
+    <h4 className="mb-3 flex items-center gap-2 text-sm font-bold text-slate-900">
+      <Users size={16} className="text-blue-600" />
+      Daftar peserta
+      <span className="font-medium text-slate-500">({numberFormatter.format(applications.length)})</span>
+    </h4>
+    {applications.length === 0 ? (
+      <p className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-6 text-center text-xs text-slate-500">
+        Belum ada peserta yang mendaftar di program ini.
+      </p>
+    ) : (
+      <ul className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white">
+        {applications.map(application => (
+          <li key={application.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="break-words text-sm font-semibold text-slate-900">{application.volunteerName}</p>
+              <p className="break-all text-xs text-slate-500">{application.volunteerEmail}</p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Domisili: {application.volunteerCity || 'Tidak disebutkan'}
+              </p>
+            </div>
+            <StatusBadge status={application.status} size="sm" />
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+
 export const ProgramProposalReviewList: React.FC = () => {
-  const { programs } = useApp();
+  const { programs, applications } = useApp();
+  const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
+
+  const toggleParticipants = (programId: string) => {
+    setSelectedProgramId(currentId => currentId === programId ? null : programId);
+  };
 
   const pendingCount = programs.filter(program =>
     program.proposalStatus === 'submitted' || program.proposalStatus === 'under_review'
@@ -55,52 +92,82 @@ export const ProgramProposalReviewList: React.FC = () => {
                 const progress = program.targetQuota > 0
                   ? Math.min(100, Math.round((program.enrolledCount / program.targetQuota) * 100))
                   : 0;
+                const programApplications = applications.filter(application => application.programId === program.id);
+                const isExpanded = selectedProgramId === program.id;
+                const participantsId = `program-participants-${program.id}`;
                 return (
-                  <article key={program.id} className="space-y-3 p-4">
-                    <div className="min-w-0">
-                      <h3 className="break-words text-sm font-bold text-slate-900">{program.title}</h3>
-                      <p className="mt-0.5 break-words text-xs text-slate-500">{program.partnerName}</p>
-                    </div>
-                    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
-                      <div className="min-w-0">
-                        <dt className="text-slate-500">Periode</dt>
-                        <dd className="mt-0.5 break-words font-medium text-slate-700">
-                          {program.startDate} – {program.endDate}
-                        </dd>
+                  <article key={program.id} className="border-b border-slate-100 last:border-b-0">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={isExpanded}
+                      aria-controls={participantsId}
+                      onClick={() => toggleParticipants(program.id)}
+                      onKeyDown={event => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          toggleParticipants(program.id);
+                        }
+                      }}
+                      className="block w-full cursor-pointer space-y-3 p-4 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+                    >
+                      <div className="flex min-w-0 items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="break-words text-sm font-bold text-slate-900">{program.title}</h3>
+                          <p className="mt-0.5 break-words text-xs text-slate-500">{program.partnerName}</p>
+                        </div>
+                        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-blue-700">
+                          <Users size={14} />
+                          Peserta ({numberFormatter.format(programApplications.length)})
+                          <ChevronDown size={14} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        </span>
                       </div>
-                      <div>
-                        <dt className="text-slate-500">Pendaftar / Target</dt>
-                        <dd className="mt-0.5 font-mono font-medium text-slate-700">
-                          {numberFormatter.format(program.enrolledCount)} / {numberFormatter.format(program.targetQuota)}
-                        </dd>
-                      </div>
-                      <div className="col-span-2">
-                        <dt className="text-slate-500">Progres Kuota</dt>
-                        <dd className="mt-1 flex items-center gap-2">
-                          <div
-                            className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"
-                            role="progressbar"
-                            aria-label={`Progres kuota ${program.title}`}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                            aria-valuenow={progress}
-                          >
+                      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                        <div className="min-w-0">
+                          <dt className="text-slate-500">Periode</dt>
+                          <dd className="mt-0.5 break-words font-medium text-slate-700">
+                            {program.startDate} – {program.endDate}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-slate-500">Pendaftar / Target</dt>
+                          <dd className="mt-0.5 font-mono font-medium text-slate-700">
+                            {numberFormatter.format(program.enrolledCount)} / {numberFormatter.format(program.targetQuota)}
+                          </dd>
+                        </div>
+                        <div className="col-span-2">
+                          <dt className="text-slate-500">Progres Kuota</dt>
+                          <dd className="mt-1 flex items-center gap-2">
                             <div
-                              className={`h-full rounded-full ${progress >= 100 ? 'bg-emerald-500' : 'bg-blue-500'}`}
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                          <span className="w-9 text-right font-mono text-slate-600">{progress}%</span>
-                        </dd>
+                              className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"
+                              role="progressbar"
+                              aria-label={`Progres kuota ${program.title}`}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                              aria-valuenow={progress}
+                            >
+                              <div
+                                className={`h-full rounded-full ${progress >= 100 ? 'bg-emerald-500' : 'bg-blue-500'}`}
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                            <span className="w-9 text-right font-mono text-slate-600">{progress}%</span>
+                          </dd>
+                        </div>
+                        <div className="col-span-2">
+                          <dt className="text-slate-500">Status</dt>
+                          <dd className="mt-1.5 flex flex-wrap gap-1.5">
+                            <StatusBadge status={program.proposalStatus} size="sm" />
+                            <StatusBadge status={program.publishedStatus} size="sm" />
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                    {isExpanded && (
+                      <div id={participantsId}>
+                        <ProgramParticipants applications={programApplications} />
                       </div>
-                      <div className="col-span-2">
-                        <dt className="text-slate-500">Status</dt>
-                        <dd className="mt-1.5 flex flex-wrap gap-1.5">
-                          <StatusBadge status={program.proposalStatus} size="sm" />
-                          <StatusBadge status={program.publishedStatus} size="sm" />
-                        </dd>
-                      </div>
-                    </dl>
+                    )}
                   </article>
                 );
               })}
@@ -121,11 +188,30 @@ export const ProgramProposalReviewList: React.FC = () => {
                     const progress = program.targetQuota > 0
                       ? Math.min(100, Math.round((program.enrolledCount / program.targetQuota) * 100))
                       : 0;
+                    const programApplications = applications.filter(application => application.programId === program.id);
+                    const isExpanded = selectedProgramId === program.id;
+                    const participantsId = `program-participants-${program.id}`;
                     return (
-                      <tr key={program.id} className="hover:bg-slate-50">
+                      <React.Fragment key={program.id}>
+                      <tr className="hover:bg-slate-50">
                         <td className="break-words px-3 py-3.5 xl:px-4">
-                          <p className="font-bold text-slate-900">{program.title}</p>
-                          <p className="mt-0.5 text-[11px] text-slate-500">{program.partnerName}</p>
+                          <button
+                            type="button"
+                            aria-expanded={isExpanded}
+                            aria-controls={participantsId}
+                            onClick={() => toggleParticipants(program.id)}
+                            className="group flex w-full items-start justify-between gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                          >
+                            <span className="min-w-0">
+                              <span className="block break-words font-bold text-slate-900 group-hover:text-blue-700">{program.title}</span>
+                              <span className="mt-0.5 block text-[11px] text-slate-500">{program.partnerName}</span>
+                            </span>
+                            <span className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-blue-700">
+                              <Users size={13} />
+                              <span>{numberFormatter.format(programApplications.length)}</span>
+                              <ChevronDown size={13} className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            </span>
+                          </button>
                         </td>
                         <td className="break-words px-3 py-3.5 text-slate-600 xl:px-4">
                           {program.startDate} – {program.endDate}
@@ -158,6 +244,14 @@ export const ProgramProposalReviewList: React.FC = () => {
                           </div>
                         </td>
                       </tr>
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={5} id={participantsId} className="p-0">
+                            <ProgramParticipants applications={programApplications} />
+                          </td>
+                        </tr>
+                      )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
