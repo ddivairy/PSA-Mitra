@@ -30,6 +30,9 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    agentUpgrade: 'security',
+  },
   // Enable Turbopack for dev (optional but recommended)
   // experimental: {
   //   turbo: true,
