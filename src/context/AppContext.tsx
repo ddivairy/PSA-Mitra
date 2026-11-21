@@ -39,6 +39,7 @@ interface AppContextType {
   refreshPartnerWorkspace: () => Promise<void>;
   publicDirectoryLoading: boolean;
   publicDirectoryError: string;
+  refreshPublicDirectory: () => Promise<void>;
 
   // Auth actions
   loginAsUser: (userId: string) => void;
@@ -157,38 +158,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (role === 'admin') void refreshAdminWorkspace();
   }, [role, refreshAdminWorkspace]);
 
+  const refreshPublicDirectory = useCallback(async () => {
+    setUsers([]);
+    setAuditLogs([]);
+    setNotifications([]);
+    setApplications([]);
+    setPrograms([]);
+    setPartners([]);
+    setPublicDirectoryError('');
+    setPublicDirectoryLoading(true);
+    try {
+      const response = await fetch('/api/public/directory', { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) {
+        setPublicDirectoryError(data.error || 'Katalog publik gagal dimuat.');
+        return;
+      }
+      setPrograms((data.programs || []).map((p: any) => ({
+        id:p.id, partnerId:p.partner_id, partnerName:p.partner_name, title:p.title, category:p.category,
+        summary:p.summary, description:p.description, objectives:p.objectives||[], format:p.format,
+        province:p.province||undefined, city:p.city||undefined, address:p.address||undefined,
+        startDate:p.start_date, endDate:p.end_date, schedule:p.schedule, targetQuota:p.target_quota,
+        enrolledCount:p.enrolled_count, requirements:p.requirements||[], accessibilityInfo:p.accessibility_info||undefined,
+        deadline:p.deadline, picName:'', picContact:'', proposalStatus:p.proposal_status,
+        publishedStatus:p.published_status, executionStatus:p.execution_status||'planned', publicAnnouncement:p.public_announcement||undefined,
+        publicTimeline:(data.timeline||[]).filter((item:any)=>item.program_id===p.id).map((item:any)=>({status:item.status,announcement:item.announcement||undefined,createdAt:item.created_at})),
+        image:p.image, createdAt:p.created_at,
+      })));
+      setPartners((data.partners || []).map((p: any) => ({
+        id:p.id, userId:'', name:p.name, type:p.type, sector:p.sector, description:p.description||'',
+        website:p.website||undefined, address:'', province:p.province, city:p.city, picName:'', picRole:'',
+        picPhone:'', picEmail:'', collaborationReason:'', collaborationFocus:[], collaborationObjective:'',
+        targetImpact:'', offeredContribution:'', collaborationPeriod:'', documents:[], status:'approved', history:[], createdAt:'',
+      })));
+    } catch (error) {
+      setPrograms([]);
+      setPartners([]);
+      setPublicDirectoryError(error instanceof Error ? error.message : 'Katalog publik gagal dimuat.');
+      console.error('Public PSA directory load failed:', error);
+    } finally {
+      setPublicDirectoryLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (role === 'partner') void refreshPartnerWorkspace();
-    else if (role === 'public') {
-      setUsers([]); setAuditLogs([]); setNotifications([]); setPublicDirectoryError('');
-      setPrograms([]); setApplications([]); setPartners([]); setPublicDirectoryLoading(true);
-      void fetch('/api/public/directory', { cache: 'no-store' }).then(async response => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Katalog publik gagal dimuat.');
-        setPrograms((data.programs || []).map((p: any) => ({
-          id:p.id, partnerId:p.partner_id, partnerName:p.partner_name, title:p.title, category:p.category,
-          summary:p.summary, description:p.description, objectives:p.objectives||[], format:p.format,
-          province:p.province||undefined, city:p.city||undefined, address:p.address||undefined,
-          startDate:p.start_date, endDate:p.end_date, schedule:p.schedule, targetQuota:p.target_quota,
-          enrolledCount:p.enrolled_count, requirements:p.requirements||[], accessibilityInfo:p.accessibility_info||undefined,
-          deadline:p.deadline, picName:'', picContact:'', proposalStatus:p.proposal_status,
-          publishedStatus:p.published_status, executionStatus:p.execution_status||'planned', publicAnnouncement:p.public_announcement||undefined,
-          publicTimeline:(data.timeline||[]).filter((item:any)=>item.program_id===p.id).map((item:any)=>({status:item.status,announcement:item.announcement||undefined,createdAt:item.created_at})),
-          image:p.image, createdAt:p.created_at,
-        })));
-        setPartners((data.partners || []).map((p: any) => ({
-          id:p.id, userId:'', name:p.name, type:p.type, sector:p.sector, description:p.description||'',
-          website:p.website||undefined, address:'', province:p.province, city:p.city, picName:'', picRole:'',
-          picPhone:'', picEmail:'', collaborationReason:'', collaborationFocus:[], collaborationObjective:'',
-          targetImpact:'', offeredContribution:'', collaborationPeriod:'', documents:[], status:'approved', history:[], createdAt:'',
-        })));
-      }).catch(error => {
-        setPrograms([]); setPartners([]);
-        setPublicDirectoryError(error instanceof Error ? error.message : 'Katalog publik gagal dimuat.');
-        console.error('Public PSA directory load failed:', error);
-      }).finally(() => setPublicDirectoryLoading(false));
-    }
   }, [role, refreshPartnerWorkspace]);
+
+  useEffect(() => {
+    if (role === 'public') void refreshPublicDirectory();
+  }, [role, refreshPublicDirectory]);
 
   // Derived current user
   const currentUser = users.find(u => u.id === currentUserId) || null;
@@ -692,6 +711,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         refreshPartnerWorkspace,
         publicDirectoryLoading,
         publicDirectoryError,
+        refreshPublicDirectory,
 
         loginAsUser,
         logoutToPublic,

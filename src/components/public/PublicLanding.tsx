@@ -31,6 +31,9 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   const publishedPrograms = programs.filter(p => p.publishedStatus === 'published').slice(0, 3);
+  const openProgramCount = programs.filter(p => p.publishedStatus === 'published').length;
+  const verifiedPartnerCount = partners.filter(partner => partner.status === 'approved').length;
+  const provinceCount = new Set([...programs, ...partners].map(item => item.province).filter(Boolean)).size;
 
   const faqs = [
     {
@@ -90,21 +93,17 @@ export const PublicLanding: React.FC<PublicLandingProps> = ({
               </div>
 
               {/* Trust markers */}
-              <div className="pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-left">
+              <div className="pt-6 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 gap-4 text-left">
                 <div>
-                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">{publishedPrograms.length}</span>
+                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">{openProgramCount}</span>
                   <span className="text-xs text-slate-500">Program terbuka</span>
                 </div>
                 <div>
-                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">{partners.filter(partner => partner.status === 'approved').length}</span>
+                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">{verifiedPartnerCount}</span>
                   <span className="text-xs text-slate-500">Mitra terverifikasi</span>
                 </div>
                 <div>
-                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">Tanpa akun</span>
-                  <span className="text-xs text-slate-500">Pendaftaran relawan</span>
-                </div>
-                <div>
-                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">12</span>
+                  <span className="block text-2xl font-bold text-slate-900 font-mono tabular-nums">{provinceCount}</span>
                   <span className="text-xs text-slate-500">Provinsi Jangkauan</span>
                 </div>
               </div>

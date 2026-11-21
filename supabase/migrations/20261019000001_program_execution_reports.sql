@@ -84,7 +84,9 @@ create policy "PSA admin reads program reports"
   on storage.objects for select to authenticated
   using (bucket_id = 'program-reports' and public.current_user_is_psa_admin());
 
-create or replace view public.published_program_directory as
+drop view if exists public.published_program_directory;
+
+create view public.published_program_directory as
   select id, partner_id, partner_name, title, category, summary, description,
     objectives, format, province, city, address, start_date, end_date, schedule,
     target_quota, enrolled_count, requirements, accessibility_info, deadline,

@@ -32,7 +32,7 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
   selectedProgramForDetail,
   onClearSelectedProgram,
 }) => {
-  const { programs, applications, currentUser, role, publicDirectoryLoading, publicDirectoryError } = useApp();
+  const { programs, applications, currentUser, role, publicDirectoryLoading, publicDirectoryError, refreshPublicDirectory } = useApp();
   const canApplyToProgram = role === 'public' || role === 'volunteer';
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -254,15 +254,16 @@ export const ProgramsDirectory: React.FC<ProgramsDirectoryProps> = ({
           <p className="text-xs text-slate-500">
             {publicDirectoryError|| (publicDirectoryLoading?'Mengambil program yang telah disetujui dari PSA.':programs.length?'Coba ubah kata kunci pencarian atau bersihkan filter provinsi dan kategori.':'Belum ada program yang dipublikasikan.')}
           </p>
-          {!publicDirectoryLoading&&programs.length>0&&<button
-            onClick={() => {
+          {!publicDirectoryLoading && (publicDirectoryError || programs.length > 0) && <button
+            type="button"
+            onClick={publicDirectoryError ? () => void refreshPublicDirectory() : () => {
               setSearchQuery('');
               setSelectedCategory('all');
               setSelectedProvince('all');
             }}
             className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg"
           >
-            Bersihkan Filter
+            {publicDirectoryError ? 'Coba lagi' : 'Bersihkan Filter'}
           </button>}
         </div>
       ) : (
